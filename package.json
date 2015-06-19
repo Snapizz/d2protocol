@@ -1,0 +1,24 @@
+{
+  "name": "d2protocol",
+  "version": "1.0.0",
+  "description": "Protocol dofus 2.0 in javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Snapizz/d2protocol.git"
+  },
+  "keywords": [
+    "dofus",
+    "protocol",
+    "2.0"
+  ],
+  "author": "Snapiz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Snapizz/d2protocol/issues"
+  },
+  "homepage": "https://github.com/Snapizz/d2protocol#readme"
+}

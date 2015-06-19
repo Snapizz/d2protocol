@@ -14,3 +14,6 @@ files.forEach(function (file) {
   var e = require(file);
   d2protocol[path.basename(file, '.js')] = e;
 });
+
+d2protocol['protocol-constants-enum'] = require('./lib/protocol-constants-enum.js');
+d2protocol['metadata'] = require('./lib/metadata.js');

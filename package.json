@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/Snapizz/d2protocol/issues"
   },
-  "homepage": "https://github.com/Snapizz/d2protocol#readme"
+  "homepage": "https://github.com/Snapizz/d2protocol#readme",
+  "dependencies": {
+    "d2com": "git+https://github.com/Snapizz/d2com.git",
+    "glob": "^5.0.10",
+    "q": "^1.4.1",
+    "require-all": "^1.1.0"
+  }
 }

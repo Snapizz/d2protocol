@@ -8,12 +8,9 @@ var d2protocol = {
 
 module.exports = d2protocol;
 
-glob(path.join(__dirname, 'enums/**/*.js'), function( err, files ) {
-  if(err){
-    throw err;
-  }
-  files.forEach(function (file) {
-    var e = require(file);
-    d2protocol[path.basename(file, '.js')] = e;
-  });
+var files = glob.sync(path.join(__dirname, 'lib/enums/**/*.js'));
+
+files.forEach(function (file) {
+  var e = require(file);
+  d2protocol[path.basename(file, '.js')] = e;
 });

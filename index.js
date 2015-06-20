@@ -2,8 +2,8 @@ var glob = require('glob'),
     path = require('path');
 
 var d2protocol = {
-  messageReceiver: require('./lib/message-receiver.js'),
-  protocolTypeManager: require('./lib/protocol-type-manager.js')
+  MessageReceiver: require('./lib/message-receiver.js'),
+  ProtocolTypeManager: require('./lib/protocol-type-manager.js')
 };
 
 module.exports = d2protocol;

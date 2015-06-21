@@ -1,19 +1,5 @@
-var glob = require('glob'),
-    path = require('path');
-
-var d2protocol = {
-  MessageReceiver: require('./lib/message-receiver.js'),
-  ProtocolTypeManager: require('./lib/protocol-type-manager.js')
+module.exports = {
+  messages: require('./lib/message-receiver.js')(),
+  types: require('./lib/protocol-type-manager.js')(),
+  enums: require('./lib/enum-manager.js')()
 };
-
-module.exports = d2protocol;
-
-var files = glob.sync(path.join(__dirname, 'lib/enums/**/*.js'));
-
-files.forEach(function (file) {
-  var e = require(file);
-  d2protocol[path.basename(file, '.js')] = e;
-});
-
-d2protocol['protocol-constants-enum'] = require('./lib/protocol-constants-enum.js');
-d2protocol['metadata'] = require('./lib/metadata.js');

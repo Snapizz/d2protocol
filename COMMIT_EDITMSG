@@ -1,0 +1,67 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# # On branch master
+# # Changes to be committed:
+# #
+# #
+# #	modified:   index.js
+# #	deleted:    lib/enums/crafter-directory-param-bit-enum.js
+# #	deleted:    lib/enums/payment-type-enum.js
+# #	modified:   lib/enums/preset-use-result-enum.js
+# #	modified:   lib/messages/connection/identification-message.js
+# #	modified:   lib/messages/connection/selected-server-data-message.js
+# #	modified:   lib/messages/connection/servers-list-message.js
+# #	modified:   lib/messages/game/approach/account-capabilities-message.js
+# #	modified:   lib/messages/game/context/fight/game-fight-resume-message.js
+# #	modified:   lib/messages/game/context/fight/game-fight-resume-with-slaves-message.js
+# #	modified:   lib/messages/game/context/fight/game-fight-spectate-message.js
+# #	modified:   lib/messages/game/context/fight/game-fight-start-message.js
+# #	new file:   lib/messages/game/context/roleplay/fight/arena/game-role-play-arena-switch-to-fight-server-message.js
+# #	new file:   lib/messages/game/context/roleplay/fight/arena/game-role-play-arena-switch-to-game-server-message.js
+# #	deleted:    lib/messages/game/context/roleplay/job/job-allow-multi-craft-request-set-message.js
+# #	new file:   lib/messages/game/context/roleplay/job/job-book-subscription-message.js
+# #	modified:   lib/messages/game/context/roleplay/job/job-level-up-message.js
+# #	deleted:    lib/messages/game/context/roleplay/job/job-listed-update-message.js
+# #	deleted:    lib/messages/game/context/roleplay/job/job-unlearnt-message.js
+# #	modified:   lib/messages/game/context/roleplay/quest/quest-list-message.js
+# #	new file:   lib/messages/game/guild/guild-motd-message.js
+# #	new file:   lib/messages/game/guild/guild-motd-set-error-message.js
+# #	new file:   lib/messages/game/idol/idol-fight-preparation-update-message.js
+# #	new file:   lib/messages/game/idol/idol-list-message.js
+# #	new file:   lib/messages/game/idol/idol-party-lost-message.js
+# #	new file:   lib/messages/game/idol/idol-party-refresh-message.js
+# #	new file:   lib/messages/game/idol/idol-party-register-request-message.js
+# #	new file:   lib/messages/game/idol/idol-select-error-message.js
+# #	new file:   lib/messages/game/idol/idol-select-request-message.js
+# #	new file:   lib/messages/game/idol/idol-selected-message.js
+# #	modified:   lib/messages/game/initialization/set-character-restrictions-message.js
+# #	new file:   lib/messages/game/interactive/zaap/zaap-respawn-save-request-message.js
+# #	new file:   lib/messages/game/interactive/zaap/zaap-respawn-updated-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-clear-payment-for-craft-message.js
+# #	new file:   lib/messages/game/inventory/exchanges/exchange-craft-payment-modification-request-message.js
+# #	new file:   lib/messages/game/inventory/exchanges/exchange-craft-payment-modified-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-craft-slot-count-increased-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-gold-payment-for-craft-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-item-gold-add-as-payment-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-item-object-add-as-payment-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-item-payment-for-craft-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-modified-payment-for-craft-message.js
+# #	deleted:    lib/messages/game/inventory/exchanges/exchange-removed-payment-for-craft-message.js
+# #	modified:   lib/messages/game/inventory/exchanges/exchange-start-ok-craft-with-information-message.js
+# #	modified:   lib/messages/game/inventory/exchanges/exchange-start-ok-multicraft-crafter-message.js
+# #	modified:   lib/messages/game/inventory/exchanges/exchange-start-ok-multicraft-customer-message.js
+# #	new file:   lib/messages/game/inventory/exchanges/exchange-stopped-message.js
+# #	new file:   lib/messages/game/inventory/exchanges/job-book-subscribe-request-message.js
+# #	modified:   lib/messages/secure/trust-status-message.js
+# #	modified:   lib/metadata.js
+# #	modified:   lib/protocol-constants-enum.js
+# #	modified:   lib/types/connection/game-server-informations.js
+# #	modified:   lib/types/game/context/roleplay/job/job-crafter-directory-entry-job-info.js
+# #	modified:   lib/types/game/context/roleplay/job/job-crafter-directory-settings.js
+# #	modified:   lib/types/game/context/roleplay/job/job-experience.js
+# #	new file:   lib/types/game/idol/idol.js
+# #	new file:   lib/types/game/idol/party-idol.js
+# #	modified:   lib/types/game/interactive/skill/skill-action-description-craft.js
+# #

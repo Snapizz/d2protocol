@@ -13,11 +13,11 @@ $ npm install d2protocol
 ``` js
 var d2protocol = require('d2protocol');
 
-var identificationMessage = d2protocol.messages.get(4);
+var identificationMessage = d2protocol.messages.get(4); //4 is message id
 
-var version = d2protocol.types.get(11);
+var version = d2protocol.types.get(11); // 11 is type id
 
-var sadiBreedId = d2protocol.enums['breed-enum'].Sadida;
+var sadiBreedId = d2protocol.enums['breed-enum'].Sadida; // breed-enum is name of file without .js
 ```
 
 # Documentation

@@ -22,4 +22,4 @@ var sadiBreedId = d2protocol.enums['breed-enum'].Sadida;
 
 # Documentation
 
-See source to search what you need.
+See source to find what you need.

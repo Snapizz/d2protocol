@@ -596,283 +596,280 @@ module Protocol {
         reset(): void;
     }
     export class ProtocolTypeManager {
-        private static _list: { [idx: number]: () => INetworkType };
-
-        constructor() {
-            ProtocolTypeManager._list = {};
-            ProtocolTypeManager._list[StatisticData.ID] = () => { return new StatisticData(); };
-            ProtocolTypeManager._list[StatisticDataBoolean.ID] = () => { return new StatisticDataBoolean(); };
-            ProtocolTypeManager._list[StatisticDataByte.ID] = () => { return new StatisticDataByte(); };
-            ProtocolTypeManager._list[StatisticDataInt.ID] = () => { return new StatisticDataInt(); };
-            ProtocolTypeManager._list[StatisticDataShort.ID] = () => { return new StatisticDataShort(); };
-            ProtocolTypeManager._list[StatisticDataString.ID] = () => { return new StatisticDataString(); };
-            ProtocolTypeManager._list[GameServerInformations.ID] = () => { return new GameServerInformations(); };
-            ProtocolTypeManager._list[Achievement.ID] = () => { return new Achievement(); };
-            ProtocolTypeManager._list[AchievementObjective.ID] = () => { return new AchievementObjective(); };
-            ProtocolTypeManager._list[AchievementRewardable.ID] = () => { return new AchievementRewardable(); };
-            ProtocolTypeManager._list[AchievementStartedObjective.ID] = () => { return new AchievementStartedObjective(); };
-            ProtocolTypeManager._list[FightDispellableEffectExtendedInformations.ID] = () => { return new FightDispellableEffectExtendedInformations(); };
-            ProtocolTypeManager._list[AbstractFightDispellableEffect.ID] = () => { return new AbstractFightDispellableEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostEffect.ID] = () => { return new FightTemporaryBoostEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostStateEffect.ID] = () => { return new FightTemporaryBoostStateEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostWeaponDamagesEffect.ID] = () => { return new FightTemporaryBoostWeaponDamagesEffect(); };
-            ProtocolTypeManager._list[FightTemporarySpellBoostEffect.ID] = () => { return new FightTemporarySpellBoostEffect(); };
-            ProtocolTypeManager._list[FightTemporarySpellImmunityEffect.ID] = () => { return new FightTemporarySpellImmunityEffect(); };
-            ProtocolTypeManager._list[FightTriggeredEffect.ID] = () => { return new FightTriggeredEffect(); };
-            ProtocolTypeManager._list[GameActionMark.ID] = () => { return new GameActionMark(); };
-            ProtocolTypeManager._list[GameActionMarkedCell.ID] = () => { return new GameActionMarkedCell(); };
-            ProtocolTypeManager._list[ServerSessionConstant.ID] = () => { return new ServerSessionConstant(); };
-            ProtocolTypeManager._list[ServerSessionConstantInteger.ID] = () => { return new ServerSessionConstantInteger(); };
-            ProtocolTypeManager._list[ServerSessionConstantLong.ID] = () => { return new ServerSessionConstantLong(); };
-            ProtocolTypeManager._list[ServerSessionConstantString.ID] = () => { return new ServerSessionConstantString(); };
-            ProtocolTypeManager._list[AbstractCharacterInformation.ID] = () => { return new AbstractCharacterInformation(); };
-            ProtocolTypeManager._list[CharacterMinimalAllianceInformations.ID] = () => { return new CharacterMinimalAllianceInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalGuildInformations.ID] = () => { return new CharacterMinimalGuildInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalInformations.ID] = () => { return new CharacterMinimalInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalPlusLookAndGradeInformations.ID] = () => { return new CharacterMinimalPlusLookAndGradeInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalPlusLookInformations.ID] = () => { return new CharacterMinimalPlusLookInformations(); };
-            ProtocolTypeManager._list[ActorAlignmentInformations.ID] = () => { return new ActorAlignmentInformations(); };
-            ProtocolTypeManager._list[ActorExtendedAlignmentInformations.ID] = () => { return new ActorExtendedAlignmentInformations(); };
-            ProtocolTypeManager._list[CharacterBaseCharacteristic.ID] = () => { return new CharacterBaseCharacteristic(); };
-            ProtocolTypeManager._list[CharacterCharacteristicsInformations.ID] = () => { return new CharacterCharacteristicsInformations(); };
-            ProtocolTypeManager._list[CharacterSpellModification.ID] = () => { return new CharacterSpellModification(); };
-            ProtocolTypeManager._list[AbstractCharacterToRefurbishInformation.ID] = () => { return new AbstractCharacterToRefurbishInformation(); };
-            ProtocolTypeManager._list[CharacterBaseInformations.ID] = () => { return new CharacterBaseInformations(); };
-            ProtocolTypeManager._list[CharacterHardcoreOrEpicInformations.ID] = () => { return new CharacterHardcoreOrEpicInformations(); };
-            ProtocolTypeManager._list[CharacterRemodelingInformation.ID] = () => { return new CharacterRemodelingInformation(); };
-            ProtocolTypeManager._list[CharacterToRecolorInformation.ID] = () => { return new CharacterToRecolorInformation(); };
-            ProtocolTypeManager._list[CharacterToRelookInformation.ID] = () => { return new CharacterToRelookInformation(); };
-            ProtocolTypeManager._list[CharacterToRemodelInformations.ID] = () => { return new CharacterToRemodelInformations(); };
-            ProtocolTypeManager._list[RemodelingInformation.ID] = () => { return new RemodelingInformation(); };
-            ProtocolTypeManager._list[ActorRestrictionsInformations.ID] = () => { return new ActorRestrictionsInformations(); };
-            ProtocolTypeManager._list[PlayerStatus.ID] = () => { return new PlayerStatus(); };
-            ProtocolTypeManager._list[PlayerStatusExtended.ID] = () => { return new PlayerStatusExtended(); };
-            ProtocolTypeManager._list[ActorOrientation.ID] = () => { return new ActorOrientation(); };
-            ProtocolTypeManager._list[EntityDispositionInformations.ID] = () => { return new EntityDispositionInformations(); };
-            ProtocolTypeManager._list[EntityMovementInformations.ID] = () => { return new EntityMovementInformations(); };
-            ProtocolTypeManager._list[FightEntityDispositionInformations.ID] = () => { return new FightEntityDispositionInformations(); };
-            ProtocolTypeManager._list[GameContextActorInformations.ID] = () => { return new GameContextActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayTaxCollectorInformations.ID] = () => { return new GameRolePlayTaxCollectorInformations(); };
-            ProtocolTypeManager._list[IdentifiedEntityDispositionInformations.ID] = () => { return new IdentifiedEntityDispositionInformations(); };
-            ProtocolTypeManager._list[MapCoordinates.ID] = () => { return new MapCoordinates(); };
-            ProtocolTypeManager._list[MapCoordinatesAndId.ID] = () => { return new MapCoordinatesAndId(); };
-            ProtocolTypeManager._list[MapCoordinatesExtended.ID] = () => { return new MapCoordinatesExtended(); };
-            ProtocolTypeManager._list[TaxCollectorStaticExtendedInformations.ID] = () => { return new TaxCollectorStaticExtendedInformations(); };
-            ProtocolTypeManager._list[TaxCollectorStaticInformations.ID] = () => { return new TaxCollectorStaticInformations(); };
-            ProtocolTypeManager._list[AbstractFightTeamInformations.ID] = () => { return new AbstractFightTeamInformations(); };
-            ProtocolTypeManager._list[FightAllianceTeamInformations.ID] = () => { return new FightAllianceTeamInformations(); };
-            ProtocolTypeManager._list[FightCommonInformations.ID] = () => { return new FightCommonInformations(); };
-            ProtocolTypeManager._list[FightExternalInformations.ID] = () => { return new FightExternalInformations(); };
-            ProtocolTypeManager._list[FightLoot.ID] = () => { return new FightLoot(); };
-            ProtocolTypeManager._list[FightOptionsInformations.ID] = () => { return new FightOptionsInformations(); };
-            ProtocolTypeManager._list[FightResultAdditionalData.ID] = () => { return new FightResultAdditionalData(); };
-            ProtocolTypeManager._list[FightResultExperienceData.ID] = () => { return new FightResultExperienceData(); };
-            ProtocolTypeManager._list[FightResultFighterListEntry.ID] = () => { return new FightResultFighterListEntry(); };
-            ProtocolTypeManager._list[FightResultListEntry.ID] = () => { return new FightResultListEntry(); };
-            ProtocolTypeManager._list[FightResultMutantListEntry.ID] = () => { return new FightResultMutantListEntry(); };
-            ProtocolTypeManager._list[FightResultPlayerListEntry.ID] = () => { return new FightResultPlayerListEntry(); };
-            ProtocolTypeManager._list[FightResultPvpData.ID] = () => { return new FightResultPvpData(); };
-            ProtocolTypeManager._list[FightResultTaxCollectorListEntry.ID] = () => { return new FightResultTaxCollectorListEntry(); };
-            ProtocolTypeManager._list[FightTeamInformations.ID] = () => { return new FightTeamInformations(); };
-            ProtocolTypeManager._list[FightTeamLightInformations.ID] = () => { return new FightTeamLightInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberCharacterInformations.ID] = () => { return new FightTeamMemberCharacterInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberCompanionInformations.ID] = () => { return new FightTeamMemberCompanionInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberInformations.ID] = () => { return new FightTeamMemberInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberMonsterInformations.ID] = () => { return new FightTeamMemberMonsterInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberTaxCollectorInformations.ID] = () => { return new FightTeamMemberTaxCollectorInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberWithAllianceCharacterInformations.ID] = () => { return new FightTeamMemberWithAllianceCharacterInformations(); };
-            ProtocolTypeManager._list[GameFightAIInformations.ID] = () => { return new GameFightAIInformations(); };
-            ProtocolTypeManager._list[GameFightCharacterInformations.ID] = () => { return new GameFightCharacterInformations(); };
-            ProtocolTypeManager._list[GameFightCompanionInformations.ID] = () => { return new GameFightCompanionInformations(); };
-            ProtocolTypeManager._list[GameFightFighterCompanionLightInformations.ID] = () => { return new GameFightFighterCompanionLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterInformations.ID] = () => { return new GameFightFighterInformations(); };
-            ProtocolTypeManager._list[GameFightFighterLightInformations.ID] = () => { return new GameFightFighterLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterMonsterLightInformations.ID] = () => { return new GameFightFighterMonsterLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterNamedInformations.ID] = () => { return new GameFightFighterNamedInformations(); };
-            ProtocolTypeManager._list[GameFightFighterNamedLightInformations.ID] = () => { return new GameFightFighterNamedLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterTaxCollectorLightInformations.ID] = () => { return new GameFightFighterTaxCollectorLightInformations(); };
-            ProtocolTypeManager._list[GameFightMinimalStats.ID] = () => { return new GameFightMinimalStats(); };
-            ProtocolTypeManager._list[GameFightMinimalStatsPreparation.ID] = () => { return new GameFightMinimalStatsPreparation(); };
-            ProtocolTypeManager._list[GameFightMonsterInformations.ID] = () => { return new GameFightMonsterInformations(); };
-            ProtocolTypeManager._list[GameFightMonsterWithAlignmentInformations.ID] = () => { return new GameFightMonsterWithAlignmentInformations(); };
-            ProtocolTypeManager._list[GameFightMutantInformations.ID] = () => { return new GameFightMutantInformations(); };
-            ProtocolTypeManager._list[GameFightResumeSlaveInfo.ID] = () => { return new GameFightResumeSlaveInfo(); };
-            ProtocolTypeManager._list[GameFightSpellCooldown.ID] = () => { return new GameFightSpellCooldown(); };
-            ProtocolTypeManager._list[GameFightTaxCollectorInformations.ID] = () => { return new GameFightTaxCollectorInformations(); };
-            ProtocolTypeManager._list[AllianceInformations.ID] = () => { return new AllianceInformations(); };
-            ProtocolTypeManager._list[AlternativeMonstersInGroupLightInformations.ID] = () => { return new AlternativeMonstersInGroupLightInformations(); };
-            ProtocolTypeManager._list[AtlasPointsInformations.ID] = () => { return new AtlasPointsInformations(); };
-            ProtocolTypeManager._list[BasicAllianceInformations.ID] = () => { return new BasicAllianceInformations(); };
-            ProtocolTypeManager._list[BasicGuildInformations.ID] = () => { return new BasicGuildInformations(); };
-            ProtocolTypeManager._list[BasicNamedAllianceInformations.ID] = () => { return new BasicNamedAllianceInformations(); };
-            ProtocolTypeManager._list[GameRolePlayActorInformations.ID] = () => { return new GameRolePlayActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayCharacterInformations.ID] = () => { return new GameRolePlayCharacterInformations(); };
-            ProtocolTypeManager._list[GameRolePlayGroupMonsterInformations.ID] = () => { return new GameRolePlayGroupMonsterInformations(); };
-            ProtocolTypeManager._list[GameRolePlayGroupMonsterWaveInformations.ID] = () => { return new GameRolePlayGroupMonsterWaveInformations(); };
-            ProtocolTypeManager._list[GameRolePlayHumanoidInformations.ID] = () => { return new GameRolePlayHumanoidInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMerchantInformations.ID] = () => { return new GameRolePlayMerchantInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMountInformations.ID] = () => { return new GameRolePlayMountInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMutantInformations.ID] = () => { return new GameRolePlayMutantInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNamedActorInformations.ID] = () => { return new GameRolePlayNamedActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcInformations.ID] = () => { return new GameRolePlayNpcInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcWithQuestInformations.ID] = () => { return new GameRolePlayNpcWithQuestInformations(); };
-            ProtocolTypeManager._list[GameRolePlayPortalInformations.ID] = () => { return new GameRolePlayPortalInformations(); };
-            ProtocolTypeManager._list[GameRolePlayPrismInformations.ID] = () => { return new GameRolePlayPrismInformations(); };
-            ProtocolTypeManager._list[GameRolePlayTreasureHintInformations.ID] = () => { return new GameRolePlayTreasureHintInformations(); };
-            ProtocolTypeManager._list[GroupMonsterStaticInformations.ID] = () => { return new GroupMonsterStaticInformations(); };
-            ProtocolTypeManager._list[GroupMonsterStaticInformationsWithAlternatives.ID] = () => { return new GroupMonsterStaticInformationsWithAlternatives(); };
-            ProtocolTypeManager._list[GuildInAllianceInformations.ID] = () => { return new GuildInAllianceInformations(); };
-            ProtocolTypeManager._list[GuildInformations.ID] = () => { return new GuildInformations(); };
-            ProtocolTypeManager._list[HumanInformations.ID] = () => { return new HumanInformations(); };
-            ProtocolTypeManager._list[HumanOption.ID] = () => { return new HumanOption(); };
-            ProtocolTypeManager._list[HumanOptionAlliance.ID] = () => { return new HumanOptionAlliance(); };
-            ProtocolTypeManager._list[HumanOptionEmote.ID] = () => { return new HumanOptionEmote(); };
-            ProtocolTypeManager._list[HumanOptionFollowers.ID] = () => { return new HumanOptionFollowers(); };
-            ProtocolTypeManager._list[HumanOptionGuild.ID] = () => { return new HumanOptionGuild(); };
-            ProtocolTypeManager._list[HumanOptionObjectUse.ID] = () => { return new HumanOptionObjectUse(); };
-            ProtocolTypeManager._list[HumanOptionOrnament.ID] = () => { return new HumanOptionOrnament(); };
-            ProtocolTypeManager._list[HumanOptionTitle.ID] = () => { return new HumanOptionTitle(); };
-            ProtocolTypeManager._list[MonsterInGroupInformations.ID] = () => { return new MonsterInGroupInformations(); };
-            ProtocolTypeManager._list[MonsterInGroupLightInformations.ID] = () => { return new MonsterInGroupLightInformations(); };
-            ProtocolTypeManager._list[ObjectItemInRolePlay.ID] = () => { return new ObjectItemInRolePlay(); };
-            ProtocolTypeManager._list[DecraftedItemStackInfo.ID] = () => { return new DecraftedItemStackInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryEntryJobInfo.ID] = () => { return new JobCrafterDirectoryEntryJobInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryEntryPlayerInfo.ID] = () => { return new JobCrafterDirectoryEntryPlayerInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryListEntry.ID] = () => { return new JobCrafterDirectoryListEntry(); };
-            ProtocolTypeManager._list[JobCrafterDirectorySettings.ID] = () => { return new JobCrafterDirectorySettings(); };
-            ProtocolTypeManager._list[JobDescription.ID] = () => { return new JobDescription(); };
-            ProtocolTypeManager._list[JobExperience.ID] = () => { return new JobExperience(); };
-            ProtocolTypeManager._list[DungeonPartyFinderPlayer.ID] = () => { return new DungeonPartyFinderPlayer(); };
-            ProtocolTypeManager._list[NamedPartyTeam.ID] = () => { return new NamedPartyTeam(); };
-            ProtocolTypeManager._list[NamedPartyTeamWithOutcome.ID] = () => { return new NamedPartyTeamWithOutcome(); };
-            ProtocolTypeManager._list[PartyGuestInformations.ID] = () => { return new PartyGuestInformations(); };
-            ProtocolTypeManager._list[PartyInvitationMemberInformations.ID] = () => { return new PartyInvitationMemberInformations(); };
-            ProtocolTypeManager._list[PartyMemberArenaInformations.ID] = () => { return new PartyMemberArenaInformations(); };
-            ProtocolTypeManager._list[PartyMemberGeoPosition.ID] = () => { return new PartyMemberGeoPosition(); };
-            ProtocolTypeManager._list[PartyMemberInformations.ID] = () => { return new PartyMemberInformations(); };
-            ProtocolTypeManager._list[PartyCompanionBaseInformations.ID] = () => { return new PartyCompanionBaseInformations(); };
-            ProtocolTypeManager._list[PartyCompanionMemberInformations.ID] = () => { return new PartyCompanionMemberInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcQuestFlag.ID] = () => { return new GameRolePlayNpcQuestFlag(); };
-            ProtocolTypeManager._list[QuestActiveDetailedInformations.ID] = () => { return new QuestActiveDetailedInformations(); };
-            ProtocolTypeManager._list[QuestActiveInformations.ID] = () => { return new QuestActiveInformations(); };
-            ProtocolTypeManager._list[QuestObjectiveInformations.ID] = () => { return new QuestObjectiveInformations(); };
-            ProtocolTypeManager._list[QuestObjectiveInformationsWithCompletion.ID] = () => { return new QuestObjectiveInformationsWithCompletion(); };
-            ProtocolTypeManager._list[PortalInformation.ID] = () => { return new PortalInformation(); };
-            ProtocolTypeManager._list[TreasureHuntFlag.ID] = () => { return new TreasureHuntFlag(); };
-            ProtocolTypeManager._list[TreasureHuntStep.ID] = () => { return new TreasureHuntStep(); };
-            ProtocolTypeManager._list[TreasureHuntStepDig.ID] = () => { return new TreasureHuntStepDig(); };
-            ProtocolTypeManager._list[TreasureHuntStepFight.ID] = () => { return new TreasureHuntStepFight(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirection.ID] = () => { return new TreasureHuntStepFollowDirection(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToHint.ID] = () => { return new TreasureHuntStepFollowDirectionToHint(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToPOI.ID] = () => { return new TreasureHuntStepFollowDirectionToPOI(); };
-            ProtocolTypeManager._list[BidExchangerObjectInfo.ID] = () => { return new BidExchangerObjectInfo(); };
-            ProtocolTypeManager._list[GoldItem.ID] = () => { return new GoldItem(); };
-            ProtocolTypeManager._list[Item.ID] = () => { return new Item(); };
-            ProtocolTypeManager._list[ObjectItem.ID] = () => { return new ObjectItem(); };
-            ProtocolTypeManager._list[ObjectItemGenericQuantity.ID] = () => { return new ObjectItemGenericQuantity(); };
-            ProtocolTypeManager._list[ObjectItemInformationWithQuantity.ID] = () => { return new ObjectItemInformationWithQuantity(); };
-            ProtocolTypeManager._list[ObjectItemMinimalInformation.ID] = () => { return new ObjectItemMinimalInformation(); };
-            ProtocolTypeManager._list[ObjectItemNotInContainer.ID] = () => { return new ObjectItemNotInContainer(); };
-            ProtocolTypeManager._list[ObjectItemQuantity.ID] = () => { return new ObjectItemQuantity(); };
-            ProtocolTypeManager._list[ObjectItemToSell.ID] = () => { return new ObjectItemToSell(); };
-            ProtocolTypeManager._list[ObjectItemToSellInBid.ID] = () => { return new ObjectItemToSellInBid(); };
-            ProtocolTypeManager._list[ObjectItemToSellInHumanVendorShop.ID] = () => { return new ObjectItemToSellInHumanVendorShop(); };
-            ProtocolTypeManager._list[ObjectItemToSellInNpcShop.ID] = () => { return new ObjectItemToSellInNpcShop(); };
-            ProtocolTypeManager._list[SellerBuyerDescriptor.ID] = () => { return new SellerBuyerDescriptor(); };
-            ProtocolTypeManager._list[SpellItem.ID] = () => { return new SpellItem(); };
-            ProtocolTypeManager._list[ObjectEffect.ID] = () => { return new ObjectEffect(); };
-            ProtocolTypeManager._list[ObjectEffectCreature.ID] = () => { return new ObjectEffectCreature(); };
-            ProtocolTypeManager._list[ObjectEffectDate.ID] = () => { return new ObjectEffectDate(); };
-            ProtocolTypeManager._list[ObjectEffectDice.ID] = () => { return new ObjectEffectDice(); };
-            ProtocolTypeManager._list[ObjectEffectDuration.ID] = () => { return new ObjectEffectDuration(); };
-            ProtocolTypeManager._list[ObjectEffectInteger.ID] = () => { return new ObjectEffectInteger(); };
-            ProtocolTypeManager._list[ObjectEffectLadder.ID] = () => { return new ObjectEffectLadder(); };
-            ProtocolTypeManager._list[ObjectEffectMinMax.ID] = () => { return new ObjectEffectMinMax(); };
-            ProtocolTypeManager._list[ObjectEffectMount.ID] = () => { return new ObjectEffectMount(); };
-            ProtocolTypeManager._list[ObjectEffectString.ID] = () => { return new ObjectEffectString(); };
-            ProtocolTypeManager._list[ProtectedEntityWaitingForHelpInfo.ID] = () => { return new ProtectedEntityWaitingForHelpInfo(); };
-            ProtocolTypeManager._list[AbstractContactInformations.ID] = () => { return new AbstractContactInformations(); };
-            ProtocolTypeManager._list[FriendInformations.ID] = () => { return new FriendInformations(); };
-            ProtocolTypeManager._list[FriendOnlineInformations.ID] = () => { return new FriendOnlineInformations(); };
-            ProtocolTypeManager._list[FriendSpouseInformations.ID] = () => { return new FriendSpouseInformations(); };
-            ProtocolTypeManager._list[FriendSpouseOnlineInformations.ID] = () => { return new FriendSpouseOnlineInformations(); };
-            ProtocolTypeManager._list[IgnoredInformations.ID] = () => { return new IgnoredInformations(); };
-            ProtocolTypeManager._list[IgnoredOnlineInformations.ID] = () => { return new IgnoredOnlineInformations(); };
-            ProtocolTypeManager._list[GuildEmblem.ID] = () => { return new GuildEmblem(); };
-            ProtocolTypeManager._list[GuildMember.ID] = () => { return new GuildMember(); };
-            ProtocolTypeManager._list[AdditionalTaxCollectorInformations.ID] = () => { return new AdditionalTaxCollectorInformations(); };
-            ProtocolTypeManager._list[TaxCollectorBasicInformations.ID] = () => { return new TaxCollectorBasicInformations(); };
-            ProtocolTypeManager._list[TaxCollectorComplementaryInformations.ID] = () => { return new TaxCollectorComplementaryInformations(); };
-            ProtocolTypeManager._list[TaxCollectorFightersInformation.ID] = () => { return new TaxCollectorFightersInformation(); };
-            ProtocolTypeManager._list[TaxCollectorGuildInformations.ID] = () => { return new TaxCollectorGuildInformations(); };
-            ProtocolTypeManager._list[TaxCollectorInformations.ID] = () => { return new TaxCollectorInformations(); };
-            ProtocolTypeManager._list[TaxCollectorLootInformations.ID] = () => { return new TaxCollectorLootInformations(); };
-            ProtocolTypeManager._list[TaxCollectorWaitingForHelpInformations.ID] = () => { return new TaxCollectorWaitingForHelpInformations(); };
-            ProtocolTypeManager._list[AccountHouseInformations.ID] = () => { return new AccountHouseInformations(); };
-            ProtocolTypeManager._list[HouseInformations.ID] = () => { return new HouseInformations(); };
-            ProtocolTypeManager._list[HouseInformationsExtended.ID] = () => { return new HouseInformationsExtended(); };
-            ProtocolTypeManager._list[HouseInformationsForGuild.ID] = () => { return new HouseInformationsForGuild(); };
-            ProtocolTypeManager._list[HouseInformationsForSell.ID] = () => { return new HouseInformationsForSell(); };
-            ProtocolTypeManager._list[HouseInformationsInside.ID] = () => { return new HouseInformationsInside(); };
-            ProtocolTypeManager._list[Idol.ID] = () => { return new Idol(); };
-            ProtocolTypeManager._list[PartyIdol.ID] = () => { return new PartyIdol(); };
-            ProtocolTypeManager._list[InteractiveElement.ID] = () => { return new InteractiveElement(); };
-            ProtocolTypeManager._list[InteractiveElementNamedSkill.ID] = () => { return new InteractiveElementNamedSkill(); };
-            ProtocolTypeManager._list[InteractiveElementSkill.ID] = () => { return new InteractiveElementSkill(); };
-            ProtocolTypeManager._list[InteractiveElementWithAgeBonus.ID] = () => { return new InteractiveElementWithAgeBonus(); };
-            ProtocolTypeManager._list[MapObstacle.ID] = () => { return new MapObstacle(); };
-            ProtocolTypeManager._list[StatedElement.ID] = () => { return new StatedElement(); };
-            ProtocolTypeManager._list[SkillActionDescription.ID] = () => { return new SkillActionDescription(); };
-            ProtocolTypeManager._list[SkillActionDescriptionCollect.ID] = () => { return new SkillActionDescriptionCollect(); };
-            ProtocolTypeManager._list[SkillActionDescriptionCraft.ID] = () => { return new SkillActionDescriptionCraft(); };
-            ProtocolTypeManager._list[SkillActionDescriptionTimed.ID] = () => { return new SkillActionDescriptionTimed(); };
-            ProtocolTypeManager._list[IdolsPreset.ID] = () => { return new IdolsPreset(); };
-            ProtocolTypeManager._list[Preset.ID] = () => { return new Preset(); };
-            ProtocolTypeManager._list[PresetItem.ID] = () => { return new PresetItem(); };
-            ProtocolTypeManager._list[EntityLook.ID] = () => { return new EntityLook(); };
-            ProtocolTypeManager._list[IndexedEntityLook.ID] = () => { return new IndexedEntityLook(); };
-            ProtocolTypeManager._list[SubEntity.ID] = () => { return new SubEntity(); };
-            ProtocolTypeManager._list[ItemDurability.ID] = () => { return new ItemDurability(); };
-            ProtocolTypeManager._list[MountClientData.ID] = () => { return new MountClientData(); };
-            ProtocolTypeManager._list[UpdateMountBoost.ID] = () => { return new UpdateMountBoost(); };
-            ProtocolTypeManager._list[UpdateMountIntBoost.ID] = () => { return new UpdateMountIntBoost(); };
-            ProtocolTypeManager._list[MountInformationsForPaddock.ID] = () => { return new MountInformationsForPaddock(); };
-            ProtocolTypeManager._list[PaddockAbandonnedInformations.ID] = () => { return new PaddockAbandonnedInformations(); };
-            ProtocolTypeManager._list[PaddockBuyableInformations.ID] = () => { return new PaddockBuyableInformations(); };
-            ProtocolTypeManager._list[PaddockContentInformations.ID] = () => { return new PaddockContentInformations(); };
-            ProtocolTypeManager._list[PaddockInformations.ID] = () => { return new PaddockInformations(); };
-            ProtocolTypeManager._list[PaddockInformationsForSell.ID] = () => { return new PaddockInformationsForSell(); };
-            ProtocolTypeManager._list[PaddockItem.ID] = () => { return new PaddockItem(); };
-            ProtocolTypeManager._list[PaddockPrivateInformations.ID] = () => { return new PaddockPrivateInformations(); };
-            ProtocolTypeManager._list[AllianceInsiderPrismInformation.ID] = () => { return new AllianceInsiderPrismInformation(); };
-            ProtocolTypeManager._list[AlliancePrismInformation.ID] = () => { return new AlliancePrismInformation(); };
-            ProtocolTypeManager._list[PrismFightersInformation.ID] = () => { return new PrismFightersInformation(); };
-            ProtocolTypeManager._list[PrismGeolocalizedInformation.ID] = () => { return new PrismGeolocalizedInformation(); };
-            ProtocolTypeManager._list[PrismInformation.ID] = () => { return new PrismInformation(); };
-            ProtocolTypeManager._list[PrismSubareaEmptyInfo.ID] = () => { return new PrismSubareaEmptyInfo(); };
-            ProtocolTypeManager._list[Shortcut.ID] = () => { return new Shortcut(); };
-            ProtocolTypeManager._list[ShortcutEmote.ID] = () => { return new ShortcutEmote(); };
-            ProtocolTypeManager._list[ShortcutObject.ID] = () => { return new ShortcutObject(); };
-            ProtocolTypeManager._list[ShortcutObjectIdolsPreset.ID] = () => { return new ShortcutObjectIdolsPreset(); };
-            ProtocolTypeManager._list[ShortcutObjectItem.ID] = () => { return new ShortcutObjectItem(); };
-            ProtocolTypeManager._list[ShortcutObjectPreset.ID] = () => { return new ShortcutObjectPreset(); };
-            ProtocolTypeManager._list[ShortcutSmiley.ID] = () => { return new ShortcutSmiley(); };
-            ProtocolTypeManager._list[ShortcutSpell.ID] = () => { return new ShortcutSpell(); };
-            ProtocolTypeManager._list[AbstractSocialGroupInfos.ID] = () => { return new AbstractSocialGroupInfos(); };
-            ProtocolTypeManager._list[AllianceFactSheetInformations.ID] = () => { return new AllianceFactSheetInformations(); };
-            ProtocolTypeManager._list[AllianceVersatileInformations.ID] = () => { return new AllianceVersatileInformations(); };
-            ProtocolTypeManager._list[AlliancedGuildFactSheetInformations.ID] = () => { return new AlliancedGuildFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildFactSheetInformations.ID] = () => { return new GuildFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildInAllianceVersatileInformations.ID] = () => { return new GuildInAllianceVersatileInformations(); };
-            ProtocolTypeManager._list[GuildInsiderFactSheetInformations.ID] = () => { return new GuildInsiderFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildVersatileInformations.ID] = () => { return new GuildVersatileInformations(); };
-            ProtocolTypeManager._list[StartupActionAddObject.ID] = () => { return new StartupActionAddObject(); };
-            ProtocolTypeManager._list[TrustCertificate.ID] = () => { return new TrustCertificate(); };
-            ProtocolTypeManager._list[ContentPart.ID] = () => { return new ContentPart(); };
-            ProtocolTypeManager._list[Version.ID] = () => { return new Version(); };
-            ProtocolTypeManager._list[VersionExtended.ID] = () => { return new VersionExtended(); };
-            ProtocolTypeManager._list[KrosmasterFigure.ID] = () => { return new KrosmasterFigure(); };
-        }
+        private static _list: { [idx: number]: () => INetworkType } = {
+            484: () => { return new StatisticData(); },
+            482: () => { return new StatisticDataBoolean(); },
+            486: () => { return new StatisticDataByte(); },
+            485: () => { return new StatisticDataInt(); },
+            488: () => { return new StatisticDataShort(); },
+            487: () => { return new StatisticDataString(); },
+            25: () => { return new GameServerInformations(); },
+            363: () => { return new Achievement(); },
+            404: () => { return new AchievementObjective(); },
+            412: () => { return new AchievementRewardable(); },
+            402: () => { return new AchievementStartedObjective(); },
+            208: () => { return new FightDispellableEffectExtendedInformations(); },
+            206: () => { return new AbstractFightDispellableEffect(); },
+            209: () => { return new FightTemporaryBoostEffect(); },
+            214: () => { return new FightTemporaryBoostStateEffect(); },
+            211: () => { return new FightTemporaryBoostWeaponDamagesEffect(); },
+            207: () => { return new FightTemporarySpellBoostEffect(); },
+            366: () => { return new FightTemporarySpellImmunityEffect(); },
+            210: () => { return new FightTriggeredEffect(); },
+            351: () => { return new GameActionMark(); },
+            85: () => { return new GameActionMarkedCell(); },
+            430: () => { return new ServerSessionConstant(); },
+            433: () => { return new ServerSessionConstantInteger(); },
+            429: () => { return new ServerSessionConstantLong(); },
+            436: () => { return new ServerSessionConstantString(); },
+            400: () => { return new AbstractCharacterInformation(); },
+            444: () => { return new CharacterMinimalAllianceInformations(); },
+            445: () => { return new CharacterMinimalGuildInformations(); },
+            110: () => { return new CharacterMinimalInformations(); },
+            193: () => { return new CharacterMinimalPlusLookAndGradeInformations(); },
+            163: () => { return new CharacterMinimalPlusLookInformations(); },
+            201: () => { return new ActorAlignmentInformations(); },
+            202: () => { return new ActorExtendedAlignmentInformations(); },
+            4: () => { return new CharacterBaseCharacteristic(); },
+            8: () => { return new CharacterCharacteristicsInformations(); },
+            215: () => { return new CharacterSpellModification(); },
+            475: () => { return new AbstractCharacterToRefurbishInformation(); },
+            45: () => { return new CharacterBaseInformations(); },
+            474: () => { return new CharacterHardcoreOrEpicInformations(); },
+            479: () => { return new CharacterRemodelingInformation(); },
+            212: () => { return new CharacterToRecolorInformation(); },
+            399: () => { return new CharacterToRelookInformation(); },
+            477: () => { return new CharacterToRemodelInformations(); },
+            480: () => { return new RemodelingInformation(); },
+            204: () => { return new ActorRestrictionsInformations(); },
+            415: () => { return new PlayerStatus(); },
+            414: () => { return new PlayerStatusExtended(); },
+            353: () => { return new ActorOrientation(); },
+            60: () => { return new EntityDispositionInformations(); },
+            63: () => { return new EntityMovementInformations(); },
+            217: () => { return new FightEntityDispositionInformations(); },
+            150: () => { return new GameContextActorInformations(); },
+            148: () => { return new GameRolePlayTaxCollectorInformations(); },
+            107: () => { return new IdentifiedEntityDispositionInformations(); },
+            174: () => { return new MapCoordinates(); },
+            392: () => { return new MapCoordinatesAndId(); },
+            176: () => { return new MapCoordinatesExtended(); },
+            440: () => { return new TaxCollectorStaticExtendedInformations(); },
+            147: () => { return new TaxCollectorStaticInformations(); },
+            116: () => { return new AbstractFightTeamInformations(); },
+            439: () => { return new FightAllianceTeamInformations(); },
+            43: () => { return new FightCommonInformations(); },
+            117: () => { return new FightExternalInformations(); },
+            41: () => { return new FightLoot(); },
+            20: () => { return new FightOptionsInformations(); },
+            191: () => { return new FightResultAdditionalData(); },
+            192: () => { return new FightResultExperienceData(); },
+            189: () => { return new FightResultFighterListEntry(); },
+            16: () => { return new FightResultListEntry(); },
+            216: () => { return new FightResultMutantListEntry(); },
+            24: () => { return new FightResultPlayerListEntry(); },
+            190: () => { return new FightResultPvpData(); },
+            84: () => { return new FightResultTaxCollectorListEntry(); },
+            33: () => { return new FightTeamInformations(); },
+            115: () => { return new FightTeamLightInformations(); },
+            13: () => { return new FightTeamMemberCharacterInformations(); },
+            451: () => { return new FightTeamMemberCompanionInformations(); },
+            44: () => { return new FightTeamMemberInformations(); },
+            6: () => { return new FightTeamMemberMonsterInformations(); },
+            177: () => { return new FightTeamMemberTaxCollectorInformations(); },
+            426: () => { return new FightTeamMemberWithAllianceCharacterInformations(); },
+            151: () => { return new GameFightAIInformations(); },
+            46: () => { return new GameFightCharacterInformations(); },
+            450: () => { return new GameFightCompanionInformations(); },
+            454: () => { return new GameFightFighterCompanionLightInformations(); },
+            143: () => { return new GameFightFighterInformations(); },
+            413: () => { return new GameFightFighterLightInformations(); },
+            455: () => { return new GameFightFighterMonsterLightInformations(); },
+            158: () => { return new GameFightFighterNamedInformations(); },
+            456: () => { return new GameFightFighterNamedLightInformations(); },
+            457: () => { return new GameFightFighterTaxCollectorLightInformations(); },
+            31: () => { return new GameFightMinimalStats(); },
+            360: () => { return new GameFightMinimalStatsPreparation(); },
+            29: () => { return new GameFightMonsterInformations(); },
+            203: () => { return new GameFightMonsterWithAlignmentInformations(); },
+            50: () => { return new GameFightMutantInformations(); },
+            364: () => { return new GameFightResumeSlaveInfo(); },
+            205: () => { return new GameFightSpellCooldown(); },
+            48: () => { return new GameFightTaxCollectorInformations(); },
+            417: () => { return new AllianceInformations(); },
+            394: () => { return new AlternativeMonstersInGroupLightInformations(); },
+            175: () => { return new AtlasPointsInformations(); },
+            419: () => { return new BasicAllianceInformations(); },
+            365: () => { return new BasicGuildInformations(); },
+            418: () => { return new BasicNamedAllianceInformations(); },
+            141: () => { return new GameRolePlayActorInformations(); },
+            36: () => { return new GameRolePlayCharacterInformations(); },
+            160: () => { return new GameRolePlayGroupMonsterInformations(); },
+            464: () => { return new GameRolePlayGroupMonsterWaveInformations(); },
+            159: () => { return new GameRolePlayHumanoidInformations(); },
+            129: () => { return new GameRolePlayMerchantInformations(); },
+            180: () => { return new GameRolePlayMountInformations(); },
+            3: () => { return new GameRolePlayMutantInformations(); },
+            154: () => { return new GameRolePlayNamedActorInformations(); },
+            156: () => { return new GameRolePlayNpcInformations(); },
+            383: () => { return new GameRolePlayNpcWithQuestInformations(); },
+            467: () => { return new GameRolePlayPortalInformations(); },
+            161: () => { return new GameRolePlayPrismInformations(); },
+            471: () => { return new GameRolePlayTreasureHintInformations(); },
+            140: () => { return new GroupMonsterStaticInformations(); },
+            396: () => { return new GroupMonsterStaticInformationsWithAlternatives(); },
+            420: () => { return new GuildInAllianceInformations(); },
+            127: () => { return new GuildInformations(); },
+            157: () => { return new HumanInformations(); },
+            406: () => { return new HumanOption(); },
+            425: () => { return new HumanOptionAlliance(); },
+            407: () => { return new HumanOptionEmote(); },
+            410: () => { return new HumanOptionFollowers(); },
+            409: () => { return new HumanOptionGuild(); },
+            449: () => { return new HumanOptionObjectUse(); },
+            411: () => { return new HumanOptionOrnament(); },
+            408: () => { return new HumanOptionTitle(); },
+            144: () => { return new MonsterInGroupInformations(); },
+            395: () => { return new MonsterInGroupLightInformations(); },
+            198: () => { return new ObjectItemInRolePlay(); },
+            481: () => { return new DecraftedItemStackInfo(); },
+            195: () => { return new JobCrafterDirectoryEntryJobInfo(); },
+            194: () => { return new JobCrafterDirectoryEntryPlayerInfo(); },
+            196: () => { return new JobCrafterDirectoryListEntry(); },
+            97: () => { return new JobCrafterDirectorySettings(); },
+            101: () => { return new JobDescription(); },
+            98: () => { return new JobExperience(); },
+            373: () => { return new DungeonPartyFinderPlayer(); },
+            469: () => { return new NamedPartyTeam(); },
+            470: () => { return new NamedPartyTeamWithOutcome(); },
+            374: () => { return new PartyGuestInformations(); },
+            376: () => { return new PartyInvitationMemberInformations(); },
+            391: () => { return new PartyMemberArenaInformations(); },
+            378: () => { return new PartyMemberGeoPosition(); },
+            90: () => { return new PartyMemberInformations(); },
+            453: () => { return new PartyCompanionBaseInformations(); },
+            452: () => { return new PartyCompanionMemberInformations(); },
+            384: () => { return new GameRolePlayNpcQuestFlag(); },
+            382: () => { return new QuestActiveDetailedInformations(); },
+            381: () => { return new QuestActiveInformations(); },
+            385: () => { return new QuestObjectiveInformations(); },
+            386: () => { return new QuestObjectiveInformationsWithCompletion(); },
+            466: () => { return new PortalInformation(); },
+            473: () => { return new TreasureHuntFlag(); },
+            463: () => { return new TreasureHuntStep(); },
+            465: () => { return new TreasureHuntStepDig(); },
+            462: () => { return new TreasureHuntStepFight(); },
+            468: () => { return new TreasureHuntStepFollowDirection(); },
+            472: () => { return new TreasureHuntStepFollowDirectionToHint(); },
+            461: () => { return new TreasureHuntStepFollowDirectionToPOI(); },
+            122: () => { return new BidExchangerObjectInfo(); },
+            123: () => { return new GoldItem(); },
+            7: () => { return new Item(); },
+            37: () => { return new ObjectItem(); },
+            483: () => { return new ObjectItemGenericQuantity(); },
+            387: () => { return new ObjectItemInformationWithQuantity(); },
+            124: () => { return new ObjectItemMinimalInformation(); },
+            134: () => { return new ObjectItemNotInContainer(); },
+            119: () => { return new ObjectItemQuantity(); },
+            120: () => { return new ObjectItemToSell(); },
+            164: () => { return new ObjectItemToSellInBid(); },
+            359: () => { return new ObjectItemToSellInHumanVendorShop(); },
+            352: () => { return new ObjectItemToSellInNpcShop(); },
+            121: () => { return new SellerBuyerDescriptor(); },
+            49: () => { return new SpellItem(); },
+            76: () => { return new ObjectEffect(); },
+            71: () => { return new ObjectEffectCreature(); },
+            72: () => { return new ObjectEffectDate(); },
+            73: () => { return new ObjectEffectDice(); },
+            75: () => { return new ObjectEffectDuration(); },
+            70: () => { return new ObjectEffectInteger(); },
+            81: () => { return new ObjectEffectLadder(); },
+            82: () => { return new ObjectEffectMinMax(); },
+            179: () => { return new ObjectEffectMount(); },
+            74: () => { return new ObjectEffectString(); },
+            186: () => { return new ProtectedEntityWaitingForHelpInfo(); },
+            380: () => { return new AbstractContactInformations(); },
+            78: () => { return new FriendInformations(); },
+            92: () => { return new FriendOnlineInformations(); },
+            77: () => { return new FriendSpouseInformations(); },
+            93: () => { return new FriendSpouseOnlineInformations(); },
+            106: () => { return new IgnoredInformations(); },
+            105: () => { return new IgnoredOnlineInformations(); },
+            87: () => { return new GuildEmblem(); },
+            88: () => { return new GuildMember(); },
+            165: () => { return new AdditionalTaxCollectorInformations(); },
+            96: () => { return new TaxCollectorBasicInformations(); },
+            448: () => { return new TaxCollectorComplementaryInformations(); },
+            169: () => { return new TaxCollectorFightersInformation(); },
+            446: () => { return new TaxCollectorGuildInformations(); },
+            167: () => { return new TaxCollectorInformations(); },
+            372: () => { return new TaxCollectorLootInformations(); },
+            447: () => { return new TaxCollectorWaitingForHelpInformations(); },
+            390: () => { return new AccountHouseInformations(); },
+            111: () => { return new HouseInformations(); },
+            112: () => { return new HouseInformationsExtended(); },
+            170: () => { return new HouseInformationsForGuild(); },
+            221: () => { return new HouseInformationsForSell(); },
+            218: () => { return new HouseInformationsInside(); },
+            489: () => { return new Idol(); },
+            490: () => { return new PartyIdol(); },
+            80: () => { return new InteractiveElement(); },
+            220: () => { return new InteractiveElementNamedSkill(); },
+            219: () => { return new InteractiveElementSkill(); },
+            398: () => { return new InteractiveElementWithAgeBonus(); },
+            200: () => { return new MapObstacle(); },
+            108: () => { return new StatedElement(); },
+            102: () => { return new SkillActionDescription(); },
+            99: () => { return new SkillActionDescriptionCollect(); },
+            100: () => { return new SkillActionDescriptionCraft(); },
+            103: () => { return new SkillActionDescriptionTimed(); },
+            491: () => { return new IdolsPreset(); },
+            355: () => { return new Preset(); },
+            354: () => { return new PresetItem(); },
+            55: () => { return new EntityLook(); },
+            405: () => { return new IndexedEntityLook(); },
+            54: () => { return new SubEntity(); },
+            168: () => { return new ItemDurability(); },
+            178: () => { return new MountClientData(); },
+            356: () => { return new UpdateMountBoost(); },
+            357: () => { return new UpdateMountIntBoost(); },
+            184: () => { return new MountInformationsForPaddock(); },
+            133: () => { return new PaddockAbandonnedInformations(); },
+            130: () => { return new PaddockBuyableInformations(); },
+            183: () => { return new PaddockContentInformations(); },
+            132: () => { return new PaddockInformations(); },
+            222: () => { return new PaddockInformationsForSell(); },
+            185: () => { return new PaddockItem(); },
+            131: () => { return new PaddockPrivateInformations(); },
+            431: () => { return new AllianceInsiderPrismInformation(); },
+            427: () => { return new AlliancePrismInformation(); },
+            443: () => { return new PrismFightersInformation(); },
+            434: () => { return new PrismGeolocalizedInformation(); },
+            428: () => { return new PrismInformation(); },
+            438: () => { return new PrismSubareaEmptyInfo(); },
+            369: () => { return new Shortcut(); },
+            389: () => { return new ShortcutEmote(); },
+            367: () => { return new ShortcutObject(); },
+            492: () => { return new ShortcutObjectIdolsPreset(); },
+            371: () => { return new ShortcutObjectItem(); },
+            370: () => { return new ShortcutObjectPreset(); },
+            388: () => { return new ShortcutSmiley(); },
+            368: () => { return new ShortcutSpell(); },
+            416: () => { return new AbstractSocialGroupInfos(); },
+            421: () => { return new AllianceFactSheetInformations(); },
+            432: () => { return new AllianceVersatileInformations(); },
+            422: () => { return new AlliancedGuildFactSheetInformations(); },
+            424: () => { return new GuildFactSheetInformations(); },
+            437: () => { return new GuildInAllianceVersatileInformations(); },
+            423: () => { return new GuildInsiderFactSheetInformations(); },
+            435: () => { return new GuildVersatileInformations(); },
+            52: () => { return new StartupActionAddObject(); },
+            377: () => { return new TrustCertificate(); },
+            350: () => { return new ContentPart(); },
+            11: () => { return new Version(); },
+            393: () => { return new VersionExtended(); },
+            397: () => { return new KrosmasterFigure(); }
+        };
 
         public static getInstance(networkType: any, param2: number): INetworkType {
             let _loc3_ = ProtocolTypeManager._list[param2];
@@ -883,955 +880,952 @@ module Protocol {
         }
     }
     export class MessageReceiver {
-        private static _list: { [idx: number]: () => INetworkMessage };
-
-        constructor() {
-            MessageReceiver._list = {};
-            MessageReceiver._list[AdminCommandMessage.ID] = () => { return new AdminCommandMessage(); };
-            MessageReceiver._list[AdminQuietCommandMessage.ID] = () => { return new AdminQuietCommandMessage(); };
-            MessageReceiver._list[ConsoleCommandsListMessage.ID] = () => { return new ConsoleCommandsListMessage(); };
-            MessageReceiver._list[ConsoleMessage.ID] = () => { return new ConsoleMessage(); };
-            MessageReceiver._list[NetworkDataContainerMessage.ID] = () => { return new NetworkDataContainerMessage(); };
-            MessageReceiver._list[BasicPingMessage.ID] = () => { return new BasicPingMessage(); };
-            MessageReceiver._list[BasicPongMessage.ID] = () => { return new BasicPongMessage(); };
-            MessageReceiver._list[BasicStatMessage.ID] = () => { return new BasicStatMessage(); };
-            MessageReceiver._list[CredentialsAcknowledgementMessage.ID] = () => { return new CredentialsAcknowledgementMessage(); };
-            MessageReceiver._list[HelloConnectMessage.ID] = () => { return new HelloConnectMessage(); };
-            MessageReceiver._list[IdentificationAccountForceMessage.ID] = () => { return new IdentificationAccountForceMessage(); };
-            MessageReceiver._list[IdentificationFailedBannedMessage.ID] = () => { return new IdentificationFailedBannedMessage(); };
-            MessageReceiver._list[IdentificationFailedForBadVersionMessage.ID] = () => { return new IdentificationFailedForBadVersionMessage(); };
-            MessageReceiver._list[IdentificationFailedMessage.ID] = () => { return new IdentificationFailedMessage(); };
-            MessageReceiver._list[IdentificationMessage.ID] = () => { return new IdentificationMessage(); };
-            MessageReceiver._list[IdentificationSuccessMessage.ID] = () => { return new IdentificationSuccessMessage(); };
-            MessageReceiver._list[IdentificationSuccessWithLoginTokenMessage.ID] = () => { return new IdentificationSuccessWithLoginTokenMessage(); };
-            MessageReceiver._list[SelectedServerDataExtendedMessage.ID] = () => { return new SelectedServerDataExtendedMessage(); };
-            MessageReceiver._list[SelectedServerDataMessage.ID] = () => { return new SelectedServerDataMessage(); };
-            MessageReceiver._list[SelectedServerRefusedMessage.ID] = () => { return new SelectedServerRefusedMessage(); };
-            MessageReceiver._list[ServerSelectionMessage.ID] = () => { return new ServerSelectionMessage(); };
-            MessageReceiver._list[ServerStatusUpdateMessage.ID] = () => { return new ServerStatusUpdateMessage(); };
-            MessageReceiver._list[ServersListMessage.ID] = () => { return new ServersListMessage(); };
-            MessageReceiver._list[AccountLinkRequiredMessage.ID] = () => { return new AccountLinkRequiredMessage(); };
-            MessageReceiver._list[NicknameAcceptedMessage.ID] = () => { return new NicknameAcceptedMessage(); };
-            MessageReceiver._list[NicknameChoiceRequestMessage.ID] = () => { return new NicknameChoiceRequestMessage(); };
-            MessageReceiver._list[NicknameRefusedMessage.ID] = () => { return new NicknameRefusedMessage(); };
-            MessageReceiver._list[NicknameRegistrationMessage.ID] = () => { return new NicknameRegistrationMessage(); };
-            MessageReceiver._list[AcquaintanceSearchErrorMessage.ID] = () => { return new AcquaintanceSearchErrorMessage(); };
-            MessageReceiver._list[AcquaintanceSearchMessage.ID] = () => { return new AcquaintanceSearchMessage(); };
-            MessageReceiver._list[AcquaintanceServerListMessage.ID] = () => { return new AcquaintanceServerListMessage(); };
-            MessageReceiver._list[DebugClearHighlightCellsMessage.ID] = () => { return new DebugClearHighlightCellsMessage(); };
-            MessageReceiver._list[DebugHighlightCellsMessage.ID] = () => { return new DebugHighlightCellsMessage(); };
-            MessageReceiver._list[DebugInClientMessage.ID] = () => { return new DebugInClientMessage(); };
-            MessageReceiver._list[AchievementDetailedListMessage.ID] = () => { return new AchievementDetailedListMessage(); };
-            MessageReceiver._list[AchievementDetailedListRequestMessage.ID] = () => { return new AchievementDetailedListRequestMessage(); };
-            MessageReceiver._list[AchievementDetailsMessage.ID] = () => { return new AchievementDetailsMessage(); };
-            MessageReceiver._list[AchievementDetailsRequestMessage.ID] = () => { return new AchievementDetailsRequestMessage(); };
-            MessageReceiver._list[AchievementFinishedInformationMessage.ID] = () => { return new AchievementFinishedInformationMessage(); };
-            MessageReceiver._list[AchievementFinishedMessage.ID] = () => { return new AchievementFinishedMessage(); };
-            MessageReceiver._list[AchievementListMessage.ID] = () => { return new AchievementListMessage(); };
-            MessageReceiver._list[AchievementRewardErrorMessage.ID] = () => { return new AchievementRewardErrorMessage(); };
-            MessageReceiver._list[AchievementRewardRequestMessage.ID] = () => { return new AchievementRewardRequestMessage(); };
-            MessageReceiver._list[AchievementRewardSuccessMessage.ID] = () => { return new AchievementRewardSuccessMessage(); };
-            MessageReceiver._list[FriendGuildSetWarnOnAchievementCompleteMessage.ID] = () => { return new FriendGuildSetWarnOnAchievementCompleteMessage(); };
-            MessageReceiver._list[FriendGuildWarnOnAchievementCompleteStateMessage.ID] = () => { return new FriendGuildWarnOnAchievementCompleteStateMessage(); };
-            MessageReceiver._list[AbstractGameActionMessage.ID] = () => { return new AbstractGameActionMessage(); };
-            MessageReceiver._list[AbstractGameActionWithAckMessage.ID] = () => { return new AbstractGameActionWithAckMessage(); };
-            MessageReceiver._list[GameActionAcknowledgementMessage.ID] = () => { return new GameActionAcknowledgementMessage(); };
-            MessageReceiver._list[GameActionNoopMessage.ID] = () => { return new GameActionNoopMessage(); };
-            MessageReceiver._list[AbstractGameActionFightTargetedAbilityMessage.ID] = () => { return new AbstractGameActionFightTargetedAbilityMessage(); };
-            MessageReceiver._list[GameActionFightActivateGlyphTrapMessage.ID] = () => { return new GameActionFightActivateGlyphTrapMessage(); };
-            MessageReceiver._list[GameActionFightCarryCharacterMessage.ID] = () => { return new GameActionFightCarryCharacterMessage(); };
-            MessageReceiver._list[GameActionFightCastOnTargetRequestMessage.ID] = () => { return new GameActionFightCastOnTargetRequestMessage(); };
-            MessageReceiver._list[GameActionFightCastRequestMessage.ID] = () => { return new GameActionFightCastRequestMessage(); };
-            MessageReceiver._list[GameActionFightChangeLookMessage.ID] = () => { return new GameActionFightChangeLookMessage(); };
-            MessageReceiver._list[GameActionFightCloseCombatMessage.ID] = () => { return new GameActionFightCloseCombatMessage(); };
-            MessageReceiver._list[GameActionFightDeathMessage.ID] = () => { return new GameActionFightDeathMessage(); };
-            MessageReceiver._list[GameActionFightDispellEffectMessage.ID] = () => { return new GameActionFightDispellEffectMessage(); };
-            MessageReceiver._list[GameActionFightDispellMessage.ID] = () => { return new GameActionFightDispellMessage(); };
-            MessageReceiver._list[GameActionFightDispellSpellMessage.ID] = () => { return new GameActionFightDispellSpellMessage(); };
-            MessageReceiver._list[GameActionFightDispellableEffectMessage.ID] = () => { return new GameActionFightDispellableEffectMessage(); };
-            MessageReceiver._list[GameActionFightDodgePointLossMessage.ID] = () => { return new GameActionFightDodgePointLossMessage(); };
-            MessageReceiver._list[GameActionFightDropCharacterMessage.ID] = () => { return new GameActionFightDropCharacterMessage(); };
-            MessageReceiver._list[GameActionFightExchangePositionsMessage.ID] = () => { return new GameActionFightExchangePositionsMessage(); };
-            MessageReceiver._list[GameActionFightInvisibilityMessage.ID] = () => { return new GameActionFightInvisibilityMessage(); };
-            MessageReceiver._list[GameActionFightInvisibleDetectedMessage.ID] = () => { return new GameActionFightInvisibleDetectedMessage(); };
-            MessageReceiver._list[GameActionFightKillMessage.ID] = () => { return new GameActionFightKillMessage(); };
-            MessageReceiver._list[GameActionFightLifeAndShieldPointsLostMessage.ID] = () => { return new GameActionFightLifeAndShieldPointsLostMessage(); };
-            MessageReceiver._list[GameActionFightLifePointsGainMessage.ID] = () => { return new GameActionFightLifePointsGainMessage(); };
-            MessageReceiver._list[GameActionFightLifePointsLostMessage.ID] = () => { return new GameActionFightLifePointsLostMessage(); };
-            MessageReceiver._list[GameActionFightMarkCellsMessage.ID] = () => { return new GameActionFightMarkCellsMessage(); };
-            MessageReceiver._list[GameActionFightModifyEffectsDurationMessage.ID] = () => { return new GameActionFightModifyEffectsDurationMessage(); };
-            MessageReceiver._list[GameActionFightNoSpellCastMessage.ID] = () => { return new GameActionFightNoSpellCastMessage(); };
-            MessageReceiver._list[GameActionFightPointsVariationMessage.ID] = () => { return new GameActionFightPointsVariationMessage(); };
-            MessageReceiver._list[GameActionFightReduceDamagesMessage.ID] = () => { return new GameActionFightReduceDamagesMessage(); };
-            MessageReceiver._list[GameActionFightReflectDamagesMessage.ID] = () => { return new GameActionFightReflectDamagesMessage(); };
-            MessageReceiver._list[GameActionFightReflectSpellMessage.ID] = () => { return new GameActionFightReflectSpellMessage(); };
-            MessageReceiver._list[GameActionFightSlideMessage.ID] = () => { return new GameActionFightSlideMessage(); };
-            MessageReceiver._list[GameActionFightSpellCastMessage.ID] = () => { return new GameActionFightSpellCastMessage(); };
-            MessageReceiver._list[GameActionFightSpellCooldownVariationMessage.ID] = () => { return new GameActionFightSpellCooldownVariationMessage(); };
-            MessageReceiver._list[GameActionFightSpellImmunityMessage.ID] = () => { return new GameActionFightSpellImmunityMessage(); };
-            MessageReceiver._list[GameActionFightStealKamaMessage.ID] = () => { return new GameActionFightStealKamaMessage(); };
-            MessageReceiver._list[GameActionFightSummonMessage.ID] = () => { return new GameActionFightSummonMessage(); };
-            MessageReceiver._list[GameActionFightTackledMessage.ID] = () => { return new GameActionFightTackledMessage(); };
-            MessageReceiver._list[GameActionFightTeleportOnSameMapMessage.ID] = () => { return new GameActionFightTeleportOnSameMapMessage(); };
-            MessageReceiver._list[GameActionFightThrowCharacterMessage.ID] = () => { return new GameActionFightThrowCharacterMessage(); };
-            MessageReceiver._list[GameActionFightTriggerEffectMessage.ID] = () => { return new GameActionFightTriggerEffectMessage(); };
-            MessageReceiver._list[GameActionFightTriggerGlyphTrapMessage.ID] = () => { return new GameActionFightTriggerGlyphTrapMessage(); };
-            MessageReceiver._list[GameActionFightUnmarkCellsMessage.ID] = () => { return new GameActionFightUnmarkCellsMessage(); };
-            MessageReceiver._list[GameActionFightVanishMessage.ID] = () => { return new GameActionFightVanishMessage(); };
-            MessageReceiver._list[SequenceEndMessage.ID] = () => { return new SequenceEndMessage(); };
-            MessageReceiver._list[SequenceStartMessage.ID] = () => { return new SequenceStartMessage(); };
-            MessageReceiver._list[AllianceChangeGuildRightsMessage.ID] = () => { return new AllianceChangeGuildRightsMessage(); };
-            MessageReceiver._list[AllianceCreationResultMessage.ID] = () => { return new AllianceCreationResultMessage(); };
-            MessageReceiver._list[AllianceCreationStartedMessage.ID] = () => { return new AllianceCreationStartedMessage(); };
-            MessageReceiver._list[AllianceCreationValidMessage.ID] = () => { return new AllianceCreationValidMessage(); };
-            MessageReceiver._list[AllianceFactsErrorMessage.ID] = () => { return new AllianceFactsErrorMessage(); };
-            MessageReceiver._list[AllianceFactsMessage.ID] = () => { return new AllianceFactsMessage(); };
-            MessageReceiver._list[AllianceFactsRequestMessage.ID] = () => { return new AllianceFactsRequestMessage(); };
-            MessageReceiver._list[AllianceGuildLeavingMessage.ID] = () => { return new AllianceGuildLeavingMessage(); };
-            MessageReceiver._list[AllianceInsiderInfoMessage.ID] = () => { return new AllianceInsiderInfoMessage(); };
-            MessageReceiver._list[AllianceInsiderInfoRequestMessage.ID] = () => { return new AllianceInsiderInfoRequestMessage(); };
-            MessageReceiver._list[AllianceInvitationAnswerMessage.ID] = () => { return new AllianceInvitationAnswerMessage(); };
-            MessageReceiver._list[AllianceInvitationMessage.ID] = () => { return new AllianceInvitationMessage(); };
-            MessageReceiver._list[AllianceInvitationStateRecrutedMessage.ID] = () => { return new AllianceInvitationStateRecrutedMessage(); };
-            MessageReceiver._list[AllianceInvitationStateRecruterMessage.ID] = () => { return new AllianceInvitationStateRecruterMessage(); };
-            MessageReceiver._list[AllianceInvitedMessage.ID] = () => { return new AllianceInvitedMessage(); };
-            MessageReceiver._list[AllianceJoinedMessage.ID] = () => { return new AllianceJoinedMessage(); };
-            MessageReceiver._list[AllianceKickRequestMessage.ID] = () => { return new AllianceKickRequestMessage(); };
-            MessageReceiver._list[AllianceLeftMessage.ID] = () => { return new AllianceLeftMessage(); };
-            MessageReceiver._list[AllianceListMessage.ID] = () => { return new AllianceListMessage(); };
-            MessageReceiver._list[AllianceMembershipMessage.ID] = () => { return new AllianceMembershipMessage(); };
-            MessageReceiver._list[AllianceModificationEmblemValidMessage.ID] = () => { return new AllianceModificationEmblemValidMessage(); };
-            MessageReceiver._list[AllianceModificationNameAndTagValidMessage.ID] = () => { return new AllianceModificationNameAndTagValidMessage(); };
-            MessageReceiver._list[AllianceModificationStartedMessage.ID] = () => { return new AllianceModificationStartedMessage(); };
-            MessageReceiver._list[AllianceModificationValidMessage.ID] = () => { return new AllianceModificationValidMessage(); };
-            MessageReceiver._list[AlliancePartialListMessage.ID] = () => { return new AlliancePartialListMessage(); };
-            MessageReceiver._list[AllianceVersatileInfoListMessage.ID] = () => { return new AllianceVersatileInfoListMessage(); };
-            MessageReceiver._list[KohUpdateMessage.ID] = () => { return new KohUpdateMessage(); };
-            MessageReceiver._list[AlmanachCalendarDateMessage.ID] = () => { return new AlmanachCalendarDateMessage(); };
-            MessageReceiver._list[AccountCapabilitiesMessage.ID] = () => { return new AccountCapabilitiesMessage(); };
-            MessageReceiver._list[AccountLoggingKickedMessage.ID] = () => { return new AccountLoggingKickedMessage(); };
-            MessageReceiver._list[AlreadyConnectedMessage.ID] = () => { return new AlreadyConnectedMessage(); };
-            MessageReceiver._list[AuthenticationTicketAcceptedMessage.ID] = () => { return new AuthenticationTicketAcceptedMessage(); };
-            MessageReceiver._list[AuthenticationTicketMessage.ID] = () => { return new AuthenticationTicketMessage(); };
-            MessageReceiver._list[AuthenticationTicketRefusedMessage.ID] = () => { return new AuthenticationTicketRefusedMessage(); };
-            MessageReceiver._list[HelloGameMessage.ID] = () => { return new HelloGameMessage(); };
-            MessageReceiver._list[ReloginTokenRequestMessage.ID] = () => { return new ReloginTokenRequestMessage(); };
-            MessageReceiver._list[ReloginTokenStatusMessage.ID] = () => { return new ReloginTokenStatusMessage(); };
-            MessageReceiver._list[ServerOptionalFeaturesMessage.ID] = () => { return new ServerOptionalFeaturesMessage(); };
-            MessageReceiver._list[ServerSessionConstantsMessage.ID] = () => { return new ServerSessionConstantsMessage(); };
-            MessageReceiver._list[ServerSettingsMessage.ID] = () => { return new ServerSettingsMessage(); };
-            MessageReceiver._list[AtlasPointInformationsMessage.ID] = () => { return new AtlasPointInformationsMessage(); };
-            MessageReceiver._list[CompassResetMessage.ID] = () => { return new CompassResetMessage(); };
-            MessageReceiver._list[CompassUpdateMessage.ID] = () => { return new CompassUpdateMessage(); };
-            MessageReceiver._list[CompassUpdatePartyMemberMessage.ID] = () => { return new CompassUpdatePartyMemberMessage(); };
-            MessageReceiver._list[CompassUpdatePvpSeekMessage.ID] = () => { return new CompassUpdatePvpSeekMessage(); };
-            MessageReceiver._list[BasicAckMessage.ID] = () => { return new BasicAckMessage(); };
-            MessageReceiver._list[BasicDateMessage.ID] = () => { return new BasicDateMessage(); };
-            MessageReceiver._list[BasicLatencyStatsMessage.ID] = () => { return new BasicLatencyStatsMessage(); };
-            MessageReceiver._list[BasicLatencyStatsRequestMessage.ID] = () => { return new BasicLatencyStatsRequestMessage(); };
-            MessageReceiver._list[BasicNoOperationMessage.ID] = () => { return new BasicNoOperationMessage(); };
-            MessageReceiver._list[BasicTimeMessage.ID] = () => { return new BasicTimeMessage(); };
-            MessageReceiver._list[BasicWhoAmIRequestMessage.ID] = () => { return new BasicWhoAmIRequestMessage(); };
-            MessageReceiver._list[BasicWhoIsMessage.ID] = () => { return new BasicWhoIsMessage(); };
-            MessageReceiver._list[BasicWhoIsNoMatchMessage.ID] = () => { return new BasicWhoIsNoMatchMessage(); };
-            MessageReceiver._list[BasicWhoIsRequestMessage.ID] = () => { return new BasicWhoIsRequestMessage(); };
-            MessageReceiver._list[CurrentServerStatusUpdateMessage.ID] = () => { return new CurrentServerStatusUpdateMessage(); };
-            MessageReceiver._list[NumericWhoIsMessage.ID] = () => { return new NumericWhoIsMessage(); };
-            MessageReceiver._list[NumericWhoIsRequestMessage.ID] = () => { return new NumericWhoIsRequestMessage(); };
-            MessageReceiver._list[SequenceNumberMessage.ID] = () => { return new SequenceNumberMessage(); };
-            MessageReceiver._list[SequenceNumberRequestMessage.ID] = () => { return new SequenceNumberRequestMessage(); };
-            MessageReceiver._list[TextInformationMessage.ID] = () => { return new TextInformationMessage(); };
-            MessageReceiver._list[BasicCharactersListMessage.ID] = () => { return new BasicCharactersListMessage(); };
-            MessageReceiver._list[CharacterFirstSelectionMessage.ID] = () => { return new CharacterFirstSelectionMessage(); };
-            MessageReceiver._list[CharacterReplayWithRemodelRequestMessage.ID] = () => { return new CharacterReplayWithRemodelRequestMessage(); };
-            MessageReceiver._list[CharacterSelectedErrorMessage.ID] = () => { return new CharacterSelectedErrorMessage(); };
-            MessageReceiver._list[CharacterSelectedForceMessage.ID] = () => { return new CharacterSelectedForceMessage(); };
-            MessageReceiver._list[CharacterSelectedForceReadyMessage.ID] = () => { return new CharacterSelectedForceReadyMessage(); };
-            MessageReceiver._list[CharacterSelectedSuccessMessage.ID] = () => { return new CharacterSelectedSuccessMessage(); };
-            MessageReceiver._list[CharacterSelectionMessage.ID] = () => { return new CharacterSelectionMessage(); };
-            MessageReceiver._list[CharacterSelectionWithRemodelMessage.ID] = () => { return new CharacterSelectionWithRemodelMessage(); };
-            MessageReceiver._list[CharactersListErrorMessage.ID] = () => { return new CharactersListErrorMessage(); };
-            MessageReceiver._list[CharactersListMessage.ID] = () => { return new CharactersListMessage(); };
-            MessageReceiver._list[CharactersListRequestMessage.ID] = () => { return new CharactersListRequestMessage(); };
-            MessageReceiver._list[CharactersListWithModificationsMessage.ID] = () => { return new CharactersListWithModificationsMessage(); };
-            MessageReceiver._list[CharactersListWithRemodelingMessage.ID] = () => { return new CharactersListWithRemodelingMessage(); };
-            MessageReceiver._list[CharacterCreationRequestMessage.ID] = () => { return new CharacterCreationRequestMessage(); };
-            MessageReceiver._list[CharacterCreationResultMessage.ID] = () => { return new CharacterCreationResultMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionFailureMessage.ID] = () => { return new CharacterNameSuggestionFailureMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionRequestMessage.ID] = () => { return new CharacterNameSuggestionRequestMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionSuccessMessage.ID] = () => { return new CharacterNameSuggestionSuccessMessage(); };
-            MessageReceiver._list[CharacterDeletionErrorMessage.ID] = () => { return new CharacterDeletionErrorMessage(); };
-            MessageReceiver._list[CharacterDeletionRequestMessage.ID] = () => { return new CharacterDeletionRequestMessage(); };
-            MessageReceiver._list[CharacterReplayRequestMessage.ID] = () => { return new CharacterReplayRequestMessage(); };
-            MessageReceiver._list[CharacterExperienceGainMessage.ID] = () => { return new CharacterExperienceGainMessage(); };
-            MessageReceiver._list[CharacterLevelUpInformationMessage.ID] = () => { return new CharacterLevelUpInformationMessage(); };
-            MessageReceiver._list[CharacterLevelUpMessage.ID] = () => { return new CharacterLevelUpMessage(); };
-            MessageReceiver._list[CharacterStatsListMessage.ID] = () => { return new CharacterStatsListMessage(); };
-            MessageReceiver._list[FighterStatsListMessage.ID] = () => { return new FighterStatsListMessage(); };
-            MessageReceiver._list[LifePointsRegenBeginMessage.ID] = () => { return new LifePointsRegenBeginMessage(); };
-            MessageReceiver._list[LifePointsRegenEndMessage.ID] = () => { return new LifePointsRegenEndMessage(); };
-            MessageReceiver._list[UpdateLifePointsMessage.ID] = () => { return new UpdateLifePointsMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateErrorMessage.ID] = () => { return new PlayerStatusUpdateErrorMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateMessage.ID] = () => { return new PlayerStatusUpdateMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateRequestMessage.ID] = () => { return new PlayerStatusUpdateRequestMessage(); };
-            MessageReceiver._list[ChatAbstractClientMessage.ID] = () => { return new ChatAbstractClientMessage(); };
-            MessageReceiver._list[ChatAbstractServerMessage.ID] = () => { return new ChatAbstractServerMessage(); };
-            MessageReceiver._list[ChatAdminServerMessage.ID] = () => { return new ChatAdminServerMessage(); };
-            MessageReceiver._list[ChatClientMultiMessage.ID] = () => { return new ChatClientMultiMessage(); };
-            MessageReceiver._list[ChatClientMultiWithObjectMessage.ID] = () => { return new ChatClientMultiWithObjectMessage(); };
-            MessageReceiver._list[ChatClientPrivateMessage.ID] = () => { return new ChatClientPrivateMessage(); };
-            MessageReceiver._list[ChatClientPrivateWithObjectMessage.ID] = () => { return new ChatClientPrivateWithObjectMessage(); };
-            MessageReceiver._list[ChatErrorMessage.ID] = () => { return new ChatErrorMessage(); };
-            MessageReceiver._list[ChatServerCopyMessage.ID] = () => { return new ChatServerCopyMessage(); };
-            MessageReceiver._list[ChatServerCopyWithObjectMessage.ID] = () => { return new ChatServerCopyWithObjectMessage(); };
-            MessageReceiver._list[ChatServerMessage.ID] = () => { return new ChatServerMessage(); };
-            MessageReceiver._list[ChatServerWithObjectMessage.ID] = () => { return new ChatServerWithObjectMessage(); };
-            MessageReceiver._list[ChannelEnablingChangeMessage.ID] = () => { return new ChannelEnablingChangeMessage(); };
-            MessageReceiver._list[ChannelEnablingMessage.ID] = () => { return new ChannelEnablingMessage(); };
-            MessageReceiver._list[EnabledChannelsMessage.ID] = () => { return new EnabledChannelsMessage(); };
-            MessageReceiver._list[ChatMessageReportMessage.ID] = () => { return new ChatMessageReportMessage(); };
-            MessageReceiver._list[ChatSmileyExtraPackListMessage.ID] = () => { return new ChatSmileyExtraPackListMessage(); };
-            MessageReceiver._list[ChatSmileyMessage.ID] = () => { return new ChatSmileyMessage(); };
-            MessageReceiver._list[ChatSmileyRequestMessage.ID] = () => { return new ChatSmileyRequestMessage(); };
-            MessageReceiver._list[LocalizedChatSmileyMessage.ID] = () => { return new LocalizedChatSmileyMessage(); };
-            MessageReceiver._list[MoodSmileyRequestMessage.ID] = () => { return new MoodSmileyRequestMessage(); };
-            MessageReceiver._list[MoodSmileyResultMessage.ID] = () => { return new MoodSmileyResultMessage(); };
-            MessageReceiver._list[MoodSmileyUpdateMessage.ID] = () => { return new MoodSmileyUpdateMessage(); };
-            MessageReceiver._list[GameCautiousMapMovementMessage.ID] = () => { return new GameCautiousMapMovementMessage(); };
-            MessageReceiver._list[GameCautiousMapMovementRequestMessage.ID] = () => { return new GameCautiousMapMovementRequestMessage(); };
-            MessageReceiver._list[GameContextCreateErrorMessage.ID] = () => { return new GameContextCreateErrorMessage(); };
-            MessageReceiver._list[GameContextCreateMessage.ID] = () => { return new GameContextCreateMessage(); };
-            MessageReceiver._list[GameContextCreateRequestMessage.ID] = () => { return new GameContextCreateRequestMessage(); };
-            MessageReceiver._list[GameContextDestroyMessage.ID] = () => { return new GameContextDestroyMessage(); };
-            MessageReceiver._list[GameContextKickMessage.ID] = () => { return new GameContextKickMessage(); };
-            MessageReceiver._list[GameContextMoveElementMessage.ID] = () => { return new GameContextMoveElementMessage(); };
-            MessageReceiver._list[GameContextMoveMultipleElementsMessage.ID] = () => { return new GameContextMoveMultipleElementsMessage(); };
-            MessageReceiver._list[GameContextQuitMessage.ID] = () => { return new GameContextQuitMessage(); };
-            MessageReceiver._list[GameContextReadyMessage.ID] = () => { return new GameContextReadyMessage(); };
-            MessageReceiver._list[GameContextRefreshEntityLookMessage.ID] = () => { return new GameContextRefreshEntityLookMessage(); };
-            MessageReceiver._list[GameContextRemoveElementMessage.ID] = () => { return new GameContextRemoveElementMessage(); };
-            MessageReceiver._list[GameContextRemoveElementWithEventMessage.ID] = () => { return new GameContextRemoveElementWithEventMessage(); };
-            MessageReceiver._list[GameContextRemoveMultipleElementsMessage.ID] = () => { return new GameContextRemoveMultipleElementsMessage(); };
-            MessageReceiver._list[GameContextRemoveMultipleElementsWithEventsMessage.ID] = () => { return new GameContextRemoveMultipleElementsWithEventsMessage(); };
-            MessageReceiver._list[GameEntitiesDispositionMessage.ID] = () => { return new GameEntitiesDispositionMessage(); };
-            MessageReceiver._list[GameEntityDispositionErrorMessage.ID] = () => { return new GameEntityDispositionErrorMessage(); };
-            MessageReceiver._list[GameEntityDispositionMessage.ID] = () => { return new GameEntityDispositionMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationMessage.ID] = () => { return new GameMapChangeOrientationMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationRequestMessage.ID] = () => { return new GameMapChangeOrientationRequestMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationsMessage.ID] = () => { return new GameMapChangeOrientationsMessage(); };
-            MessageReceiver._list[GameMapMovementCancelMessage.ID] = () => { return new GameMapMovementCancelMessage(); };
-            MessageReceiver._list[GameMapMovementConfirmMessage.ID] = () => { return new GameMapMovementConfirmMessage(); };
-            MessageReceiver._list[GameMapMovementMessage.ID] = () => { return new GameMapMovementMessage(); };
-            MessageReceiver._list[GameMapMovementRequestMessage.ID] = () => { return new GameMapMovementRequestMessage(); };
-            MessageReceiver._list[GameMapNoMovementMessage.ID] = () => { return new GameMapNoMovementMessage(); };
-            MessageReceiver._list[ShowCellMessage.ID] = () => { return new ShowCellMessage(); };
-            MessageReceiver._list[ShowCellRequestMessage.ID] = () => { return new ShowCellRequestMessage(); };
-            MessageReceiver._list[ShowCellSpectatorMessage.ID] = () => { return new ShowCellSpectatorMessage(); };
-            MessageReceiver._list[DisplayNumericalValuePaddockMessage.ID] = () => { return new DisplayNumericalValuePaddockMessage(); };
-            MessageReceiver._list[DungeonKeyRingMessage.ID] = () => { return new DungeonKeyRingMessage(); };
-            MessageReceiver._list[DungeonKeyRingUpdateMessage.ID] = () => { return new DungeonKeyRingUpdateMessage(); };
-            MessageReceiver._list[GameFightEndMessage.ID] = () => { return new GameFightEndMessage(); };
-            MessageReceiver._list[GameFightHumanReadyStateMessage.ID] = () => { return new GameFightHumanReadyStateMessage(); };
-            MessageReceiver._list[GameFightJoinMessage.ID] = () => { return new GameFightJoinMessage(); };
-            MessageReceiver._list[GameFightJoinRequestMessage.ID] = () => { return new GameFightJoinRequestMessage(); };
-            MessageReceiver._list[GameFightLeaveMessage.ID] = () => { return new GameFightLeaveMessage(); };
-            MessageReceiver._list[GameFightNewRoundMessage.ID] = () => { return new GameFightNewRoundMessage(); };
-            MessageReceiver._list[GameFightNewWaveMessage.ID] = () => { return new GameFightNewWaveMessage(); };
-            MessageReceiver._list[GameFightOptionStateUpdateMessage.ID] = () => { return new GameFightOptionStateUpdateMessage(); };
-            MessageReceiver._list[GameFightOptionToggleMessage.ID] = () => { return new GameFightOptionToggleMessage(); };
-            MessageReceiver._list[GameFightPlacementPositionRequestMessage.ID] = () => { return new GameFightPlacementPositionRequestMessage(); };
-            MessageReceiver._list[GameFightPlacementPossiblePositionsMessage.ID] = () => { return new GameFightPlacementPossiblePositionsMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsAcceptMessage.ID] = () => { return new GameFightPlacementSwapPositionsAcceptMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsCancelMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsCancelledMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelledMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsErrorMessage.ID] = () => { return new GameFightPlacementSwapPositionsErrorMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsMessage.ID] = () => { return new GameFightPlacementSwapPositionsMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsOfferMessage.ID] = () => { return new GameFightPlacementSwapPositionsOfferMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsRequestMessage.ID] = () => { return new GameFightPlacementSwapPositionsRequestMessage(); };
-            MessageReceiver._list[GameFightReadyMessage.ID] = () => { return new GameFightReadyMessage(); };
-            MessageReceiver._list[GameFightRemoveTeamMemberMessage.ID] = () => { return new GameFightRemoveTeamMemberMessage(); };
-            MessageReceiver._list[GameFightResumeMessage.ID] = () => { return new GameFightResumeMessage(); };
-            MessageReceiver._list[GameFightResumeWithSlavesMessage.ID] = () => { return new GameFightResumeWithSlavesMessage(); };
-            MessageReceiver._list[GameFightSpectateMessage.ID] = () => { return new GameFightSpectateMessage(); };
-            MessageReceiver._list[GameFightSpectatePlayerRequestMessage.ID] = () => { return new GameFightSpectatePlayerRequestMessage(); };
-            MessageReceiver._list[GameFightSpectatorJoinMessage.ID] = () => { return new GameFightSpectatorJoinMessage(); };
-            MessageReceiver._list[GameFightStartMessage.ID] = () => { return new GameFightStartMessage(); };
-            MessageReceiver._list[GameFightStartingMessage.ID] = () => { return new GameFightStartingMessage(); };
-            MessageReceiver._list[GameFightSynchronizeMessage.ID] = () => { return new GameFightSynchronizeMessage(); };
-            MessageReceiver._list[GameFightTurnEndMessage.ID] = () => { return new GameFightTurnEndMessage(); };
-            MessageReceiver._list[GameFightTurnFinishMessage.ID] = () => { return new GameFightTurnFinishMessage(); };
-            MessageReceiver._list[GameFightTurnListMessage.ID] = () => { return new GameFightTurnListMessage(); };
-            MessageReceiver._list[GameFightTurnReadyMessage.ID] = () => { return new GameFightTurnReadyMessage(); };
-            MessageReceiver._list[GameFightTurnReadyRequestMessage.ID] = () => { return new GameFightTurnReadyRequestMessage(); };
-            MessageReceiver._list[GameFightTurnResumeMessage.ID] = () => { return new GameFightTurnResumeMessage(); };
-            MessageReceiver._list[GameFightTurnStartMessage.ID] = () => { return new GameFightTurnStartMessage(); };
-            MessageReceiver._list[GameFightTurnStartPlayingMessage.ID] = () => { return new GameFightTurnStartPlayingMessage(); };
-            MessageReceiver._list[GameFightUpdateTeamMessage.ID] = () => { return new GameFightUpdateTeamMessage(); };
-            MessageReceiver._list[SlaveSwitchContextMessage.ID] = () => { return new SlaveSwitchContextMessage(); };
-            MessageReceiver._list[ChallengeInfoMessage.ID] = () => { return new ChallengeInfoMessage(); };
-            MessageReceiver._list[ChallengeResultMessage.ID] = () => { return new ChallengeResultMessage(); };
-            MessageReceiver._list[ChallengeTargetUpdateMessage.ID] = () => { return new ChallengeTargetUpdateMessage(); };
-            MessageReceiver._list[ChallengeTargetsListMessage.ID] = () => { return new ChallengeTargetsListMessage(); };
-            MessageReceiver._list[ChallengeTargetsListRequestMessage.ID] = () => { return new ChallengeTargetsListRequestMessage(); };
-            MessageReceiver._list[GameFightRefreshFighterMessage.ID] = () => { return new GameFightRefreshFighterMessage(); };
-            MessageReceiver._list[GameFightShowFighterMessage.ID] = () => { return new GameFightShowFighterMessage(); };
-            MessageReceiver._list[GameFightShowFighterRandomStaticPoseMessage.ID] = () => { return new GameFightShowFighterRandomStaticPoseMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectAddMessage.ID] = () => { return new GameDataPaddockObjectAddMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectListAddMessage.ID] = () => { return new GameDataPaddockObjectListAddMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectRemoveMessage.ID] = () => { return new GameDataPaddockObjectRemoveMessage(); };
-            MessageReceiver._list[MountDataErrorMessage.ID] = () => { return new MountDataErrorMessage(); };
-            MessageReceiver._list[MountDataMessage.ID] = () => { return new MountDataMessage(); };
-            MessageReceiver._list[MountEmoteIconUsedOkMessage.ID] = () => { return new MountEmoteIconUsedOkMessage(); };
-            MessageReceiver._list[MountEquipedErrorMessage.ID] = () => { return new MountEquipedErrorMessage(); };
-            MessageReceiver._list[MountFeedRequestMessage.ID] = () => { return new MountFeedRequestMessage(); };
-            MessageReceiver._list[MountInformationInPaddockRequestMessage.ID] = () => { return new MountInformationInPaddockRequestMessage(); };
-            MessageReceiver._list[MountInformationRequestMessage.ID] = () => { return new MountInformationRequestMessage(); };
-            MessageReceiver._list[MountReleaseRequestMessage.ID] = () => { return new MountReleaseRequestMessage(); };
-            MessageReceiver._list[MountReleasedMessage.ID] = () => { return new MountReleasedMessage(); };
-            MessageReceiver._list[MountRenameRequestMessage.ID] = () => { return new MountRenameRequestMessage(); };
-            MessageReceiver._list[MountRenamedMessage.ID] = () => { return new MountRenamedMessage(); };
-            MessageReceiver._list[MountRidingMessage.ID] = () => { return new MountRidingMessage(); };
-            MessageReceiver._list[MountSetMessage.ID] = () => { return new MountSetMessage(); };
-            MessageReceiver._list[MountSetXpRatioRequestMessage.ID] = () => { return new MountSetXpRatioRequestMessage(); };
-            MessageReceiver._list[MountSterilizeRequestMessage.ID] = () => { return new MountSterilizeRequestMessage(); };
-            MessageReceiver._list[MountSterilizedMessage.ID] = () => { return new MountSterilizedMessage(); };
-            MessageReceiver._list[MountToggleRidingRequestMessage.ID] = () => { return new MountToggleRidingRequestMessage(); };
-            MessageReceiver._list[MountUnSetMessage.ID] = () => { return new MountUnSetMessage(); };
-            MessageReceiver._list[MountXpRatioMessage.ID] = () => { return new MountXpRatioMessage(); };
-            MessageReceiver._list[PaddockBuyRequestMessage.ID] = () => { return new PaddockBuyRequestMessage(); };
-            MessageReceiver._list[PaddockBuyResultMessage.ID] = () => { return new PaddockBuyResultMessage(); };
-            MessageReceiver._list[PaddockMoveItemRequestMessage.ID] = () => { return new PaddockMoveItemRequestMessage(); };
-            MessageReceiver._list[PaddockRemoveItemRequestMessage.ID] = () => { return new PaddockRemoveItemRequestMessage(); };
-            MessageReceiver._list[PaddockSellRequestMessage.ID] = () => { return new PaddockSellRequestMessage(); };
-            MessageReceiver._list[NotificationByServerMessage.ID] = () => { return new NotificationByServerMessage(); };
-            MessageReceiver._list[NotificationListMessage.ID] = () => { return new NotificationListMessage(); };
-            MessageReceiver._list[NotificationResetMessage.ID] = () => { return new NotificationResetMessage(); };
-            MessageReceiver._list[NotificationUpdateFlagMessage.ID] = () => { return new NotificationUpdateFlagMessage(); };
-            MessageReceiver._list[ChangeMapMessage.ID] = () => { return new ChangeMapMessage(); };
-            MessageReceiver._list[CurrentMapMessage.ID] = () => { return new CurrentMapMessage(); };
-            MessageReceiver._list[ErrorMapNotFoundMessage.ID] = () => { return new ErrorMapNotFoundMessage(); };
-            MessageReceiver._list[GameRolePlayShowActorMessage.ID] = () => { return new GameRolePlayShowActorMessage(); };
-            MessageReceiver._list[GameRolePlayShowActorWithEventMessage.ID] = () => { return new GameRolePlayShowActorWithEventMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsDataInHouseMessage.ID] = () => { return new MapComplementaryInformationsDataInHouseMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsDataMessage.ID] = () => { return new MapComplementaryInformationsDataMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsWithCoordsMessage.ID] = () => { return new MapComplementaryInformationsWithCoordsMessage(); };
-            MessageReceiver._list[MapFightCountMessage.ID] = () => { return new MapFightCountMessage(); };
-            MessageReceiver._list[MapInformationsRequestMessage.ID] = () => { return new MapInformationsRequestMessage(); };
-            MessageReceiver._list[MapObstacleUpdateMessage.ID] = () => { return new MapObstacleUpdateMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsExtendedMessage.ID] = () => { return new MapRunningFightDetailsExtendedMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsMessage.ID] = () => { return new MapRunningFightDetailsMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsRequestMessage.ID] = () => { return new MapRunningFightDetailsRequestMessage(); };
-            MessageReceiver._list[MapRunningFightListMessage.ID] = () => { return new MapRunningFightListMessage(); };
-            MessageReceiver._list[MapRunningFightListRequestMessage.ID] = () => { return new MapRunningFightListRequestMessage(); };
-            MessageReceiver._list[StopToListenRunningFightRequestMessage.ID] = () => { return new StopToListenRunningFightRequestMessage(); };
-            MessageReceiver._list[TeleportOnSameMapMessage.ID] = () => { return new TeleportOnSameMapMessage(); };
-            MessageReceiver._list[GameRolePlayFreeSoulRequestMessage.ID] = () => { return new GameRolePlayFreeSoulRequestMessage(); };
-            MessageReceiver._list[GameRolePlayGameOverMessage.ID] = () => { return new GameRolePlayGameOverMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerLifeStatusMessage.ID] = () => { return new GameRolePlayPlayerLifeStatusMessage(); };
-            MessageReceiver._list[WarnOnPermaDeathMessage.ID] = () => { return new WarnOnPermaDeathMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedActionFinishedMessage.ID] = () => { return new GameRolePlayDelayedActionFinishedMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedActionMessage.ID] = () => { return new GameRolePlayDelayedActionMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedObjectUseMessage.ID] = () => { return new GameRolePlayDelayedObjectUseMessage(); };
-            MessageReceiver._list[ComicReadingBeginMessage.ID] = () => { return new ComicReadingBeginMessage(); };
-            MessageReceiver._list[DocumentReadingBeginMessage.ID] = () => { return new DocumentReadingBeginMessage(); };
-            MessageReceiver._list[EmoteAddMessage.ID] = () => { return new EmoteAddMessage(); };
-            MessageReceiver._list[EmoteListMessage.ID] = () => { return new EmoteListMessage(); };
-            MessageReceiver._list[EmotePlayAbstractMessage.ID] = () => { return new EmotePlayAbstractMessage(); };
-            MessageReceiver._list[EmotePlayErrorMessage.ID] = () => { return new EmotePlayErrorMessage(); };
-            MessageReceiver._list[EmotePlayMassiveMessage.ID] = () => { return new EmotePlayMassiveMessage(); };
-            MessageReceiver._list[EmotePlayMessage.ID] = () => { return new EmotePlayMessage(); };
-            MessageReceiver._list[EmotePlayRequestMessage.ID] = () => { return new EmotePlayRequestMessage(); };
-            MessageReceiver._list[EmoteRemoveMessage.ID] = () => { return new EmoteRemoveMessage(); };
-            MessageReceiver._list[GameRolePlayAggressionMessage.ID] = () => { return new GameRolePlayAggressionMessage(); };
-            MessageReceiver._list[GameRolePlayAttackMonsterRequestMessage.ID] = () => { return new GameRolePlayAttackMonsterRequestMessage(); };
-            MessageReceiver._list[GameRolePlayFightRequestCanceledMessage.ID] = () => { return new GameRolePlayFightRequestCanceledMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnswerMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnswerMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnsweredMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnsweredMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyRequestedMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyRequestedMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightRequestMessage.ID] = () => { return new GameRolePlayPlayerFightRequestMessage(); };
-            MessageReceiver._list[GameRolePlayRemoveChallengeMessage.ID] = () => { return new GameRolePlayRemoveChallengeMessage(); };
-            MessageReceiver._list[GameRolePlayShowChallengeMessage.ID] = () => { return new GameRolePlayShowChallengeMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFightAnswerMessage.ID] = () => { return new GameRolePlayArenaFightAnswerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFightPropositionMessage.ID] = () => { return new GameRolePlayArenaFightPropositionMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFighterStatusMessage.ID] = () => { return new GameRolePlayArenaFighterStatusMessage(); };
-            MessageReceiver._list[GameRolePlayArenaRegisterMessage.ID] = () => { return new GameRolePlayArenaRegisterMessage(); };
-            MessageReceiver._list[GameRolePlayArenaRegistrationStatusMessage.ID] = () => { return new GameRolePlayArenaRegistrationStatusMessage(); };
-            MessageReceiver._list[GameRolePlayArenaSwitchToFightServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToFightServerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaSwitchToGameServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToGameServerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaUnregisterMessage.ID] = () => { return new GameRolePlayArenaUnregisterMessage(); };
-            MessageReceiver._list[GameRolePlayArenaUpdatePlayerInfosMessage.ID] = () => { return new GameRolePlayArenaUpdatePlayerInfosMessage(); };
-            MessageReceiver._list[AccountHouseMessage.ID] = () => { return new AccountHouseMessage(); };
-            MessageReceiver._list[HouseBuyRequestMessage.ID] = () => { return new HouseBuyRequestMessage(); };
-            MessageReceiver._list[HouseBuyResultMessage.ID] = () => { return new HouseBuyResultMessage(); };
-            MessageReceiver._list[HouseKickIndoorMerchantRequestMessage.ID] = () => { return new HouseKickIndoorMerchantRequestMessage(); };
-            MessageReceiver._list[HouseKickRequestMessage.ID] = () => { return new HouseKickRequestMessage(); };
-            MessageReceiver._list[HouseLockFromInsideRequestMessage.ID] = () => { return new HouseLockFromInsideRequestMessage(); };
-            MessageReceiver._list[HousePropertiesMessage.ID] = () => { return new HousePropertiesMessage(); };
-            MessageReceiver._list[HouseSellFromInsideRequestMessage.ID] = () => { return new HouseSellFromInsideRequestMessage(); };
-            MessageReceiver._list[HouseSellRequestMessage.ID] = () => { return new HouseSellRequestMessage(); };
-            MessageReceiver._list[HouseSoldMessage.ID] = () => { return new HouseSoldMessage(); };
-            MessageReceiver._list[HouseToSellFilterMessage.ID] = () => { return new HouseToSellFilterMessage(); };
-            MessageReceiver._list[HouseToSellListMessage.ID] = () => { return new HouseToSellListMessage(); };
-            MessageReceiver._list[HouseToSellListRequestMessage.ID] = () => { return new HouseToSellListRequestMessage(); };
-            MessageReceiver._list[HouseGuildNoneMessage.ID] = () => { return new HouseGuildNoneMessage(); };
-            MessageReceiver._list[HouseGuildRightsMessage.ID] = () => { return new HouseGuildRightsMessage(); };
-            MessageReceiver._list[HouseGuildRightsViewMessage.ID] = () => { return new HouseGuildRightsViewMessage(); };
-            MessageReceiver._list[HouseGuildShareRequestMessage.ID] = () => { return new HouseGuildShareRequestMessage(); };
-            MessageReceiver._list[JobAllowMultiCraftRequestMessage.ID] = () => { return new JobAllowMultiCraftRequestMessage(); };
-            MessageReceiver._list[JobBookSubscriptionMessage.ID] = () => { return new JobBookSubscriptionMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryAddMessage.ID] = () => { return new JobCrafterDirectoryAddMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryDefineSettingsMessage.ID] = () => { return new JobCrafterDirectoryDefineSettingsMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryEntryMessage.ID] = () => { return new JobCrafterDirectoryEntryMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryEntryRequestMessage.ID] = () => { return new JobCrafterDirectoryEntryRequestMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryListMessage.ID] = () => { return new JobCrafterDirectoryListMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryListRequestMessage.ID] = () => { return new JobCrafterDirectoryListRequestMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryRemoveMessage.ID] = () => { return new JobCrafterDirectoryRemoveMessage(); };
-            MessageReceiver._list[JobCrafterDirectorySettingsMessage.ID] = () => { return new JobCrafterDirectorySettingsMessage(); };
-            MessageReceiver._list[JobDescriptionMessage.ID] = () => { return new JobDescriptionMessage(); };
-            MessageReceiver._list[JobExperienceMultiUpdateMessage.ID] = () => { return new JobExperienceMultiUpdateMessage(); };
-            MessageReceiver._list[JobExperienceOtherPlayerUpdateMessage.ID] = () => { return new JobExperienceOtherPlayerUpdateMessage(); };
-            MessageReceiver._list[JobExperienceUpdateMessage.ID] = () => { return new JobExperienceUpdateMessage(); };
-            MessageReceiver._list[JobLevelUpMessage.ID] = () => { return new JobLevelUpMessage(); };
-            MessageReceiver._list[JobMultiCraftAvailableSkillsMessage.ID] = () => { return new JobMultiCraftAvailableSkillsMessage(); };
-            MessageReceiver._list[LockableChangeCodeMessage.ID] = () => { return new LockableChangeCodeMessage(); };
-            MessageReceiver._list[LockableCodeResultMessage.ID] = () => { return new LockableCodeResultMessage(); };
-            MessageReceiver._list[LockableShowCodeDialogMessage.ID] = () => { return new LockableShowCodeDialogMessage(); };
-            MessageReceiver._list[LockableStateUpdateAbstractMessage.ID] = () => { return new LockableStateUpdateAbstractMessage(); };
-            MessageReceiver._list[LockableStateUpdateHouseDoorMessage.ID] = () => { return new LockableStateUpdateHouseDoorMessage(); };
-            MessageReceiver._list[LockableStateUpdateStorageMessage.ID] = () => { return new LockableStateUpdateStorageMessage(); };
-            MessageReceiver._list[LockableUseCodeMessage.ID] = () => { return new LockableUseCodeMessage(); };
-            MessageReceiver._list[AlliancePrismDialogQuestionMessage.ID] = () => { return new AlliancePrismDialogQuestionMessage(); };
-            MessageReceiver._list[AllianceTaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new AllianceTaxCollectorDialogQuestionExtendedMessage(); };
-            MessageReceiver._list[EntityTalkMessage.ID] = () => { return new EntityTalkMessage(); };
-            MessageReceiver._list[MapNpcsQuestStatusUpdateMessage.ID] = () => { return new MapNpcsQuestStatusUpdateMessage(); };
-            MessageReceiver._list[NpcDialogCreationMessage.ID] = () => { return new NpcDialogCreationMessage(); };
-            MessageReceiver._list[NpcDialogQuestionMessage.ID] = () => { return new NpcDialogQuestionMessage(); };
-            MessageReceiver._list[NpcDialogReplyMessage.ID] = () => { return new NpcDialogReplyMessage(); };
-            MessageReceiver._list[NpcGenericActionFailureMessage.ID] = () => { return new NpcGenericActionFailureMessage(); };
-            MessageReceiver._list[NpcGenericActionRequestMessage.ID] = () => { return new NpcGenericActionRequestMessage(); };
-            MessageReceiver._list[TaxCollectorDialogQuestionBasicMessage.ID] = () => { return new TaxCollectorDialogQuestionBasicMessage(); };
-            MessageReceiver._list[TaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new TaxCollectorDialogQuestionExtendedMessage(); };
-            MessageReceiver._list[ObjectGroundAddedMessage.ID] = () => { return new ObjectGroundAddedMessage(); };
-            MessageReceiver._list[ObjectGroundListAddedMessage.ID] = () => { return new ObjectGroundListAddedMessage(); };
-            MessageReceiver._list[ObjectGroundRemovedMessage.ID] = () => { return new ObjectGroundRemovedMessage(); };
-            MessageReceiver._list[ObjectGroundRemovedMultipleMessage.ID] = () => { return new ObjectGroundRemovedMultipleMessage(); };
-            MessageReceiver._list[GameDataPlayFarmObjectAnimationMessage.ID] = () => { return new GameDataPlayFarmObjectAnimationMessage(); };
-            MessageReceiver._list[PaddockPropertiesMessage.ID] = () => { return new PaddockPropertiesMessage(); };
-            MessageReceiver._list[PaddockSellBuyDialogMessage.ID] = () => { return new PaddockSellBuyDialogMessage(); };
-            MessageReceiver._list[PaddockToSellFilterMessage.ID] = () => { return new PaddockToSellFilterMessage(); };
-            MessageReceiver._list[PaddockToSellListMessage.ID] = () => { return new PaddockToSellListMessage(); };
-            MessageReceiver._list[PaddockToSellListRequestMessage.ID] = () => { return new PaddockToSellListRequestMessage(); };
-            MessageReceiver._list[AbstractPartyEventMessage.ID] = () => { return new AbstractPartyEventMessage(); };
-            MessageReceiver._list[AbstractPartyMessage.ID] = () => { return new AbstractPartyMessage(); };
-            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsMessage(); };
-            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsRequestMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderListenErrorMessage.ID] = () => { return new DungeonPartyFinderListenErrorMessage(); };
-            MessageReceiver._list[DungeonPartyFinderListenRequestMessage.ID] = () => { return new DungeonPartyFinderListenRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterErrorMessage.ID] = () => { return new DungeonPartyFinderRegisterErrorMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterRequestMessage.ID] = () => { return new DungeonPartyFinderRegisterRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterSuccessMessage.ID] = () => { return new DungeonPartyFinderRegisterSuccessMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRoomContentMessage.ID] = () => { return new DungeonPartyFinderRoomContentMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRoomContentUpdateMessage.ID] = () => { return new DungeonPartyFinderRoomContentUpdateMessage(); };
-            MessageReceiver._list[PartyAbdicateThroneMessage.ID] = () => { return new PartyAbdicateThroneMessage(); };
-            MessageReceiver._list[PartyAcceptInvitationMessage.ID] = () => { return new PartyAcceptInvitationMessage(); };
-            MessageReceiver._list[PartyCancelInvitationMessage.ID] = () => { return new PartyCancelInvitationMessage(); };
-            MessageReceiver._list[PartyCancelInvitationNotificationMessage.ID] = () => { return new PartyCancelInvitationNotificationMessage(); };
-            MessageReceiver._list[PartyCannotJoinErrorMessage.ID] = () => { return new PartyCannotJoinErrorMessage(); };
-            MessageReceiver._list[PartyDeletedMessage.ID] = () => { return new PartyDeletedMessage(); };
-            MessageReceiver._list[PartyFollowMemberRequestMessage.ID] = () => { return new PartyFollowMemberRequestMessage(); };
-            MessageReceiver._list[PartyFollowStatusUpdateMessage.ID] = () => { return new PartyFollowStatusUpdateMessage(); };
-            MessageReceiver._list[PartyFollowThisMemberRequestMessage.ID] = () => { return new PartyFollowThisMemberRequestMessage(); };
-            MessageReceiver._list[PartyInvitationArenaRequestMessage.ID] = () => { return new PartyInvitationArenaRequestMessage(); };
-            MessageReceiver._list[PartyInvitationCancelledForGuestMessage.ID] = () => { return new PartyInvitationCancelledForGuestMessage(); };
-            MessageReceiver._list[PartyInvitationDetailsMessage.ID] = () => { return new PartyInvitationDetailsMessage(); };
-            MessageReceiver._list[PartyInvitationDetailsRequestMessage.ID] = () => { return new PartyInvitationDetailsRequestMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonDetailsMessage.ID] = () => { return new PartyInvitationDungeonDetailsMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonMessage.ID] = () => { return new PartyInvitationDungeonMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonRequestMessage.ID] = () => { return new PartyInvitationDungeonRequestMessage(); };
-            MessageReceiver._list[PartyInvitationMessage.ID] = () => { return new PartyInvitationMessage(); };
-            MessageReceiver._list[PartyInvitationRequestMessage.ID] = () => { return new PartyInvitationRequestMessage(); };
-            MessageReceiver._list[PartyJoinMessage.ID] = () => { return new PartyJoinMessage(); };
-            MessageReceiver._list[PartyKickRequestMessage.ID] = () => { return new PartyKickRequestMessage(); };
-            MessageReceiver._list[PartyKickedByMessage.ID] = () => { return new PartyKickedByMessage(); };
-            MessageReceiver._list[PartyLeaderUpdateMessage.ID] = () => { return new PartyLeaderUpdateMessage(); };
-            MessageReceiver._list[PartyLeaveMessage.ID] = () => { return new PartyLeaveMessage(); };
-            MessageReceiver._list[PartyLeaveRequestMessage.ID] = () => { return new PartyLeaveRequestMessage(); };
-            MessageReceiver._list[PartyLocateMembersMessage.ID] = () => { return new PartyLocateMembersMessage(); };
-            MessageReceiver._list[PartyLoyaltyStatusMessage.ID] = () => { return new PartyLoyaltyStatusMessage(); };
-            MessageReceiver._list[PartyMemberEjectedMessage.ID] = () => { return new PartyMemberEjectedMessage(); };
-            MessageReceiver._list[PartyMemberInFightMessage.ID] = () => { return new PartyMemberInFightMessage(); };
-            MessageReceiver._list[PartyMemberRemoveMessage.ID] = () => { return new PartyMemberRemoveMessage(); };
-            MessageReceiver._list[PartyModifiableStatusMessage.ID] = () => { return new PartyModifiableStatusMessage(); };
-            MessageReceiver._list[PartyNameSetErrorMessage.ID] = () => { return new PartyNameSetErrorMessage(); };
-            MessageReceiver._list[PartyNameSetRequestMessage.ID] = () => { return new PartyNameSetRequestMessage(); };
-            MessageReceiver._list[PartyNameUpdateMessage.ID] = () => { return new PartyNameUpdateMessage(); };
-            MessageReceiver._list[PartyNewGuestMessage.ID] = () => { return new PartyNewGuestMessage(); };
-            MessageReceiver._list[PartyNewMemberMessage.ID] = () => { return new PartyNewMemberMessage(); };
-            MessageReceiver._list[PartyPledgeLoyaltyRequestMessage.ID] = () => { return new PartyPledgeLoyaltyRequestMessage(); };
-            MessageReceiver._list[PartyRefuseInvitationMessage.ID] = () => { return new PartyRefuseInvitationMessage(); };
-            MessageReceiver._list[PartyRefuseInvitationNotificationMessage.ID] = () => { return new PartyRefuseInvitationNotificationMessage(); };
-            MessageReceiver._list[PartyRestrictedMessage.ID] = () => { return new PartyRestrictedMessage(); };
-            MessageReceiver._list[PartyStopFollowRequestMessage.ID] = () => { return new PartyStopFollowRequestMessage(); };
-            MessageReceiver._list[PartyUpdateLightMessage.ID] = () => { return new PartyUpdateLightMessage(); };
-            MessageReceiver._list[PartyUpdateMessage.ID] = () => { return new PartyUpdateMessage(); };
-            MessageReceiver._list[PartyCompanionUpdateLightMessage.ID] = () => { return new PartyCompanionUpdateLightMessage(); };
-            MessageReceiver._list[PurchasableDialogMessage.ID] = () => { return new PurchasableDialogMessage(); };
-            MessageReceiver._list[GuidedModeQuitRequestMessage.ID] = () => { return new GuidedModeQuitRequestMessage(); };
-            MessageReceiver._list[GuidedModeReturnRequestMessage.ID] = () => { return new GuidedModeReturnRequestMessage(); };
-            MessageReceiver._list[QuestListMessage.ID] = () => { return new QuestListMessage(); };
-            MessageReceiver._list[QuestListRequestMessage.ID] = () => { return new QuestListRequestMessage(); };
-            MessageReceiver._list[QuestObjectiveValidatedMessage.ID] = () => { return new QuestObjectiveValidatedMessage(); };
-            MessageReceiver._list[QuestObjectiveValidationMessage.ID] = () => { return new QuestObjectiveValidationMessage(); };
-            MessageReceiver._list[QuestStartRequestMessage.ID] = () => { return new QuestStartRequestMessage(); };
-            MessageReceiver._list[QuestStartedMessage.ID] = () => { return new QuestStartedMessage(); };
-            MessageReceiver._list[QuestStepInfoMessage.ID] = () => { return new QuestStepInfoMessage(); };
-            MessageReceiver._list[QuestStepInfoRequestMessage.ID] = () => { return new QuestStepInfoRequestMessage(); };
-            MessageReceiver._list[QuestStepStartedMessage.ID] = () => { return new QuestStepStartedMessage(); };
-            MessageReceiver._list[QuestStepValidatedMessage.ID] = () => { return new QuestStepValidatedMessage(); };
-            MessageReceiver._list[QuestValidatedMessage.ID] = () => { return new QuestValidatedMessage(); };
-            MessageReceiver._list[SpellForgetUIMessage.ID] = () => { return new SpellForgetUIMessage(); };
-            MessageReceiver._list[SpellForgottenMessage.ID] = () => { return new SpellForgottenMessage(); };
-            MessageReceiver._list[SpellItemBoostMessage.ID] = () => { return new SpellItemBoostMessage(); };
-            MessageReceiver._list[SpellUpgradeFailureMessage.ID] = () => { return new SpellUpgradeFailureMessage(); };
-            MessageReceiver._list[SpellUpgradeRequestMessage.ID] = () => { return new SpellUpgradeRequestMessage(); };
-            MessageReceiver._list[SpellUpgradeSuccessMessage.ID] = () => { return new SpellUpgradeSuccessMessage(); };
-            MessageReceiver._list[ValidateSpellForgetMessage.ID] = () => { return new ValidateSpellForgetMessage(); };
-            MessageReceiver._list[StatsUpgradeRequestMessage.ID] = () => { return new StatsUpgradeRequestMessage(); };
-            MessageReceiver._list[StatsUpgradeResultMessage.ID] = () => { return new StatsUpgradeResultMessage(); };
-            MessageReceiver._list[PortalUseRequestMessage.ID] = () => { return new PortalUseRequestMessage(); };
-            MessageReceiver._list[TreasureHuntAvailableRetryCountUpdateMessage.ID] = () => { return new TreasureHuntAvailableRetryCountUpdateMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestAnswerFailedMessage.ID] = () => { return new TreasureHuntDigRequestAnswerFailedMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestAnswerMessage.ID] = () => { return new TreasureHuntDigRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestMessage.ID] = () => { return new TreasureHuntDigRequestMessage(); };
-            MessageReceiver._list[TreasureHuntFinishedMessage.ID] = () => { return new TreasureHuntFinishedMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRemoveRequestMessage.ID] = () => { return new TreasureHuntFlagRemoveRequestMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRequestAnswerMessage.ID] = () => { return new TreasureHuntFlagRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRequestMessage.ID] = () => { return new TreasureHuntFlagRequestMessage(); };
-            MessageReceiver._list[TreasureHuntGiveUpRequestMessage.ID] = () => { return new TreasureHuntGiveUpRequestMessage(); };
-            MessageReceiver._list[TreasureHuntLegendaryRequestMessage.ID] = () => { return new TreasureHuntLegendaryRequestMessage(); };
-            MessageReceiver._list[TreasureHuntMessage.ID] = () => { return new TreasureHuntMessage(); };
-            MessageReceiver._list[TreasureHuntRequestAnswerMessage.ID] = () => { return new TreasureHuntRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntRequestMessage.ID] = () => { return new TreasureHuntRequestMessage(); };
-            MessageReceiver._list[TreasureHuntShowLegendaryUIMessage.ID] = () => { return new TreasureHuntShowLegendaryUIMessage(); };
-            MessageReceiver._list[GameRolePlaySpellAnimMessage.ID] = () => { return new GameRolePlaySpellAnimMessage(); };
-            MessageReceiver._list[LeaveDialogMessage.ID] = () => { return new LeaveDialogMessage(); };
-            MessageReceiver._list[LeaveDialogRequestMessage.ID] = () => { return new LeaveDialogRequestMessage(); };
-            MessageReceiver._list[PauseDialogMessage.ID] = () => { return new PauseDialogMessage(); };
-            MessageReceiver._list[FriendAddFailureMessage.ID] = () => { return new FriendAddFailureMessage(); };
-            MessageReceiver._list[FriendAddRequestMessage.ID] = () => { return new FriendAddRequestMessage(); };
-            MessageReceiver._list[FriendAddedMessage.ID] = () => { return new FriendAddedMessage(); };
-            MessageReceiver._list[FriendDeleteRequestMessage.ID] = () => { return new FriendDeleteRequestMessage(); };
-            MessageReceiver._list[FriendDeleteResultMessage.ID] = () => { return new FriendDeleteResultMessage(); };
-            MessageReceiver._list[FriendJoinRequestMessage.ID] = () => { return new FriendJoinRequestMessage(); };
-            MessageReceiver._list[FriendSetWarnOnConnectionMessage.ID] = () => { return new FriendSetWarnOnConnectionMessage(); };
-            MessageReceiver._list[FriendSetWarnOnLevelGainMessage.ID] = () => { return new FriendSetWarnOnLevelGainMessage(); };
-            MessageReceiver._list[FriendSpouseFollowWithCompassRequestMessage.ID] = () => { return new FriendSpouseFollowWithCompassRequestMessage(); };
-            MessageReceiver._list[FriendSpouseJoinRequestMessage.ID] = () => { return new FriendSpouseJoinRequestMessage(); };
-            MessageReceiver._list[FriendUpdateMessage.ID] = () => { return new FriendUpdateMessage(); };
-            MessageReceiver._list[FriendWarnOnConnectionStateMessage.ID] = () => { return new FriendWarnOnConnectionStateMessage(); };
-            MessageReceiver._list[FriendWarnOnLevelGainStateMessage.ID] = () => { return new FriendWarnOnLevelGainStateMessage(); };
-            MessageReceiver._list[FriendsGetListMessage.ID] = () => { return new FriendsGetListMessage(); };
-            MessageReceiver._list[FriendsListMessage.ID] = () => { return new FriendsListMessage(); };
-            MessageReceiver._list[GuildMemberSetWarnOnConnectionMessage.ID] = () => { return new GuildMemberSetWarnOnConnectionMessage(); };
-            MessageReceiver._list[GuildMemberWarnOnConnectionStateMessage.ID] = () => { return new GuildMemberWarnOnConnectionStateMessage(); };
-            MessageReceiver._list[IgnoredAddFailureMessage.ID] = () => { return new IgnoredAddFailureMessage(); };
-            MessageReceiver._list[IgnoredAddRequestMessage.ID] = () => { return new IgnoredAddRequestMessage(); };
-            MessageReceiver._list[IgnoredAddedMessage.ID] = () => { return new IgnoredAddedMessage(); };
-            MessageReceiver._list[IgnoredDeleteRequestMessage.ID] = () => { return new IgnoredDeleteRequestMessage(); };
-            MessageReceiver._list[IgnoredDeleteResultMessage.ID] = () => { return new IgnoredDeleteResultMessage(); };
-            MessageReceiver._list[IgnoredGetListMessage.ID] = () => { return new IgnoredGetListMessage(); };
-            MessageReceiver._list[IgnoredListMessage.ID] = () => { return new IgnoredListMessage(); };
-            MessageReceiver._list[SpouseGetInformationsMessage.ID] = () => { return new SpouseGetInformationsMessage(); };
-            MessageReceiver._list[SpouseInformationsMessage.ID] = () => { return new SpouseInformationsMessage(); };
-            MessageReceiver._list[SpouseStatusMessage.ID] = () => { return new SpouseStatusMessage(); };
-            MessageReceiver._list[WarnOnPermaDeathStateMessage.ID] = () => { return new WarnOnPermaDeathStateMessage(); };
-            MessageReceiver._list[GuestLimitationMessage.ID] = () => { return new GuestLimitationMessage(); };
-            MessageReceiver._list[GuestModeMessage.ID] = () => { return new GuestModeMessage(); };
-            MessageReceiver._list[ChallengeFightJoinRefusedMessage.ID] = () => { return new ChallengeFightJoinRefusedMessage(); };
-            MessageReceiver._list[GuildChangeMemberParametersMessage.ID] = () => { return new GuildChangeMemberParametersMessage(); };
-            MessageReceiver._list[GuildCharacsUpgradeRequestMessage.ID] = () => { return new GuildCharacsUpgradeRequestMessage(); };
-            MessageReceiver._list[GuildCreationResultMessage.ID] = () => { return new GuildCreationResultMessage(); };
-            MessageReceiver._list[GuildCreationStartedMessage.ID] = () => { return new GuildCreationStartedMessage(); };
-            MessageReceiver._list[GuildCreationValidMessage.ID] = () => { return new GuildCreationValidMessage(); };
-            MessageReceiver._list[GuildFactsErrorMessage.ID] = () => { return new GuildFactsErrorMessage(); };
-            MessageReceiver._list[GuildFactsMessage.ID] = () => { return new GuildFactsMessage(); };
-            MessageReceiver._list[GuildFactsRequestMessage.ID] = () => { return new GuildFactsRequestMessage(); };
-            MessageReceiver._list[GuildGetInformationsMessage.ID] = () => { return new GuildGetInformationsMessage(); };
-            MessageReceiver._list[GuildHouseRemoveMessage.ID] = () => { return new GuildHouseRemoveMessage(); };
-            MessageReceiver._list[GuildHouseTeleportRequestMessage.ID] = () => { return new GuildHouseTeleportRequestMessage(); };
-            MessageReceiver._list[GuildHouseUpdateInformationMessage.ID] = () => { return new GuildHouseUpdateInformationMessage(); };
-            MessageReceiver._list[GuildHousesInformationMessage.ID] = () => { return new GuildHousesInformationMessage(); };
-            MessageReceiver._list[GuildInAllianceFactsMessage.ID] = () => { return new GuildInAllianceFactsMessage(); };
-            MessageReceiver._list[GuildInformationsGeneralMessage.ID] = () => { return new GuildInformationsGeneralMessage(); };
-            MessageReceiver._list[GuildInformationsMemberUpdateMessage.ID] = () => { return new GuildInformationsMemberUpdateMessage(); };
-            MessageReceiver._list[GuildInformationsMembersMessage.ID] = () => { return new GuildInformationsMembersMessage(); };
-            MessageReceiver._list[GuildInformationsPaddocksMessage.ID] = () => { return new GuildInformationsPaddocksMessage(); };
-            MessageReceiver._list[GuildInfosUpgradeMessage.ID] = () => { return new GuildInfosUpgradeMessage(); };
-            MessageReceiver._list[GuildInvitationAnswerMessage.ID] = () => { return new GuildInvitationAnswerMessage(); };
-            MessageReceiver._list[GuildInvitationByNameMessage.ID] = () => { return new GuildInvitationByNameMessage(); };
-            MessageReceiver._list[GuildInvitationMessage.ID] = () => { return new GuildInvitationMessage(); };
-            MessageReceiver._list[GuildInvitationStateRecrutedMessage.ID] = () => { return new GuildInvitationStateRecrutedMessage(); };
-            MessageReceiver._list[GuildInvitationStateRecruterMessage.ID] = () => { return new GuildInvitationStateRecruterMessage(); };
-            MessageReceiver._list[GuildInvitedMessage.ID] = () => { return new GuildInvitedMessage(); };
-            MessageReceiver._list[GuildJoinedMessage.ID] = () => { return new GuildJoinedMessage(); };
-            MessageReceiver._list[GuildKickRequestMessage.ID] = () => { return new GuildKickRequestMessage(); };
-            MessageReceiver._list[GuildLeftMessage.ID] = () => { return new GuildLeftMessage(); };
-            MessageReceiver._list[GuildLevelUpMessage.ID] = () => { return new GuildLevelUpMessage(); };
-            MessageReceiver._list[GuildListMessage.ID] = () => { return new GuildListMessage(); };
-            MessageReceiver._list[GuildMemberLeavingMessage.ID] = () => { return new GuildMemberLeavingMessage(); };
-            MessageReceiver._list[GuildMemberOnlineStatusMessage.ID] = () => { return new GuildMemberOnlineStatusMessage(); };
-            MessageReceiver._list[GuildMembershipMessage.ID] = () => { return new GuildMembershipMessage(); };
-            MessageReceiver._list[GuildModificationEmblemValidMessage.ID] = () => { return new GuildModificationEmblemValidMessage(); };
-            MessageReceiver._list[GuildModificationNameValidMessage.ID] = () => { return new GuildModificationNameValidMessage(); };
-            MessageReceiver._list[GuildModificationStartedMessage.ID] = () => { return new GuildModificationStartedMessage(); };
-            MessageReceiver._list[GuildModificationValidMessage.ID] = () => { return new GuildModificationValidMessage(); };
-            MessageReceiver._list[GuildMotdMessage.ID] = () => { return new GuildMotdMessage(); };
-            MessageReceiver._list[GuildMotdSetErrorMessage.ID] = () => { return new GuildMotdSetErrorMessage(); };
-            MessageReceiver._list[GuildPaddockBoughtMessage.ID] = () => { return new GuildPaddockBoughtMessage(); };
-            MessageReceiver._list[GuildPaddockRemovedMessage.ID] = () => { return new GuildPaddockRemovedMessage(); };
-            MessageReceiver._list[GuildPaddockTeleportRequestMessage.ID] = () => { return new GuildPaddockTeleportRequestMessage(); };
-            MessageReceiver._list[GuildSpellUpgradeRequestMessage.ID] = () => { return new GuildSpellUpgradeRequestMessage(); };
-            MessageReceiver._list[GuildVersatileInfoListMessage.ID] = () => { return new GuildVersatileInfoListMessage(); };
-            MessageReceiver._list[AbstractTaxCollectorListMessage.ID] = () => { return new AbstractTaxCollectorListMessage(); };
-            MessageReceiver._list[GameRolePlayTaxCollectorFightRequestMessage.ID] = () => { return new GameRolePlayTaxCollectorFightRequestMessage(); };
-            MessageReceiver._list[GuildFightJoinRequestMessage.ID] = () => { return new GuildFightJoinRequestMessage(); };
-            MessageReceiver._list[GuildFightLeaveRequestMessage.ID] = () => { return new GuildFightLeaveRequestMessage(); };
-            MessageReceiver._list[GuildFightPlayersEnemiesListMessage.ID] = () => { return new GuildFightPlayersEnemiesListMessage(); };
-            MessageReceiver._list[GuildFightPlayersEnemyRemoveMessage.ID] = () => { return new GuildFightPlayersEnemyRemoveMessage(); };
-            MessageReceiver._list[GuildFightPlayersHelpersJoinMessage.ID] = () => { return new GuildFightPlayersHelpersJoinMessage(); };
-            MessageReceiver._list[GuildFightPlayersHelpersLeaveMessage.ID] = () => { return new GuildFightPlayersHelpersLeaveMessage(); };
-            MessageReceiver._list[GuildFightTakePlaceRequestMessage.ID] = () => { return new GuildFightTakePlaceRequestMessage(); };
-            MessageReceiver._list[TaxCollectorAttackedMessage.ID] = () => { return new TaxCollectorAttackedMessage(); };
-            MessageReceiver._list[TaxCollectorAttackedResultMessage.ID] = () => { return new TaxCollectorAttackedResultMessage(); };
-            MessageReceiver._list[TaxCollectorErrorMessage.ID] = () => { return new TaxCollectorErrorMessage(); };
-            MessageReceiver._list[TaxCollectorListMessage.ID] = () => { return new TaxCollectorListMessage(); };
-            MessageReceiver._list[TaxCollectorMovementAddMessage.ID] = () => { return new TaxCollectorMovementAddMessage(); };
-            MessageReceiver._list[TaxCollectorMovementMessage.ID] = () => { return new TaxCollectorMovementMessage(); };
-            MessageReceiver._list[TaxCollectorMovementRemoveMessage.ID] = () => { return new TaxCollectorMovementRemoveMessage(); };
-            MessageReceiver._list[TaxCollectorStateUpdateMessage.ID] = () => { return new TaxCollectorStateUpdateMessage(); };
-            MessageReceiver._list[TopTaxCollectorListMessage.ID] = () => { return new TopTaxCollectorListMessage(); };
-            MessageReceiver._list[IdolFightPreparationUpdateMessage.ID] = () => { return new IdolFightPreparationUpdateMessage(); };
-            MessageReceiver._list[IdolListMessage.ID] = () => { return new IdolListMessage(); };
-            MessageReceiver._list[IdolPartyLostMessage.ID] = () => { return new IdolPartyLostMessage(); };
-            MessageReceiver._list[IdolPartyRefreshMessage.ID] = () => { return new IdolPartyRefreshMessage(); };
-            MessageReceiver._list[IdolPartyRegisterRequestMessage.ID] = () => { return new IdolPartyRegisterRequestMessage(); };
-            MessageReceiver._list[IdolSelectErrorMessage.ID] = () => { return new IdolSelectErrorMessage(); };
-            MessageReceiver._list[IdolSelectRequestMessage.ID] = () => { return new IdolSelectRequestMessage(); };
-            MessageReceiver._list[IdolSelectedMessage.ID] = () => { return new IdolSelectedMessage(); };
-            MessageReceiver._list[CharacterCapabilitiesMessage.ID] = () => { return new CharacterCapabilitiesMessage(); };
-            MessageReceiver._list[CharacterLoadingCompleteMessage.ID] = () => { return new CharacterLoadingCompleteMessage(); };
-            MessageReceiver._list[OnConnectionEventMessage.ID] = () => { return new OnConnectionEventMessage(); };
-            MessageReceiver._list[ServerExperienceModificatorMessage.ID] = () => { return new ServerExperienceModificatorMessage(); };
-            MessageReceiver._list[SetCharacterRestrictionsMessage.ID] = () => { return new SetCharacterRestrictionsMessage(); };
-            MessageReceiver._list[InteractiveElementUpdatedMessage.ID] = () => { return new InteractiveElementUpdatedMessage(); };
-            MessageReceiver._list[InteractiveMapUpdateMessage.ID] = () => { return new InteractiveMapUpdateMessage(); };
-            MessageReceiver._list[InteractiveUseEndedMessage.ID] = () => { return new InteractiveUseEndedMessage(); };
-            MessageReceiver._list[InteractiveUseErrorMessage.ID] = () => { return new InteractiveUseErrorMessage(); };
-            MessageReceiver._list[InteractiveUseRequestMessage.ID] = () => { return new InteractiveUseRequestMessage(); };
-            MessageReceiver._list[InteractiveUsedMessage.ID] = () => { return new InteractiveUsedMessage(); };
-            MessageReceiver._list[StatedElementUpdatedMessage.ID] = () => { return new StatedElementUpdatedMessage(); };
-            MessageReceiver._list[StatedMapUpdateMessage.ID] = () => { return new StatedMapUpdateMessage(); };
-            MessageReceiver._list[TeleportBuddiesAnswerMessage.ID] = () => { return new TeleportBuddiesAnswerMessage(); };
-            MessageReceiver._list[TeleportBuddiesMessage.ID] = () => { return new TeleportBuddiesMessage(); };
-            MessageReceiver._list[TeleportBuddiesRequestedMessage.ID] = () => { return new TeleportBuddiesRequestedMessage(); };
-            MessageReceiver._list[TeleportToBuddyAnswerMessage.ID] = () => { return new TeleportToBuddyAnswerMessage(); };
-            MessageReceiver._list[TeleportToBuddyCloseMessage.ID] = () => { return new TeleportToBuddyCloseMessage(); };
-            MessageReceiver._list[TeleportToBuddyOfferMessage.ID] = () => { return new TeleportToBuddyOfferMessage(); };
-            MessageReceiver._list[TeleportDestinationsListMessage.ID] = () => { return new TeleportDestinationsListMessage(); };
-            MessageReceiver._list[TeleportRequestMessage.ID] = () => { return new TeleportRequestMessage(); };
-            MessageReceiver._list[ZaapListMessage.ID] = () => { return new ZaapListMessage(); };
-            MessageReceiver._list[ZaapRespawnSaveRequestMessage.ID] = () => { return new ZaapRespawnSaveRequestMessage(); };
-            MessageReceiver._list[ZaapRespawnUpdatedMessage.ID] = () => { return new ZaapRespawnUpdatedMessage(); };
-            MessageReceiver._list[KamasUpdateMessage.ID] = () => { return new KamasUpdateMessage(); };
-            MessageReceiver._list[ObjectAveragePricesErrorMessage.ID] = () => { return new ObjectAveragePricesErrorMessage(); };
-            MessageReceiver._list[ObjectAveragePricesGetMessage.ID] = () => { return new ObjectAveragePricesGetMessage(); };
-            MessageReceiver._list[ObjectAveragePricesMessage.ID] = () => { return new ObjectAveragePricesMessage(); };
-            MessageReceiver._list[DecraftResultMessage.ID] = () => { return new DecraftResultMessage(); };
-            MessageReceiver._list[ExchangeAcceptMessage.ID] = () => { return new ExchangeAcceptMessage(); };
-            MessageReceiver._list[ExchangeBidHouseBuyMessage.ID] = () => { return new ExchangeBidHouseBuyMessage(); };
-            MessageReceiver._list[ExchangeBidHouseBuyResultMessage.ID] = () => { return new ExchangeBidHouseBuyResultMessage(); };
-            MessageReceiver._list[ExchangeBidHouseGenericItemAddedMessage.ID] = () => { return new ExchangeBidHouseGenericItemAddedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseGenericItemRemovedMessage.ID] = () => { return new ExchangeBidHouseGenericItemRemovedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListAddedMessage.ID] = () => { return new ExchangeBidHouseInListAddedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListRemovedMessage.ID] = () => { return new ExchangeBidHouseInListRemovedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListUpdatedMessage.ID] = () => { return new ExchangeBidHouseInListUpdatedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseItemAddOkMessage.ID] = () => { return new ExchangeBidHouseItemAddOkMessage(); };
-            MessageReceiver._list[ExchangeBidHouseItemRemoveOkMessage.ID] = () => { return new ExchangeBidHouseItemRemoveOkMessage(); };
-            MessageReceiver._list[ExchangeBidHouseListMessage.ID] = () => { return new ExchangeBidHouseListMessage(); };
-            MessageReceiver._list[ExchangeBidHousePriceMessage.ID] = () => { return new ExchangeBidHousePriceMessage(); };
-            MessageReceiver._list[ExchangeBidHouseSearchMessage.ID] = () => { return new ExchangeBidHouseSearchMessage(); };
-            MessageReceiver._list[ExchangeBidHouseTypeMessage.ID] = () => { return new ExchangeBidHouseTypeMessage(); };
-            MessageReceiver._list[ExchangeBidPriceForSellerMessage.ID] = () => { return new ExchangeBidPriceForSellerMessage(); };
-            MessageReceiver._list[ExchangeBidPriceMessage.ID] = () => { return new ExchangeBidPriceMessage(); };
-            MessageReceiver._list[ExchangeBidSearchOkMessage.ID] = () => { return new ExchangeBidSearchOkMessage(); };
-            MessageReceiver._list[ExchangeBuyMessage.ID] = () => { return new ExchangeBuyMessage(); };
-            MessageReceiver._list[ExchangeBuyOkMessage.ID] = () => { return new ExchangeBuyOkMessage(); };
-            MessageReceiver._list[ExchangeCraftCountModifiedMessage.ID] = () => { return new ExchangeCraftCountModifiedMessage(); };
-            MessageReceiver._list[ExchangeCraftCountRequestMessage.ID] = () => { return new ExchangeCraftCountRequestMessage(); };
-            MessageReceiver._list[ExchangeCraftInformationObjectMessage.ID] = () => { return new ExchangeCraftInformationObjectMessage(); };
-            MessageReceiver._list[ExchangeCraftPaymentModificationRequestMessage.ID] = () => { return new ExchangeCraftPaymentModificationRequestMessage(); };
-            MessageReceiver._list[ExchangeCraftPaymentModifiedMessage.ID] = () => { return new ExchangeCraftPaymentModifiedMessage(); };
-            MessageReceiver._list[ExchangeCraftResultMagicWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultMagicWithObjectDescMessage(); };
-            MessageReceiver._list[ExchangeCraftResultMessage.ID] = () => { return new ExchangeCraftResultMessage(); };
-            MessageReceiver._list[ExchangeCraftResultWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultWithObjectDescMessage(); };
-            MessageReceiver._list[ExchangeCraftResultWithObjectIdMessage.ID] = () => { return new ExchangeCraftResultWithObjectIdMessage(); };
-            MessageReceiver._list[ExchangeCrafterJobLevelupMessage.ID] = () => { return new ExchangeCrafterJobLevelupMessage(); };
-            MessageReceiver._list[ExchangeErrorMessage.ID] = () => { return new ExchangeErrorMessage(); };
-            MessageReceiver._list[ExchangeGuildTaxCollectorGetMessage.ID] = () => { return new ExchangeGuildTaxCollectorGetMessage(); };
-            MessageReceiver._list[ExchangeHandleMountsStableMessage.ID] = () => { return new ExchangeHandleMountsStableMessage(); };
-            MessageReceiver._list[ExchangeIsReadyMessage.ID] = () => { return new ExchangeIsReadyMessage(); };
-            MessageReceiver._list[ExchangeItemAutoCraftStopedMessage.ID] = () => { return new ExchangeItemAutoCraftStopedMessage(); };
-            MessageReceiver._list[ExchangeLeaveMessage.ID] = () => { return new ExchangeLeaveMessage(); };
-            MessageReceiver._list[ExchangeMountFreeFromPaddockMessage.ID] = () => { return new ExchangeMountFreeFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeMountStableErrorMessage.ID] = () => { return new ExchangeMountStableErrorMessage(); };
-            MessageReceiver._list[ExchangeMountSterilizeFromPaddockMessage.ID] = () => { return new ExchangeMountSterilizeFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeMountsPaddockAddMessage.ID] = () => { return new ExchangeMountsPaddockAddMessage(); };
-            MessageReceiver._list[ExchangeMountsPaddockRemoveMessage.ID] = () => { return new ExchangeMountsPaddockRemoveMessage(); };
-            MessageReceiver._list[ExchangeMountsStableAddMessage.ID] = () => { return new ExchangeMountsStableAddMessage(); };
-            MessageReceiver._list[ExchangeMountsStableBornAddMessage.ID] = () => { return new ExchangeMountsStableBornAddMessage(); };
-            MessageReceiver._list[ExchangeMountsStableRemoveMessage.ID] = () => { return new ExchangeMountsStableRemoveMessage(); };
-            MessageReceiver._list[ExchangeMountsTakenFromPaddockMessage.ID] = () => { return new ExchangeMountsTakenFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeObjectAddedMessage.ID] = () => { return new ExchangeObjectAddedMessage(); };
-            MessageReceiver._list[ExchangeObjectMessage.ID] = () => { return new ExchangeObjectMessage(); };
-            MessageReceiver._list[ExchangeObjectModifyPricedMessage.ID] = () => { return new ExchangeObjectModifyPricedMessage(); };
-            MessageReceiver._list[ExchangeObjectMoveKamaMessage.ID] = () => { return new ExchangeObjectMoveKamaMessage(); };
-            MessageReceiver._list[ExchangeObjectMoveMessage.ID] = () => { return new ExchangeObjectMoveMessage(); };
-            MessageReceiver._list[ExchangeObjectMovePricedMessage.ID] = () => { return new ExchangeObjectMovePricedMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertAllFromInvMessage.ID] = () => { return new ExchangeObjectTransfertAllFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertAllToInvMessage.ID] = () => { return new ExchangeObjectTransfertAllToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertExistingFromInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertExistingToInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListFromInvMessage.ID] = () => { return new ExchangeObjectTransfertListFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListToInvMessage.ID] = () => { return new ExchangeObjectTransfertListToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListWithQuantityToInvMessage.ID] = () => { return new ExchangeObjectTransfertListWithQuantityToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectUseInWorkshopMessage.ID] = () => { return new ExchangeObjectUseInWorkshopMessage(); };
-            MessageReceiver._list[ExchangeObjectsAddedMessage.ID] = () => { return new ExchangeObjectsAddedMessage(); };
-            MessageReceiver._list[ExchangeOkMultiCraftMessage.ID] = () => { return new ExchangeOkMultiCraftMessage(); };
-            MessageReceiver._list[ExchangeOnHumanVendorRequestMessage.ID] = () => { return new ExchangeOnHumanVendorRequestMessage(); };
-            MessageReceiver._list[ExchangePlayerMultiCraftRequestMessage.ID] = () => { return new ExchangePlayerMultiCraftRequestMessage(); };
-            MessageReceiver._list[ExchangePlayerRequestMessage.ID] = () => { return new ExchangePlayerRequestMessage(); };
-            MessageReceiver._list[ExchangeReadyMessage.ID] = () => { return new ExchangeReadyMessage(); };
-            MessageReceiver._list[ExchangeReplayStopMessage.ID] = () => { return new ExchangeReplayStopMessage(); };
-            MessageReceiver._list[ExchangeReplyTaxVendorMessage.ID] = () => { return new ExchangeReplyTaxVendorMessage(); };
-            MessageReceiver._list[ExchangeRequestMessage.ID] = () => { return new ExchangeRequestMessage(); };
-            MessageReceiver._list[ExchangeRequestOnMountStockMessage.ID] = () => { return new ExchangeRequestOnMountStockMessage(); };
-            MessageReceiver._list[ExchangeRequestOnShopStockMessage.ID] = () => { return new ExchangeRequestOnShopStockMessage(); };
-            MessageReceiver._list[ExchangeRequestOnTaxCollectorMessage.ID] = () => { return new ExchangeRequestOnTaxCollectorMessage(); };
-            MessageReceiver._list[ExchangeRequestedMessage.ID] = () => { return new ExchangeRequestedMessage(); };
-            MessageReceiver._list[ExchangeRequestedTradeMessage.ID] = () => { return new ExchangeRequestedTradeMessage(); };
-            MessageReceiver._list[ExchangeSellMessage.ID] = () => { return new ExchangeSellMessage(); };
-            MessageReceiver._list[ExchangeSellOkMessage.ID] = () => { return new ExchangeSellOkMessage(); };
-            MessageReceiver._list[ExchangeSetCraftRecipeMessage.ID] = () => { return new ExchangeSetCraftRecipeMessage(); };
-            MessageReceiver._list[ExchangeShopStockMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMovementRemovedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMovementUpdatedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMultiMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMultiMovementRemovedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMultiMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMultiMovementUpdatedMessage(); };
-            MessageReceiver._list[ExchangeShopStockStartedMessage.ID] = () => { return new ExchangeShopStockStartedMessage(); };
-            MessageReceiver._list[ExchangeShowVendorTaxMessage.ID] = () => { return new ExchangeShowVendorTaxMessage(); };
-            MessageReceiver._list[ExchangeStartAsVendorMessage.ID] = () => { return new ExchangeStartAsVendorMessage(); };
-            MessageReceiver._list[ExchangeStartOkCraftMessage.ID] = () => { return new ExchangeStartOkCraftMessage(); };
-            MessageReceiver._list[ExchangeStartOkCraftWithInformationMessage.ID] = () => { return new ExchangeStartOkCraftWithInformationMessage(); };
-            MessageReceiver._list[ExchangeStartOkHumanVendorMessage.ID] = () => { return new ExchangeStartOkHumanVendorMessage(); };
-            MessageReceiver._list[ExchangeStartOkJobIndexMessage.ID] = () => { return new ExchangeStartOkJobIndexMessage(); };
-            MessageReceiver._list[ExchangeStartOkMountMessage.ID] = () => { return new ExchangeStartOkMountMessage(); };
-            MessageReceiver._list[ExchangeStartOkMountWithOutPaddockMessage.ID] = () => { return new ExchangeStartOkMountWithOutPaddockMessage(); };
-            MessageReceiver._list[ExchangeStartOkMulticraftCrafterMessage.ID] = () => { return new ExchangeStartOkMulticraftCrafterMessage(); };
-            MessageReceiver._list[ExchangeStartOkMulticraftCustomerMessage.ID] = () => { return new ExchangeStartOkMulticraftCustomerMessage(); };
-            MessageReceiver._list[ExchangeStartOkNpcShopMessage.ID] = () => { return new ExchangeStartOkNpcShopMessage(); };
-            MessageReceiver._list[ExchangeStartOkNpcTradeMessage.ID] = () => { return new ExchangeStartOkNpcTradeMessage(); };
-            MessageReceiver._list[ExchangeStartOkRecycleTradeMessage.ID] = () => { return new ExchangeStartOkRecycleTradeMessage(); };
-            MessageReceiver._list[ExchangeStartOkRunesTradeMessage.ID] = () => { return new ExchangeStartOkRunesTradeMessage(); };
-            MessageReceiver._list[ExchangeStartedBidBuyerMessage.ID] = () => { return new ExchangeStartedBidBuyerMessage(); };
-            MessageReceiver._list[ExchangeStartedBidSellerMessage.ID] = () => { return new ExchangeStartedBidSellerMessage(); };
-            MessageReceiver._list[ExchangeStartedMessage.ID] = () => { return new ExchangeStartedMessage(); };
-            MessageReceiver._list[ExchangeStartedMountStockMessage.ID] = () => { return new ExchangeStartedMountStockMessage(); };
-            MessageReceiver._list[ExchangeStartedWithPodsMessage.ID] = () => { return new ExchangeStartedWithPodsMessage(); };
-            MessageReceiver._list[ExchangeStartedWithStorageMessage.ID] = () => { return new ExchangeStartedWithStorageMessage(); };
-            MessageReceiver._list[ExchangeStoppedMessage.ID] = () => { return new ExchangeStoppedMessage(); };
-            MessageReceiver._list[ExchangeTypesExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesExchangerDescriptionForUserMessage(); };
-            MessageReceiver._list[ExchangeTypesItemsExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesItemsExchangerDescriptionForUserMessage(); };
-            MessageReceiver._list[ExchangeWaitingResultMessage.ID] = () => { return new ExchangeWaitingResultMessage(); };
-            MessageReceiver._list[ExchangeWeightMessage.ID] = () => { return new ExchangeWeightMessage(); };
-            MessageReceiver._list[ItemNoMoreAvailableMessage.ID] = () => { return new ItemNoMoreAvailableMessage(); };
-            MessageReceiver._list[JobBookSubscribeRequestMessage.ID] = () => { return new JobBookSubscribeRequestMessage(); };
-            MessageReceiver._list[RecycleResultMessage.ID] = () => { return new RecycleResultMessage(); };
-            MessageReceiver._list[UpdateMountBoostMessage.ID] = () => { return new UpdateMountBoostMessage(); };
-            MessageReceiver._list[ExchangeKamaModifiedMessage.ID] = () => { return new ExchangeKamaModifiedMessage(); };
-            MessageReceiver._list[ExchangeMultiCraftCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(); };
-            MessageReceiver._list[ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(); };
-            MessageReceiver._list[ExchangeObjectModifiedInBagMessage.ID] = () => { return new ExchangeObjectModifiedInBagMessage(); };
-            MessageReceiver._list[ExchangeObjectModifiedMessage.ID] = () => { return new ExchangeObjectModifiedMessage(); };
-            MessageReceiver._list[ExchangeObjectPutInBagMessage.ID] = () => { return new ExchangeObjectPutInBagMessage(); };
-            MessageReceiver._list[ExchangeObjectRemovedFromBagMessage.ID] = () => { return new ExchangeObjectRemovedFromBagMessage(); };
-            MessageReceiver._list[ExchangeObjectRemovedMessage.ID] = () => { return new ExchangeObjectRemovedMessage(); };
-            MessageReceiver._list[ExchangeObjectsModifiedMessage.ID] = () => { return new ExchangeObjectsModifiedMessage(); };
-            MessageReceiver._list[ExchangeObjectsRemovedMessage.ID] = () => { return new ExchangeObjectsRemovedMessage(); };
-            MessageReceiver._list[GoldAddedMessage.ID] = () => { return new GoldAddedMessage(); };
-            MessageReceiver._list[InventoryContentAndPresetMessage.ID] = () => { return new InventoryContentAndPresetMessage(); };
-            MessageReceiver._list[InventoryContentMessage.ID] = () => { return new InventoryContentMessage(); };
-            MessageReceiver._list[InventoryWeightMessage.ID] = () => { return new InventoryWeightMessage(); };
-            MessageReceiver._list[LivingObjectChangeSkinRequestMessage.ID] = () => { return new LivingObjectChangeSkinRequestMessage(); };
-            MessageReceiver._list[LivingObjectDissociateMessage.ID] = () => { return new LivingObjectDissociateMessage(); };
-            MessageReceiver._list[LivingObjectMessageMessage.ID] = () => { return new LivingObjectMessageMessage(); };
-            MessageReceiver._list[LivingObjectMessageRequestMessage.ID] = () => { return new LivingObjectMessageRequestMessage(); };
-            MessageReceiver._list[MimicryObjectAssociatedMessage.ID] = () => { return new MimicryObjectAssociatedMessage(); };
-            MessageReceiver._list[MimicryObjectEraseRequestMessage.ID] = () => { return new MimicryObjectEraseRequestMessage(); };
-            MessageReceiver._list[MimicryObjectErrorMessage.ID] = () => { return new MimicryObjectErrorMessage(); };
-            MessageReceiver._list[MimicryObjectFeedAndAssociateRequestMessage.ID] = () => { return new MimicryObjectFeedAndAssociateRequestMessage(); };
-            MessageReceiver._list[MimicryObjectPreviewMessage.ID] = () => { return new MimicryObjectPreviewMessage(); };
-            MessageReceiver._list[ObjectAddedMessage.ID] = () => { return new ObjectAddedMessage(); };
-            MessageReceiver._list[ObjectDeleteMessage.ID] = () => { return new ObjectDeleteMessage(); };
-            MessageReceiver._list[ObjectDeletedMessage.ID] = () => { return new ObjectDeletedMessage(); };
-            MessageReceiver._list[ObjectDropMessage.ID] = () => { return new ObjectDropMessage(); };
-            MessageReceiver._list[ObjectErrorMessage.ID] = () => { return new ObjectErrorMessage(); };
-            MessageReceiver._list[ObjectFeedMessage.ID] = () => { return new ObjectFeedMessage(); };
-            MessageReceiver._list[ObjectFoundWhileRecoltingMessage.ID] = () => { return new ObjectFoundWhileRecoltingMessage(); };
-            MessageReceiver._list[ObjectJobAddedMessage.ID] = () => { return new ObjectJobAddedMessage(); };
-            MessageReceiver._list[ObjectModifiedMessage.ID] = () => { return new ObjectModifiedMessage(); };
-            MessageReceiver._list[ObjectMovementMessage.ID] = () => { return new ObjectMovementMessage(); };
-            MessageReceiver._list[ObjectQuantityMessage.ID] = () => { return new ObjectQuantityMessage(); };
-            MessageReceiver._list[ObjectSetPositionMessage.ID] = () => { return new ObjectSetPositionMessage(); };
-            MessageReceiver._list[ObjectUseMessage.ID] = () => { return new ObjectUseMessage(); };
-            MessageReceiver._list[ObjectUseMultipleMessage.ID] = () => { return new ObjectUseMultipleMessage(); };
-            MessageReceiver._list[ObjectUseOnCellMessage.ID] = () => { return new ObjectUseOnCellMessage(); };
-            MessageReceiver._list[ObjectUseOnCharacterMessage.ID] = () => { return new ObjectUseOnCharacterMessage(); };
-            MessageReceiver._list[ObjectsAddedMessage.ID] = () => { return new ObjectsAddedMessage(); };
-            MessageReceiver._list[ObjectsDeletedMessage.ID] = () => { return new ObjectsDeletedMessage(); };
-            MessageReceiver._list[ObjectsQuantityMessage.ID] = () => { return new ObjectsQuantityMessage(); };
-            MessageReceiver._list[ObtainedItemMessage.ID] = () => { return new ObtainedItemMessage(); };
-            MessageReceiver._list[ObtainedItemWithBonusMessage.ID] = () => { return new ObtainedItemWithBonusMessage(); };
-            MessageReceiver._list[SetUpdateMessage.ID] = () => { return new SetUpdateMessage(); };
-            MessageReceiver._list[SymbioticObjectAssociateRequestMessage.ID] = () => { return new SymbioticObjectAssociateRequestMessage(); };
-            MessageReceiver._list[SymbioticObjectAssociatedMessage.ID] = () => { return new SymbioticObjectAssociatedMessage(); };
-            MessageReceiver._list[SymbioticObjectErrorMessage.ID] = () => { return new SymbioticObjectErrorMessage(); };
-            MessageReceiver._list[WrapperObjectAssociatedMessage.ID] = () => { return new WrapperObjectAssociatedMessage(); };
-            MessageReceiver._list[WrapperObjectDissociateRequestMessage.ID] = () => { return new WrapperObjectDissociateRequestMessage(); };
-            MessageReceiver._list[WrapperObjectErrorMessage.ID] = () => { return new WrapperObjectErrorMessage(); };
-            MessageReceiver._list[IdolsPresetDeleteMessage.ID] = () => { return new IdolsPresetDeleteMessage(); };
-            MessageReceiver._list[IdolsPresetDeleteResultMessage.ID] = () => { return new IdolsPresetDeleteResultMessage(); };
-            MessageReceiver._list[IdolsPresetSaveMessage.ID] = () => { return new IdolsPresetSaveMessage(); };
-            MessageReceiver._list[IdolsPresetSaveResultMessage.ID] = () => { return new IdolsPresetSaveResultMessage(); };
-            MessageReceiver._list[IdolsPresetUpdateMessage.ID] = () => { return new IdolsPresetUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetDeleteMessage.ID] = () => { return new InventoryPresetDeleteMessage(); };
-            MessageReceiver._list[InventoryPresetDeleteResultMessage.ID] = () => { return new InventoryPresetDeleteResultMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateErrorMessage.ID] = () => { return new InventoryPresetItemUpdateErrorMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateMessage.ID] = () => { return new InventoryPresetItemUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateRequestMessage.ID] = () => { return new InventoryPresetItemUpdateRequestMessage(); };
-            MessageReceiver._list[InventoryPresetSaveCustomMessage.ID] = () => { return new InventoryPresetSaveCustomMessage(); };
-            MessageReceiver._list[InventoryPresetSaveMessage.ID] = () => { return new InventoryPresetSaveMessage(); };
-            MessageReceiver._list[InventoryPresetSaveResultMessage.ID] = () => { return new InventoryPresetSaveResultMessage(); };
-            MessageReceiver._list[InventoryPresetUpdateMessage.ID] = () => { return new InventoryPresetUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetUseMessage.ID] = () => { return new InventoryPresetUseMessage(); };
-            MessageReceiver._list[InventoryPresetUseResultMessage.ID] = () => { return new InventoryPresetUseResultMessage(); };
-            MessageReceiver._list[SpellListMessage.ID] = () => { return new SpellListMessage(); };
-            MessageReceiver._list[StorageInventoryContentMessage.ID] = () => { return new StorageInventoryContentMessage(); };
-            MessageReceiver._list[StorageKamasUpdateMessage.ID] = () => { return new StorageKamasUpdateMessage(); };
-            MessageReceiver._list[StorageObjectRemoveMessage.ID] = () => { return new StorageObjectRemoveMessage(); };
-            MessageReceiver._list[StorageObjectUpdateMessage.ID] = () => { return new StorageObjectUpdateMessage(); };
-            MessageReceiver._list[StorageObjectsRemoveMessage.ID] = () => { return new StorageObjectsRemoveMessage(); };
-            MessageReceiver._list[StorageObjectsUpdateMessage.ID] = () => { return new StorageObjectsUpdateMessage(); };
-            MessageReceiver._list[AccessoryPreviewErrorMessage.ID] = () => { return new AccessoryPreviewErrorMessage(); };
-            MessageReceiver._list[AccessoryPreviewMessage.ID] = () => { return new AccessoryPreviewMessage(); };
-            MessageReceiver._list[AccessoryPreviewRequestMessage.ID] = () => { return new AccessoryPreviewRequestMessage(); };
-            MessageReceiver._list[PopupWarningMessage.ID] = () => { return new PopupWarningMessage(); };
-            MessageReceiver._list[AreaFightModificatorUpdateMessage.ID] = () => { return new AreaFightModificatorUpdateMessage(); };
-            MessageReceiver._list[PrismAttackRequestMessage.ID] = () => { return new PrismAttackRequestMessage(); };
-            MessageReceiver._list[PrismFightAddedMessage.ID] = () => { return new PrismFightAddedMessage(); };
-            MessageReceiver._list[PrismFightAttackerAddMessage.ID] = () => { return new PrismFightAttackerAddMessage(); };
-            MessageReceiver._list[PrismFightAttackerRemoveMessage.ID] = () => { return new PrismFightAttackerRemoveMessage(); };
-            MessageReceiver._list[PrismFightDefenderAddMessage.ID] = () => { return new PrismFightDefenderAddMessage(); };
-            MessageReceiver._list[PrismFightDefenderLeaveMessage.ID] = () => { return new PrismFightDefenderLeaveMessage(); };
-            MessageReceiver._list[PrismFightJoinLeaveRequestMessage.ID] = () => { return new PrismFightJoinLeaveRequestMessage(); };
-            MessageReceiver._list[PrismFightRemovedMessage.ID] = () => { return new PrismFightRemovedMessage(); };
-            MessageReceiver._list[PrismFightStateUpdateMessage.ID] = () => { return new PrismFightStateUpdateMessage(); };
-            MessageReceiver._list[PrismFightSwapRequestMessage.ID] = () => { return new PrismFightSwapRequestMessage(); };
-            MessageReceiver._list[PrismInfoCloseMessage.ID] = () => { return new PrismInfoCloseMessage(); };
-            MessageReceiver._list[PrismInfoInValidMessage.ID] = () => { return new PrismInfoInValidMessage(); };
-            MessageReceiver._list[PrismInfoJoinLeaveRequestMessage.ID] = () => { return new PrismInfoJoinLeaveRequestMessage(); };
-            MessageReceiver._list[PrismModuleExchangeRequestMessage.ID] = () => { return new PrismModuleExchangeRequestMessage(); };
-            MessageReceiver._list[PrismSetSabotagedRefusedMessage.ID] = () => { return new PrismSetSabotagedRefusedMessage(); };
-            MessageReceiver._list[PrismSetSabotagedRequestMessage.ID] = () => { return new PrismSetSabotagedRequestMessage(); };
-            MessageReceiver._list[PrismSettingsErrorMessage.ID] = () => { return new PrismSettingsErrorMessage(); };
-            MessageReceiver._list[PrismSettingsRequestMessage.ID] = () => { return new PrismSettingsRequestMessage(); };
-            MessageReceiver._list[PrismUseRequestMessage.ID] = () => { return new PrismUseRequestMessage(); };
-            MessageReceiver._list[PrismsInfoValidMessage.ID] = () => { return new PrismsInfoValidMessage(); };
-            MessageReceiver._list[PrismsListMessage.ID] = () => { return new PrismsListMessage(); };
-            MessageReceiver._list[PrismsListRegisterMessage.ID] = () => { return new PrismsListRegisterMessage(); };
-            MessageReceiver._list[PrismsListUpdateMessage.ID] = () => { return new PrismsListUpdateMessage(); };
-            MessageReceiver._list[AlignmentRankUpdateMessage.ID] = () => { return new AlignmentRankUpdateMessage(); };
-            MessageReceiver._list[SetEnableAVARequestMessage.ID] = () => { return new SetEnableAVARequestMessage(); };
-            MessageReceiver._list[SetEnablePVPRequestMessage.ID] = () => { return new SetEnablePVPRequestMessage(); };
-            MessageReceiver._list[UpdateMapPlayersAgressableStatusMessage.ID] = () => { return new UpdateMapPlayersAgressableStatusMessage(); };
-            MessageReceiver._list[UpdateSelfAgressableStatusMessage.ID] = () => { return new UpdateSelfAgressableStatusMessage(); };
-            MessageReceiver._list[CharacterReportMessage.ID] = () => { return new CharacterReportMessage(); };
-            MessageReceiver._list[CinematicMessage.ID] = () => { return new CinematicMessage(); };
-            MessageReceiver._list[URLOpenMessage.ID] = () => { return new URLOpenMessage(); };
-            MessageReceiver._list[ShortcutBarAddErrorMessage.ID] = () => { return new ShortcutBarAddErrorMessage(); };
-            MessageReceiver._list[ShortcutBarAddRequestMessage.ID] = () => { return new ShortcutBarAddRequestMessage(); };
-            MessageReceiver._list[ShortcutBarContentMessage.ID] = () => { return new ShortcutBarContentMessage(); };
-            MessageReceiver._list[ShortcutBarRefreshMessage.ID] = () => { return new ShortcutBarRefreshMessage(); };
-            MessageReceiver._list[ShortcutBarRemoveErrorMessage.ID] = () => { return new ShortcutBarRemoveErrorMessage(); };
-            MessageReceiver._list[ShortcutBarRemoveRequestMessage.ID] = () => { return new ShortcutBarRemoveRequestMessage(); };
-            MessageReceiver._list[ShortcutBarRemovedMessage.ID] = () => { return new ShortcutBarRemovedMessage(); };
-            MessageReceiver._list[ShortcutBarSwapErrorMessage.ID] = () => { return new ShortcutBarSwapErrorMessage(); };
-            MessageReceiver._list[ShortcutBarSwapRequestMessage.ID] = () => { return new ShortcutBarSwapRequestMessage(); };
-            MessageReceiver._list[ContactLookErrorMessage.ID] = () => { return new ContactLookErrorMessage(); };
-            MessageReceiver._list[ContactLookMessage.ID] = () => { return new ContactLookMessage(); };
-            MessageReceiver._list[ContactLookRequestByIdMessage.ID] = () => { return new ContactLookRequestByIdMessage(); };
-            MessageReceiver._list[ContactLookRequestMessage.ID] = () => { return new ContactLookRequestMessage(); };
-            MessageReceiver._list[StartupActionAddMessage.ID] = () => { return new StartupActionAddMessage(); };
-            MessageReceiver._list[StartupActionFinishedMessage.ID] = () => { return new StartupActionFinishedMessage(); };
-            MessageReceiver._list[StartupActionsAllAttributionMessage.ID] = () => { return new StartupActionsAllAttributionMessage(); };
-            MessageReceiver._list[StartupActionsExecuteMessage.ID] = () => { return new StartupActionsExecuteMessage(); };
-            MessageReceiver._list[StartupActionsListMessage.ID] = () => { return new StartupActionsListMessage(); };
-            MessageReceiver._list[StartupActionsObjetAttributionMessage.ID] = () => { return new StartupActionsObjetAttributionMessage(); };
-            MessageReceiver._list[SubscriptionLimitationMessage.ID] = () => { return new SubscriptionLimitationMessage(); };
-            MessageReceiver._list[SubscriptionZoneMessage.ID] = () => { return new SubscriptionZoneMessage(); };
-            MessageReceiver._list[OrnamentGainedMessage.ID] = () => { return new OrnamentGainedMessage(); };
-            MessageReceiver._list[OrnamentSelectErrorMessage.ID] = () => { return new OrnamentSelectErrorMessage(); };
-            MessageReceiver._list[OrnamentSelectRequestMessage.ID] = () => { return new OrnamentSelectRequestMessage(); };
-            MessageReceiver._list[OrnamentSelectedMessage.ID] = () => { return new OrnamentSelectedMessage(); };
-            MessageReceiver._list[TitleGainedMessage.ID] = () => { return new TitleGainedMessage(); };
-            MessageReceiver._list[TitleLostMessage.ID] = () => { return new TitleLostMessage(); };
-            MessageReceiver._list[TitleSelectErrorMessage.ID] = () => { return new TitleSelectErrorMessage(); };
-            MessageReceiver._list[TitleSelectRequestMessage.ID] = () => { return new TitleSelectRequestMessage(); };
-            MessageReceiver._list[TitleSelectedMessage.ID] = () => { return new TitleSelectedMessage(); };
-            MessageReceiver._list[TitlesAndOrnamentsListMessage.ID] = () => { return new TitlesAndOrnamentsListMessage(); };
-            MessageReceiver._list[TitlesAndOrnamentsListRequestMessage.ID] = () => { return new TitlesAndOrnamentsListRequestMessage(); };
-            MessageReceiver._list[ClientUIOpenedByObjectMessage.ID] = () => { return new ClientUIOpenedByObjectMessage(); };
-            MessageReceiver._list[ClientUIOpenedMessage.ID] = () => { return new ClientUIOpenedMessage(); };
-            MessageReceiver._list[ProtocolRequired.ID] = () => { return new ProtocolRequired(); };
-            MessageReceiver._list[LoginQueueStatusMessage.ID] = () => { return new LoginQueueStatusMessage(); };
-            MessageReceiver._list[QueueStatusMessage.ID] = () => { return new QueueStatusMessage(); };
-            MessageReceiver._list[TrustStatusMessage.ID] = () => { return new TrustStatusMessage(); };
-            MessageReceiver._list[CheckFileMessage.ID] = () => { return new CheckFileMessage(); };
-            MessageReceiver._list[CheckFileRequestMessage.ID] = () => { return new CheckFileRequestMessage(); };
-            MessageReceiver._list[CheckIntegrityMessage.ID] = () => { return new CheckIntegrityMessage(); };
-            MessageReceiver._list[ClientKeyMessage.ID] = () => { return new ClientKeyMessage(); };
-            MessageReceiver._list[RawDataMessage.ID] = () => { return new RawDataMessage(); };
-            MessageReceiver._list[SystemMessageDisplayMessage.ID] = () => { return new SystemMessageDisplayMessage(); };
-            MessageReceiver._list[DownloadCurrentSpeedMessage.ID] = () => { return new DownloadCurrentSpeedMessage(); };
-            MessageReceiver._list[DownloadErrorMessage.ID] = () => { return new DownloadErrorMessage(); };
-            MessageReceiver._list[DownloadGetCurrentSpeedRequestMessage.ID] = () => { return new DownloadGetCurrentSpeedRequestMessage(); };
-            MessageReceiver._list[DownloadPartMessage.ID] = () => { return new DownloadPartMessage(); };
-            MessageReceiver._list[DownloadSetSpeedRequestMessage.ID] = () => { return new DownloadSetSpeedRequestMessage(); };
-            MessageReceiver._list[GetPartInfoMessage.ID] = () => { return new GetPartInfoMessage(); };
-            MessageReceiver._list[GetPartsListMessage.ID] = () => { return new GetPartsListMessage(); };
-            MessageReceiver._list[PartInfoMessage.ID] = () => { return new PartInfoMessage(); };
-            MessageReceiver._list[PartsListMessage.ID] = () => { return new PartsListMessage(); };
-            MessageReceiver._list[MailStatusMessage.ID] = () => { return new MailStatusMessage(); };
-            MessageReceiver._list[NewMailMessage.ID] = () => { return new NewMailMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenErrorMessage.ID] = () => { return new KrosmasterAuthTokenErrorMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenMessage.ID] = () => { return new KrosmasterAuthTokenMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenRequestMessage.ID] = () => { return new KrosmasterAuthTokenRequestMessage(); };
-            MessageReceiver._list[KrosmasterInventoryErrorMessage.ID] = () => { return new KrosmasterInventoryErrorMessage(); };
-            MessageReceiver._list[KrosmasterInventoryMessage.ID] = () => { return new KrosmasterInventoryMessage(); };
-            MessageReceiver._list[KrosmasterInventoryRequestMessage.ID] = () => { return new KrosmasterInventoryRequestMessage(); };
-            MessageReceiver._list[KrosmasterPlayingStatusMessage.ID] = () => { return new KrosmasterPlayingStatusMessage(); };
-            MessageReceiver._list[KrosmasterTransferMessage.ID] = () => { return new KrosmasterTransferMessage(); };
-            MessageReceiver._list[KrosmasterTransferRequestMessage.ID] = () => { return new KrosmasterTransferRequestMessage(); };
-            MessageReceiver._list[ClientYouAreDrunkMessage.ID] = () => { return new ClientYouAreDrunkMessage(); };
-        }
+        private static _list: { [idx: number]: () => INetworkMessage } = {
+            76: () => { return new AdminCommandMessage(); },
+            5662: () => { return new AdminQuietCommandMessage(); },
+            6127: () => { return new ConsoleCommandsListMessage(); },
+            75: () => { return new ConsoleMessage(); },
+            2: () => { return new NetworkDataContainerMessage(); },
+            182: () => { return new BasicPingMessage(); },
+            183: () => { return new BasicPongMessage(); },
+            6530: () => { return new BasicStatMessage(); },
+            6314: () => { return new CredentialsAcknowledgementMessage(); },
+            3: () => { return new HelloConnectMessage(); },
+            6119: () => { return new IdentificationAccountForceMessage(); },
+            6174: () => { return new IdentificationFailedBannedMessage(); },
+            21: () => { return new IdentificationFailedForBadVersionMessage(); },
+            20: () => { return new IdentificationFailedMessage(); },
+            4: () => { return new IdentificationMessage(); },
+            22: () => { return new IdentificationSuccessMessage(); },
+            6209: () => { return new IdentificationSuccessWithLoginTokenMessage(); },
+            6469: () => { return new SelectedServerDataExtendedMessage(); },
+            42: () => { return new SelectedServerDataMessage(); },
+            41: () => { return new SelectedServerRefusedMessage(); },
+            40: () => { return new ServerSelectionMessage(); },
+            50: () => { return new ServerStatusUpdateMessage(); },
+            30: () => { return new ServersListMessage(); },
+            6607: () => { return new AccountLinkRequiredMessage(); },
+            5641: () => { return new NicknameAcceptedMessage(); },
+            5639: () => { return new NicknameChoiceRequestMessage(); },
+            5638: () => { return new NicknameRefusedMessage(); },
+            5640: () => { return new NicknameRegistrationMessage(); },
+            6143: () => { return new AcquaintanceSearchErrorMessage(); },
+            6144: () => { return new AcquaintanceSearchMessage(); },
+            6142: () => { return new AcquaintanceServerListMessage(); },
+            2002: () => { return new DebugClearHighlightCellsMessage(); },
+            2001: () => { return new DebugHighlightCellsMessage(); },
+            6028: () => { return new DebugInClientMessage(); },
+            6358: () => { return new AchievementDetailedListMessage(); },
+            6357: () => { return new AchievementDetailedListRequestMessage(); },
+            6378: () => { return new AchievementDetailsMessage(); },
+            6380: () => { return new AchievementDetailsRequestMessage(); },
+            6381: () => { return new AchievementFinishedInformationMessage(); },
+            6208: () => { return new AchievementFinishedMessage(); },
+            6205: () => { return new AchievementListMessage(); },
+            6375: () => { return new AchievementRewardErrorMessage(); },
+            6377: () => { return new AchievementRewardRequestMessage(); },
+            6376: () => { return new AchievementRewardSuccessMessage(); },
+            6382: () => { return new FriendGuildSetWarnOnAchievementCompleteMessage(); },
+            6383: () => { return new FriendGuildWarnOnAchievementCompleteStateMessage(); },
+            1000: () => { return new AbstractGameActionMessage(); },
+            1001: () => { return new AbstractGameActionWithAckMessage(); },
+            957: () => { return new GameActionAcknowledgementMessage(); },
+            1002: () => { return new GameActionNoopMessage(); },
+            6118: () => { return new AbstractGameActionFightTargetedAbilityMessage(); },
+            6545: () => { return new GameActionFightActivateGlyphTrapMessage(); },
+            5830: () => { return new GameActionFightCarryCharacterMessage(); },
+            6330: () => { return new GameActionFightCastOnTargetRequestMessage(); },
+            1005: () => { return new GameActionFightCastRequestMessage(); },
+            5532: () => { return new GameActionFightChangeLookMessage(); },
+            6116: () => { return new GameActionFightCloseCombatMessage(); },
+            1099: () => { return new GameActionFightDeathMessage(); },
+            6113: () => { return new GameActionFightDispellEffectMessage(); },
+            5533: () => { return new GameActionFightDispellMessage(); },
+            6176: () => { return new GameActionFightDispellSpellMessage(); },
+            6070: () => { return new GameActionFightDispellableEffectMessage(); },
+            5828: () => { return new GameActionFightDodgePointLossMessage(); },
+            5826: () => { return new GameActionFightDropCharacterMessage(); },
+            5527: () => { return new GameActionFightExchangePositionsMessage(); },
+            5821: () => { return new GameActionFightInvisibilityMessage(); },
+            6320: () => { return new GameActionFightInvisibleDetectedMessage(); },
+            5571: () => { return new GameActionFightKillMessage(); },
+            6310: () => { return new GameActionFightLifeAndShieldPointsLostMessage(); },
+            6311: () => { return new GameActionFightLifePointsGainMessage(); },
+            6312: () => { return new GameActionFightLifePointsLostMessage(); },
+            5540: () => { return new GameActionFightMarkCellsMessage(); },
+            6304: () => { return new GameActionFightModifyEffectsDurationMessage(); },
+            6132: () => { return new GameActionFightNoSpellCastMessage(); },
+            1030: () => { return new GameActionFightPointsVariationMessage(); },
+            5526: () => { return new GameActionFightReduceDamagesMessage(); },
+            5530: () => { return new GameActionFightReflectDamagesMessage(); },
+            5531: () => { return new GameActionFightReflectSpellMessage(); },
+            5525: () => { return new GameActionFightSlideMessage(); },
+            1010: () => { return new GameActionFightSpellCastMessage(); },
+            6219: () => { return new GameActionFightSpellCooldownVariationMessage(); },
+            6221: () => { return new GameActionFightSpellImmunityMessage(); },
+            5535: () => { return new GameActionFightStealKamaMessage(); },
+            5825: () => { return new GameActionFightSummonMessage(); },
+            1004: () => { return new GameActionFightTackledMessage(); },
+            5528: () => { return new GameActionFightTeleportOnSameMapMessage(); },
+            5829: () => { return new GameActionFightThrowCharacterMessage(); },
+            6147: () => { return new GameActionFightTriggerEffectMessage(); },
+            5741: () => { return new GameActionFightTriggerGlyphTrapMessage(); },
+            5570: () => { return new GameActionFightUnmarkCellsMessage(); },
+            6217: () => { return new GameActionFightVanishMessage(); },
+            956: () => { return new SequenceEndMessage(); },
+            955: () => { return new SequenceStartMessage(); },
+            6426: () => { return new AllianceChangeGuildRightsMessage(); },
+            6391: () => { return new AllianceCreationResultMessage(); },
+            6394: () => { return new AllianceCreationStartedMessage(); },
+            6393: () => { return new AllianceCreationValidMessage(); },
+            6423: () => { return new AllianceFactsErrorMessage(); },
+            6414: () => { return new AllianceFactsMessage(); },
+            6409: () => { return new AllianceFactsRequestMessage(); },
+            6399: () => { return new AllianceGuildLeavingMessage(); },
+            6403: () => { return new AllianceInsiderInfoMessage(); },
+            6417: () => { return new AllianceInsiderInfoRequestMessage(); },
+            6401: () => { return new AllianceInvitationAnswerMessage(); },
+            6395: () => { return new AllianceInvitationMessage(); },
+            6392: () => { return new AllianceInvitationStateRecrutedMessage(); },
+            6396: () => { return new AllianceInvitationStateRecruterMessage(); },
+            6397: () => { return new AllianceInvitedMessage(); },
+            6402: () => { return new AllianceJoinedMessage(); },
+            6400: () => { return new AllianceKickRequestMessage(); },
+            6398: () => { return new AllianceLeftMessage(); },
+            6408: () => { return new AllianceListMessage(); },
+            6390: () => { return new AllianceMembershipMessage(); },
+            6447: () => { return new AllianceModificationEmblemValidMessage(); },
+            6449: () => { return new AllianceModificationNameAndTagValidMessage(); },
+            6444: () => { return new AllianceModificationStartedMessage(); },
+            6450: () => { return new AllianceModificationValidMessage(); },
+            6427: () => { return new AlliancePartialListMessage(); },
+            6436: () => { return new AllianceVersatileInfoListMessage(); },
+            6439: () => { return new KohUpdateMessage(); },
+            6341: () => { return new AlmanachCalendarDateMessage(); },
+            6216: () => { return new AccountCapabilitiesMessage(); },
+            6029: () => { return new AccountLoggingKickedMessage(); },
+            109: () => { return new AlreadyConnectedMessage(); },
+            111: () => { return new AuthenticationTicketAcceptedMessage(); },
+            110: () => { return new AuthenticationTicketMessage(); },
+            112: () => { return new AuthenticationTicketRefusedMessage(); },
+            101: () => { return new HelloGameMessage(); },
+            6540: () => { return new ReloginTokenRequestMessage(); },
+            6539: () => { return new ReloginTokenStatusMessage(); },
+            6305: () => { return new ServerOptionalFeaturesMessage(); },
+            6434: () => { return new ServerSessionConstantsMessage(); },
+            6340: () => { return new ServerSettingsMessage(); },
+            5956: () => { return new AtlasPointInformationsMessage(); },
+            5584: () => { return new CompassResetMessage(); },
+            5591: () => { return new CompassUpdateMessage(); },
+            5589: () => { return new CompassUpdatePartyMemberMessage(); },
+            6013: () => { return new CompassUpdatePvpSeekMessage(); },
+            6362: () => { return new BasicAckMessage(); },
+            177: () => { return new BasicDateMessage(); },
+            5663: () => { return new BasicLatencyStatsMessage(); },
+            5816: () => { return new BasicLatencyStatsRequestMessage(); },
+            176: () => { return new BasicNoOperationMessage(); },
+            175: () => { return new BasicTimeMessage(); },
+            5664: () => { return new BasicWhoAmIRequestMessage(); },
+            180: () => { return new BasicWhoIsMessage(); },
+            179: () => { return new BasicWhoIsNoMatchMessage(); },
+            181: () => { return new BasicWhoIsRequestMessage(); },
+            6525: () => { return new CurrentServerStatusUpdateMessage(); },
+            6297: () => { return new NumericWhoIsMessage(); },
+            6298: () => { return new NumericWhoIsRequestMessage(); },
+            6317: () => { return new SequenceNumberMessage(); },
+            6316: () => { return new SequenceNumberRequestMessage(); },
+            780: () => { return new TextInformationMessage(); },
+            6475: () => { return new BasicCharactersListMessage(); },
+            6084: () => { return new CharacterFirstSelectionMessage(); },
+            6551: () => { return new CharacterReplayWithRemodelRequestMessage(); },
+            5836: () => { return new CharacterSelectedErrorMessage(); },
+            6068: () => { return new CharacterSelectedForceMessage(); },
+            6072: () => { return new CharacterSelectedForceReadyMessage(); },
+            153: () => { return new CharacterSelectedSuccessMessage(); },
+            152: () => { return new CharacterSelectionMessage(); },
+            6549: () => { return new CharacterSelectionWithRemodelMessage(); },
+            5545: () => { return new CharactersListErrorMessage(); },
+            151: () => { return new CharactersListMessage(); },
+            150: () => { return new CharactersListRequestMessage(); },
+            6120: () => { return new CharactersListWithModificationsMessage(); },
+            6550: () => { return new CharactersListWithRemodelingMessage(); },
+            160: () => { return new CharacterCreationRequestMessage(); },
+            161: () => { return new CharacterCreationResultMessage(); },
+            164: () => { return new CharacterNameSuggestionFailureMessage(); },
+            162: () => { return new CharacterNameSuggestionRequestMessage(); },
+            5544: () => { return new CharacterNameSuggestionSuccessMessage(); },
+            166: () => { return new CharacterDeletionErrorMessage(); },
+            165: () => { return new CharacterDeletionRequestMessage(); },
+            167: () => { return new CharacterReplayRequestMessage(); },
+            6321: () => { return new CharacterExperienceGainMessage(); },
+            6076: () => { return new CharacterLevelUpInformationMessage(); },
+            5670: () => { return new CharacterLevelUpMessage(); },
+            500: () => { return new CharacterStatsListMessage(); },
+            6322: () => { return new FighterStatsListMessage(); },
+            5684: () => { return new LifePointsRegenBeginMessage(); },
+            5686: () => { return new LifePointsRegenEndMessage(); },
+            5658: () => { return new UpdateLifePointsMessage(); },
+            6385: () => { return new PlayerStatusUpdateErrorMessage(); },
+            6386: () => { return new PlayerStatusUpdateMessage(); },
+            6387: () => { return new PlayerStatusUpdateRequestMessage(); },
+            850: () => { return new ChatAbstractClientMessage(); },
+            880: () => { return new ChatAbstractServerMessage(); },
+            6135: () => { return new ChatAdminServerMessage(); },
+            861: () => { return new ChatClientMultiMessage(); },
+            862: () => { return new ChatClientMultiWithObjectMessage(); },
+            851: () => { return new ChatClientPrivateMessage(); },
+            852: () => { return new ChatClientPrivateWithObjectMessage(); },
+            870: () => { return new ChatErrorMessage(); },
+            882: () => { return new ChatServerCopyMessage(); },
+            884: () => { return new ChatServerCopyWithObjectMessage(); },
+            881: () => { return new ChatServerMessage(); },
+            883: () => { return new ChatServerWithObjectMessage(); },
+            891: () => { return new ChannelEnablingChangeMessage(); },
+            890: () => { return new ChannelEnablingMessage(); },
+            892: () => { return new EnabledChannelsMessage(); },
+            821: () => { return new ChatMessageReportMessage(); },
+            6596: () => { return new ChatSmileyExtraPackListMessage(); },
+            801: () => { return new ChatSmileyMessage(); },
+            800: () => { return new ChatSmileyRequestMessage(); },
+            6185: () => { return new LocalizedChatSmileyMessage(); },
+            6192: () => { return new MoodSmileyRequestMessage(); },
+            6196: () => { return new MoodSmileyResultMessage(); },
+            6388: () => { return new MoodSmileyUpdateMessage(); },
+            6497: () => { return new GameCautiousMapMovementMessage(); },
+            6496: () => { return new GameCautiousMapMovementRequestMessage(); },
+            6024: () => { return new GameContextCreateErrorMessage(); },
+            200: () => { return new GameContextCreateMessage(); },
+            250: () => { return new GameContextCreateRequestMessage(); },
+            201: () => { return new GameContextDestroyMessage(); },
+            6081: () => { return new GameContextKickMessage(); },
+            253: () => { return new GameContextMoveElementMessage(); },
+            254: () => { return new GameContextMoveMultipleElementsMessage(); },
+            255: () => { return new GameContextQuitMessage(); },
+            6071: () => { return new GameContextReadyMessage(); },
+            5637: () => { return new GameContextRefreshEntityLookMessage(); },
+            251: () => { return new GameContextRemoveElementMessage(); },
+            6412: () => { return new GameContextRemoveElementWithEventMessage(); },
+            252: () => { return new GameContextRemoveMultipleElementsMessage(); },
+            6416: () => { return new GameContextRemoveMultipleElementsWithEventsMessage(); },
+            5696: () => { return new GameEntitiesDispositionMessage(); },
+            5695: () => { return new GameEntityDispositionErrorMessage(); },
+            5693: () => { return new GameEntityDispositionMessage(); },
+            946: () => { return new GameMapChangeOrientationMessage(); },
+            945: () => { return new GameMapChangeOrientationRequestMessage(); },
+            6155: () => { return new GameMapChangeOrientationsMessage(); },
+            953: () => { return new GameMapMovementCancelMessage(); },
+            952: () => { return new GameMapMovementConfirmMessage(); },
+            951: () => { return new GameMapMovementMessage(); },
+            950: () => { return new GameMapMovementRequestMessage(); },
+            954: () => { return new GameMapNoMovementMessage(); },
+            5612: () => { return new ShowCellMessage(); },
+            5611: () => { return new ShowCellRequestMessage(); },
+            6158: () => { return new ShowCellSpectatorMessage(); },
+            6563: () => { return new DisplayNumericalValuePaddockMessage(); },
+            6299: () => { return new DungeonKeyRingMessage(); },
+            6296: () => { return new DungeonKeyRingUpdateMessage(); },
+            720: () => { return new GameFightEndMessage(); },
+            740: () => { return new GameFightHumanReadyStateMessage(); },
+            702: () => { return new GameFightJoinMessage(); },
+            701: () => { return new GameFightJoinRequestMessage(); },
+            721: () => { return new GameFightLeaveMessage(); },
+            6239: () => { return new GameFightNewRoundMessage(); },
+            6490: () => { return new GameFightNewWaveMessage(); },
+            5927: () => { return new GameFightOptionStateUpdateMessage(); },
+            707: () => { return new GameFightOptionToggleMessage(); },
+            704: () => { return new GameFightPlacementPositionRequestMessage(); },
+            703: () => { return new GameFightPlacementPossiblePositionsMessage(); },
+            6547: () => { return new GameFightPlacementSwapPositionsAcceptMessage(); },
+            6543: () => { return new GameFightPlacementSwapPositionsCancelMessage(); },
+            6546: () => { return new GameFightPlacementSwapPositionsCancelledMessage(); },
+            6548: () => { return new GameFightPlacementSwapPositionsErrorMessage(); },
+            6544: () => { return new GameFightPlacementSwapPositionsMessage(); },
+            6542: () => { return new GameFightPlacementSwapPositionsOfferMessage(); },
+            6541: () => { return new GameFightPlacementSwapPositionsRequestMessage(); },
+            708: () => { return new GameFightReadyMessage(); },
+            711: () => { return new GameFightRemoveTeamMemberMessage(); },
+            6067: () => { return new GameFightResumeMessage(); },
+            6215: () => { return new GameFightResumeWithSlavesMessage(); },
+            6069: () => { return new GameFightSpectateMessage(); },
+            6474: () => { return new GameFightSpectatePlayerRequestMessage(); },
+            6504: () => { return new GameFightSpectatorJoinMessage(); },
+            712: () => { return new GameFightStartMessage(); },
+            700: () => { return new GameFightStartingMessage(); },
+            5921: () => { return new GameFightSynchronizeMessage(); },
+            719: () => { return new GameFightTurnEndMessage(); },
+            718: () => { return new GameFightTurnFinishMessage(); },
+            713: () => { return new GameFightTurnListMessage(); },
+            716: () => { return new GameFightTurnReadyMessage(); },
+            715: () => { return new GameFightTurnReadyRequestMessage(); },
+            6307: () => { return new GameFightTurnResumeMessage(); },
+            714: () => { return new GameFightTurnStartMessage(); },
+            6465: () => { return new GameFightTurnStartPlayingMessage(); },
+            5572: () => { return new GameFightUpdateTeamMessage(); },
+            6214: () => { return new SlaveSwitchContextMessage(); },
+            6022: () => { return new ChallengeInfoMessage(); },
+            6019: () => { return new ChallengeResultMessage(); },
+            6123: () => { return new ChallengeTargetUpdateMessage(); },
+            5613: () => { return new ChallengeTargetsListMessage(); },
+            5614: () => { return new ChallengeTargetsListRequestMessage(); },
+            6309: () => { return new GameFightRefreshFighterMessage(); },
+            5864: () => { return new GameFightShowFighterMessage(); },
+            6218: () => { return new GameFightShowFighterRandomStaticPoseMessage(); },
+            5990: () => { return new GameDataPaddockObjectAddMessage(); },
+            5992: () => { return new GameDataPaddockObjectListAddMessage(); },
+            5993: () => { return new GameDataPaddockObjectRemoveMessage(); },
+            6172: () => { return new MountDataErrorMessage(); },
+            5973: () => { return new MountDataMessage(); },
+            5978: () => { return new MountEmoteIconUsedOkMessage(); },
+            5963: () => { return new MountEquipedErrorMessage(); },
+            6189: () => { return new MountFeedRequestMessage(); },
+            5975: () => { return new MountInformationInPaddockRequestMessage(); },
+            5972: () => { return new MountInformationRequestMessage(); },
+            5980: () => { return new MountReleaseRequestMessage(); },
+            6308: () => { return new MountReleasedMessage(); },
+            5987: () => { return new MountRenameRequestMessage(); },
+            5983: () => { return new MountRenamedMessage(); },
+            5967: () => { return new MountRidingMessage(); },
+            5968: () => { return new MountSetMessage(); },
+            5989: () => { return new MountSetXpRatioRequestMessage(); },
+            5962: () => { return new MountSterilizeRequestMessage(); },
+            5977: () => { return new MountSterilizedMessage(); },
+            5976: () => { return new MountToggleRidingRequestMessage(); },
+            5982: () => { return new MountUnSetMessage(); },
+            5970: () => { return new MountXpRatioMessage(); },
+            5951: () => { return new PaddockBuyRequestMessage(); },
+            6516: () => { return new PaddockBuyResultMessage(); },
+            6052: () => { return new PaddockMoveItemRequestMessage(); },
+            5958: () => { return new PaddockRemoveItemRequestMessage(); },
+            5953: () => { return new PaddockSellRequestMessage(); },
+            6103: () => { return new NotificationByServerMessage(); },
+            6087: () => { return new NotificationListMessage(); },
+            6089: () => { return new NotificationResetMessage(); },
+            6090: () => { return new NotificationUpdateFlagMessage(); },
+            221: () => { return new ChangeMapMessage(); },
+            220: () => { return new CurrentMapMessage(); },
+            6197: () => { return new ErrorMapNotFoundMessage(); },
+            5632: () => { return new GameRolePlayShowActorMessage(); },
+            6407: () => { return new GameRolePlayShowActorWithEventMessage(); },
+            6130: () => { return new MapComplementaryInformationsDataInHouseMessage(); },
+            226: () => { return new MapComplementaryInformationsDataMessage(); },
+            6268: () => { return new MapComplementaryInformationsWithCoordsMessage(); },
+            210: () => { return new MapFightCountMessage(); },
+            225: () => { return new MapInformationsRequestMessage(); },
+            6051: () => { return new MapObstacleUpdateMessage(); },
+            6500: () => { return new MapRunningFightDetailsExtendedMessage(); },
+            5751: () => { return new MapRunningFightDetailsMessage(); },
+            5750: () => { return new MapRunningFightDetailsRequestMessage(); },
+            5743: () => { return new MapRunningFightListMessage(); },
+            5742: () => { return new MapRunningFightListRequestMessage(); },
+            6124: () => { return new StopToListenRunningFightRequestMessage(); },
+            6048: () => { return new TeleportOnSameMapMessage(); },
+            745: () => { return new GameRolePlayFreeSoulRequestMessage(); },
+            746: () => { return new GameRolePlayGameOverMessage(); },
+            5996: () => { return new GameRolePlayPlayerLifeStatusMessage(); },
+            6512: () => { return new WarnOnPermaDeathMessage(); },
+            6150: () => { return new GameRolePlayDelayedActionFinishedMessage(); },
+            6153: () => { return new GameRolePlayDelayedActionMessage(); },
+            6425: () => { return new GameRolePlayDelayedObjectUseMessage(); },
+            6536: () => { return new ComicReadingBeginMessage(); },
+            5675: () => { return new DocumentReadingBeginMessage(); },
+            5644: () => { return new EmoteAddMessage(); },
+            5689: () => { return new EmoteListMessage(); },
+            5690: () => { return new EmotePlayAbstractMessage(); },
+            5688: () => { return new EmotePlayErrorMessage(); },
+            5691: () => { return new EmotePlayMassiveMessage(); },
+            5683: () => { return new EmotePlayMessage(); },
+            5685: () => { return new EmotePlayRequestMessage(); },
+            5687: () => { return new EmoteRemoveMessage(); },
+            6073: () => { return new GameRolePlayAggressionMessage(); },
+            6191: () => { return new GameRolePlayAttackMonsterRequestMessage(); },
+            5822: () => { return new GameRolePlayFightRequestCanceledMessage(); },
+            5732: () => { return new GameRolePlayPlayerFightFriendlyAnswerMessage(); },
+            5733: () => { return new GameRolePlayPlayerFightFriendlyAnsweredMessage(); },
+            5937: () => { return new GameRolePlayPlayerFightFriendlyRequestedMessage(); },
+            5731: () => { return new GameRolePlayPlayerFightRequestMessage(); },
+            300: () => { return new GameRolePlayRemoveChallengeMessage(); },
+            301: () => { return new GameRolePlayShowChallengeMessage(); },
+            6279: () => { return new GameRolePlayArenaFightAnswerMessage(); },
+            6276: () => { return new GameRolePlayArenaFightPropositionMessage(); },
+            6281: () => { return new GameRolePlayArenaFighterStatusMessage(); },
+            6280: () => { return new GameRolePlayArenaRegisterMessage(); },
+            6284: () => { return new GameRolePlayArenaRegistrationStatusMessage(); },
+            6575: () => { return new GameRolePlayArenaSwitchToFightServerMessage(); },
+            6574: () => { return new GameRolePlayArenaSwitchToGameServerMessage(); },
+            6282: () => { return new GameRolePlayArenaUnregisterMessage(); },
+            6301: () => { return new GameRolePlayArenaUpdatePlayerInfosMessage(); },
+            6315: () => { return new AccountHouseMessage(); },
+            5738: () => { return new HouseBuyRequestMessage(); },
+            5735: () => { return new HouseBuyResultMessage(); },
+            5661: () => { return new HouseKickIndoorMerchantRequestMessage(); },
+            5698: () => { return new HouseKickRequestMessage(); },
+            5885: () => { return new HouseLockFromInsideRequestMessage(); },
+            5734: () => { return new HousePropertiesMessage(); },
+            5884: () => { return new HouseSellFromInsideRequestMessage(); },
+            5697: () => { return new HouseSellRequestMessage(); },
+            5737: () => { return new HouseSoldMessage(); },
+            6137: () => { return new HouseToSellFilterMessage(); },
+            6140: () => { return new HouseToSellListMessage(); },
+            6139: () => { return new HouseToSellListRequestMessage(); },
+            5701: () => { return new HouseGuildNoneMessage(); },
+            5703: () => { return new HouseGuildRightsMessage(); },
+            5700: () => { return new HouseGuildRightsViewMessage(); },
+            5704: () => { return new HouseGuildShareRequestMessage(); },
+            5748: () => { return new JobAllowMultiCraftRequestMessage(); },
+            6593: () => { return new JobBookSubscriptionMessage(); },
+            5651: () => { return new JobCrafterDirectoryAddMessage(); },
+            5649: () => { return new JobCrafterDirectoryDefineSettingsMessage(); },
+            6044: () => { return new JobCrafterDirectoryEntryMessage(); },
+            6043: () => { return new JobCrafterDirectoryEntryRequestMessage(); },
+            6046: () => { return new JobCrafterDirectoryListMessage(); },
+            6047: () => { return new JobCrafterDirectoryListRequestMessage(); },
+            5653: () => { return new JobCrafterDirectoryRemoveMessage(); },
+            5652: () => { return new JobCrafterDirectorySettingsMessage(); },
+            5655: () => { return new JobDescriptionMessage(); },
+            5809: () => { return new JobExperienceMultiUpdateMessage(); },
+            6599: () => { return new JobExperienceOtherPlayerUpdateMessage(); },
+            5654: () => { return new JobExperienceUpdateMessage(); },
+            5656: () => { return new JobLevelUpMessage(); },
+            5747: () => { return new JobMultiCraftAvailableSkillsMessage(); },
+            5666: () => { return new LockableChangeCodeMessage(); },
+            5672: () => { return new LockableCodeResultMessage(); },
+            5740: () => { return new LockableShowCodeDialogMessage(); },
+            5671: () => { return new LockableStateUpdateAbstractMessage(); },
+            5668: () => { return new LockableStateUpdateHouseDoorMessage(); },
+            5669: () => { return new LockableStateUpdateStorageMessage(); },
+            5667: () => { return new LockableUseCodeMessage(); },
+            6448: () => { return new AlliancePrismDialogQuestionMessage(); },
+            6445: () => { return new AllianceTaxCollectorDialogQuestionExtendedMessage(); },
+            6110: () => { return new EntityTalkMessage(); },
+            5642: () => { return new MapNpcsQuestStatusUpdateMessage(); },
+            5618: () => { return new NpcDialogCreationMessage(); },
+            5617: () => { return new NpcDialogQuestionMessage(); },
+            5616: () => { return new NpcDialogReplyMessage(); },
+            5900: () => { return new NpcGenericActionFailureMessage(); },
+            5898: () => { return new NpcGenericActionRequestMessage(); },
+            5619: () => { return new TaxCollectorDialogQuestionBasicMessage(); },
+            5615: () => { return new TaxCollectorDialogQuestionExtendedMessage(); },
+            3017: () => { return new ObjectGroundAddedMessage(); },
+            5925: () => { return new ObjectGroundListAddedMessage(); },
+            3014: () => { return new ObjectGroundRemovedMessage(); },
+            5944: () => { return new ObjectGroundRemovedMultipleMessage(); },
+            6026: () => { return new GameDataPlayFarmObjectAnimationMessage(); },
+            5824: () => { return new PaddockPropertiesMessage(); },
+            6018: () => { return new PaddockSellBuyDialogMessage(); },
+            6161: () => { return new PaddockToSellFilterMessage(); },
+            6138: () => { return new PaddockToSellListMessage(); },
+            6141: () => { return new PaddockToSellListRequestMessage(); },
+            6273: () => { return new AbstractPartyEventMessage(); },
+            6274: () => { return new AbstractPartyMessage(); },
+            6242: () => { return new DungeonPartyFinderAvailableDungeonsMessage(); },
+            6240: () => { return new DungeonPartyFinderAvailableDungeonsRequestMessage(); },
+            6248: () => { return new DungeonPartyFinderListenErrorMessage(); },
+            6246: () => { return new DungeonPartyFinderListenRequestMessage(); },
+            6243: () => { return new DungeonPartyFinderRegisterErrorMessage(); },
+            6249: () => { return new DungeonPartyFinderRegisterRequestMessage(); },
+            6241: () => { return new DungeonPartyFinderRegisterSuccessMessage(); },
+            6247: () => { return new DungeonPartyFinderRoomContentMessage(); },
+            6250: () => { return new DungeonPartyFinderRoomContentUpdateMessage(); },
+            6080: () => { return new PartyAbdicateThroneMessage(); },
+            5580: () => { return new PartyAcceptInvitationMessage(); },
+            6254: () => { return new PartyCancelInvitationMessage(); },
+            6251: () => { return new PartyCancelInvitationNotificationMessage(); },
+            5583: () => { return new PartyCannotJoinErrorMessage(); },
+            6261: () => { return new PartyDeletedMessage(); },
+            5577: () => { return new PartyFollowMemberRequestMessage(); },
+            5581: () => { return new PartyFollowStatusUpdateMessage(); },
+            5588: () => { return new PartyFollowThisMemberRequestMessage(); },
+            6283: () => { return new PartyInvitationArenaRequestMessage(); },
+            6256: () => { return new PartyInvitationCancelledForGuestMessage(); },
+            6263: () => { return new PartyInvitationDetailsMessage(); },
+            6264: () => { return new PartyInvitationDetailsRequestMessage(); },
+            6262: () => { return new PartyInvitationDungeonDetailsMessage(); },
+            6244: () => { return new PartyInvitationDungeonMessage(); },
+            6245: () => { return new PartyInvitationDungeonRequestMessage(); },
+            5586: () => { return new PartyInvitationMessage(); },
+            5585: () => { return new PartyInvitationRequestMessage(); },
+            5576: () => { return new PartyJoinMessage(); },
+            5592: () => { return new PartyKickRequestMessage(); },
+            5590: () => { return new PartyKickedByMessage(); },
+            5578: () => { return new PartyLeaderUpdateMessage(); },
+            5594: () => { return new PartyLeaveMessage(); },
+            5593: () => { return new PartyLeaveRequestMessage(); },
+            5595: () => { return new PartyLocateMembersMessage(); },
+            6270: () => { return new PartyLoyaltyStatusMessage(); },
+            6252: () => { return new PartyMemberEjectedMessage(); },
+            6342: () => { return new PartyMemberInFightMessage(); },
+            5579: () => { return new PartyMemberRemoveMessage(); },
+            6277: () => { return new PartyModifiableStatusMessage(); },
+            6501: () => { return new PartyNameSetErrorMessage(); },
+            6503: () => { return new PartyNameSetRequestMessage(); },
+            6502: () => { return new PartyNameUpdateMessage(); },
+            6260: () => { return new PartyNewGuestMessage(); },
+            6306: () => { return new PartyNewMemberMessage(); },
+            6269: () => { return new PartyPledgeLoyaltyRequestMessage(); },
+            5582: () => { return new PartyRefuseInvitationMessage(); },
+            5596: () => { return new PartyRefuseInvitationNotificationMessage(); },
+            6175: () => { return new PartyRestrictedMessage(); },
+            5574: () => { return new PartyStopFollowRequestMessage(); },
+            6054: () => { return new PartyUpdateLightMessage(); },
+            5575: () => { return new PartyUpdateMessage(); },
+            6472: () => { return new PartyCompanionUpdateLightMessage(); },
+            5739: () => { return new PurchasableDialogMessage(); },
+            6092: () => { return new GuidedModeQuitRequestMessage(); },
+            6088: () => { return new GuidedModeReturnRequestMessage(); },
+            5626: () => { return new QuestListMessage(); },
+            5623: () => { return new QuestListRequestMessage(); },
+            6098: () => { return new QuestObjectiveValidatedMessage(); },
+            6085: () => { return new QuestObjectiveValidationMessage(); },
+            5643: () => { return new QuestStartRequestMessage(); },
+            6091: () => { return new QuestStartedMessage(); },
+            5625: () => { return new QuestStepInfoMessage(); },
+            5622: () => { return new QuestStepInfoRequestMessage(); },
+            6096: () => { return new QuestStepStartedMessage(); },
+            6099: () => { return new QuestStepValidatedMessage(); },
+            6097: () => { return new QuestValidatedMessage(); },
+            5565: () => { return new SpellForgetUIMessage(); },
+            5834: () => { return new SpellForgottenMessage(); },
+            6011: () => { return new SpellItemBoostMessage(); },
+            1202: () => { return new SpellUpgradeFailureMessage(); },
+            5608: () => { return new SpellUpgradeRequestMessage(); },
+            1201: () => { return new SpellUpgradeSuccessMessage(); },
+            1700: () => { return new ValidateSpellForgetMessage(); },
+            5610: () => { return new StatsUpgradeRequestMessage(); },
+            5609: () => { return new StatsUpgradeResultMessage(); },
+            6492: () => { return new PortalUseRequestMessage(); },
+            6491: () => { return new TreasureHuntAvailableRetryCountUpdateMessage(); },
+            6509: () => { return new TreasureHuntDigRequestAnswerFailedMessage(); },
+            6484: () => { return new TreasureHuntDigRequestAnswerMessage(); },
+            6485: () => { return new TreasureHuntDigRequestMessage(); },
+            6483: () => { return new TreasureHuntFinishedMessage(); },
+            6510: () => { return new TreasureHuntFlagRemoveRequestMessage(); },
+            6507: () => { return new TreasureHuntFlagRequestAnswerMessage(); },
+            6508: () => { return new TreasureHuntFlagRequestMessage(); },
+            6487: () => { return new TreasureHuntGiveUpRequestMessage(); },
+            6499: () => { return new TreasureHuntLegendaryRequestMessage(); },
+            6486: () => { return new TreasureHuntMessage(); },
+            6489: () => { return new TreasureHuntRequestAnswerMessage(); },
+            6488: () => { return new TreasureHuntRequestMessage(); },
+            6498: () => { return new TreasureHuntShowLegendaryUIMessage(); },
+            6114: () => { return new GameRolePlaySpellAnimMessage(); },
+            5502: () => { return new LeaveDialogMessage(); },
+            5501: () => { return new LeaveDialogRequestMessage(); },
+            6012: () => { return new PauseDialogMessage(); },
+            5600: () => { return new FriendAddFailureMessage(); },
+            4004: () => { return new FriendAddRequestMessage(); },
+            5599: () => { return new FriendAddedMessage(); },
+            5603: () => { return new FriendDeleteRequestMessage(); },
+            5601: () => { return new FriendDeleteResultMessage(); },
+            5605: () => { return new FriendJoinRequestMessage(); },
+            5602: () => { return new FriendSetWarnOnConnectionMessage(); },
+            6077: () => { return new FriendSetWarnOnLevelGainMessage(); },
+            5606: () => { return new FriendSpouseFollowWithCompassRequestMessage(); },
+            5604: () => { return new FriendSpouseJoinRequestMessage(); },
+            5924: () => { return new FriendUpdateMessage(); },
+            5630: () => { return new FriendWarnOnConnectionStateMessage(); },
+            6078: () => { return new FriendWarnOnLevelGainStateMessage(); },
+            4001: () => { return new FriendsGetListMessage(); },
+            4002: () => { return new FriendsListMessage(); },
+            6159: () => { return new GuildMemberSetWarnOnConnectionMessage(); },
+            6160: () => { return new GuildMemberWarnOnConnectionStateMessage(); },
+            5679: () => { return new IgnoredAddFailureMessage(); },
+            5673: () => { return new IgnoredAddRequestMessage(); },
+            5678: () => { return new IgnoredAddedMessage(); },
+            5680: () => { return new IgnoredDeleteRequestMessage(); },
+            5677: () => { return new IgnoredDeleteResultMessage(); },
+            5676: () => { return new IgnoredGetListMessage(); },
+            5674: () => { return new IgnoredListMessage(); },
+            6355: () => { return new SpouseGetInformationsMessage(); },
+            6356: () => { return new SpouseInformationsMessage(); },
+            6265: () => { return new SpouseStatusMessage(); },
+            6513: () => { return new WarnOnPermaDeathStateMessage(); },
+            6506: () => { return new GuestLimitationMessage(); },
+            6505: () => { return new GuestModeMessage(); },
+            5908: () => { return new ChallengeFightJoinRefusedMessage(); },
+            5549: () => { return new GuildChangeMemberParametersMessage(); },
+            5706: () => { return new GuildCharacsUpgradeRequestMessage(); },
+            5554: () => { return new GuildCreationResultMessage(); },
+            5920: () => { return new GuildCreationStartedMessage(); },
+            5546: () => { return new GuildCreationValidMessage(); },
+            6424: () => { return new GuildFactsErrorMessage(); },
+            6415: () => { return new GuildFactsMessage(); },
+            6404: () => { return new GuildFactsRequestMessage(); },
+            5550: () => { return new GuildGetInformationsMessage(); },
+            6180: () => { return new GuildHouseRemoveMessage(); },
+            5712: () => { return new GuildHouseTeleportRequestMessage(); },
+            6181: () => { return new GuildHouseUpdateInformationMessage(); },
+            5919: () => { return new GuildHousesInformationMessage(); },
+            6422: () => { return new GuildInAllianceFactsMessage(); },
+            5557: () => { return new GuildInformationsGeneralMessage(); },
+            5597: () => { return new GuildInformationsMemberUpdateMessage(); },
+            5558: () => { return new GuildInformationsMembersMessage(); },
+            5959: () => { return new GuildInformationsPaddocksMessage(); },
+            5636: () => { return new GuildInfosUpgradeMessage(); },
+            5556: () => { return new GuildInvitationAnswerMessage(); },
+            6115: () => { return new GuildInvitationByNameMessage(); },
+            5551: () => { return new GuildInvitationMessage(); },
+            5548: () => { return new GuildInvitationStateRecrutedMessage(); },
+            5563: () => { return new GuildInvitationStateRecruterMessage(); },
+            5552: () => { return new GuildInvitedMessage(); },
+            5564: () => { return new GuildJoinedMessage(); },
+            5887: () => { return new GuildKickRequestMessage(); },
+            5562: () => { return new GuildLeftMessage(); },
+            6062: () => { return new GuildLevelUpMessage(); },
+            6413: () => { return new GuildListMessage(); },
+            5923: () => { return new GuildMemberLeavingMessage(); },
+            6061: () => { return new GuildMemberOnlineStatusMessage(); },
+            5835: () => { return new GuildMembershipMessage(); },
+            6328: () => { return new GuildModificationEmblemValidMessage(); },
+            6327: () => { return new GuildModificationNameValidMessage(); },
+            6324: () => { return new GuildModificationStartedMessage(); },
+            6323: () => { return new GuildModificationValidMessage(); },
+            6590: () => { return new GuildMotdMessage(); },
+            6591: () => { return new GuildMotdSetErrorMessage(); },
+            5952: () => { return new GuildPaddockBoughtMessage(); },
+            5955: () => { return new GuildPaddockRemovedMessage(); },
+            5957: () => { return new GuildPaddockTeleportRequestMessage(); },
+            5699: () => { return new GuildSpellUpgradeRequestMessage(); },
+            6435: () => { return new GuildVersatileInfoListMessage(); },
+            6568: () => { return new AbstractTaxCollectorListMessage(); },
+            5954: () => { return new GameRolePlayTaxCollectorFightRequestMessage(); },
+            5717: () => { return new GuildFightJoinRequestMessage(); },
+            5715: () => { return new GuildFightLeaveRequestMessage(); },
+            5928: () => { return new GuildFightPlayersEnemiesListMessage(); },
+            5929: () => { return new GuildFightPlayersEnemyRemoveMessage(); },
+            5720: () => { return new GuildFightPlayersHelpersJoinMessage(); },
+            5719: () => { return new GuildFightPlayersHelpersLeaveMessage(); },
+            6235: () => { return new GuildFightTakePlaceRequestMessage(); },
+            5918: () => { return new TaxCollectorAttackedMessage(); },
+            5635: () => { return new TaxCollectorAttackedResultMessage(); },
+            5634: () => { return new TaxCollectorErrorMessage(); },
+            5930: () => { return new TaxCollectorListMessage(); },
+            5917: () => { return new TaxCollectorMovementAddMessage(); },
+            5633: () => { return new TaxCollectorMovementMessage(); },
+            5915: () => { return new TaxCollectorMovementRemoveMessage(); },
+            6455: () => { return new TaxCollectorStateUpdateMessage(); },
+            6565: () => { return new TopTaxCollectorListMessage(); },
+            6586: () => { return new IdolFightPreparationUpdateMessage(); },
+            6585: () => { return new IdolListMessage(); },
+            6580: () => { return new IdolPartyLostMessage(); },
+            6583: () => { return new IdolPartyRefreshMessage(); },
+            6582: () => { return new IdolPartyRegisterRequestMessage(); },
+            6584: () => { return new IdolSelectErrorMessage(); },
+            6587: () => { return new IdolSelectRequestMessage(); },
+            6581: () => { return new IdolSelectedMessage(); },
+            6339: () => { return new CharacterCapabilitiesMessage(); },
+            6471: () => { return new CharacterLoadingCompleteMessage(); },
+            5726: () => { return new OnConnectionEventMessage(); },
+            6237: () => { return new ServerExperienceModificatorMessage(); },
+            170: () => { return new SetCharacterRestrictionsMessage(); },
+            5708: () => { return new InteractiveElementUpdatedMessage(); },
+            5002: () => { return new InteractiveMapUpdateMessage(); },
+            6112: () => { return new InteractiveUseEndedMessage(); },
+            6384: () => { return new InteractiveUseErrorMessage(); },
+            5001: () => { return new InteractiveUseRequestMessage(); },
+            5745: () => { return new InteractiveUsedMessage(); },
+            5709: () => { return new StatedElementUpdatedMessage(); },
+            5716: () => { return new StatedMapUpdateMessage(); },
+            6294: () => { return new TeleportBuddiesAnswerMessage(); },
+            6289: () => { return new TeleportBuddiesMessage(); },
+            6302: () => { return new TeleportBuddiesRequestedMessage(); },
+            6293: () => { return new TeleportToBuddyAnswerMessage(); },
+            6303: () => { return new TeleportToBuddyCloseMessage(); },
+            6287: () => { return new TeleportToBuddyOfferMessage(); },
+            5960: () => { return new TeleportDestinationsListMessage(); },
+            5961: () => { return new TeleportRequestMessage(); },
+            1604: () => { return new ZaapListMessage(); },
+            6572: () => { return new ZaapRespawnSaveRequestMessage(); },
+            6571: () => { return new ZaapRespawnUpdatedMessage(); },
+            5537: () => { return new KamasUpdateMessage(); },
+            6336: () => { return new ObjectAveragePricesErrorMessage(); },
+            6334: () => { return new ObjectAveragePricesGetMessage(); },
+            6335: () => { return new ObjectAveragePricesMessage(); },
+            6569: () => { return new DecraftResultMessage(); },
+            5508: () => { return new ExchangeAcceptMessage(); },
+            5804: () => { return new ExchangeBidHouseBuyMessage(); },
+            6272: () => { return new ExchangeBidHouseBuyResultMessage(); },
+            5947: () => { return new ExchangeBidHouseGenericItemAddedMessage(); },
+            5948: () => { return new ExchangeBidHouseGenericItemRemovedMessage(); },
+            5949: () => { return new ExchangeBidHouseInListAddedMessage(); },
+            5950: () => { return new ExchangeBidHouseInListRemovedMessage(); },
+            6337: () => { return new ExchangeBidHouseInListUpdatedMessage(); },
+            5945: () => { return new ExchangeBidHouseItemAddOkMessage(); },
+            5946: () => { return new ExchangeBidHouseItemRemoveOkMessage(); },
+            5807: () => { return new ExchangeBidHouseListMessage(); },
+            5805: () => { return new ExchangeBidHousePriceMessage(); },
+            5806: () => { return new ExchangeBidHouseSearchMessage(); },
+            5803: () => { return new ExchangeBidHouseTypeMessage(); },
+            6464: () => { return new ExchangeBidPriceForSellerMessage(); },
+            5755: () => { return new ExchangeBidPriceMessage(); },
+            5802: () => { return new ExchangeBidSearchOkMessage(); },
+            5774: () => { return new ExchangeBuyMessage(); },
+            5759: () => { return new ExchangeBuyOkMessage(); },
+            6595: () => { return new ExchangeCraftCountModifiedMessage(); },
+            6597: () => { return new ExchangeCraftCountRequestMessage(); },
+            5794: () => { return new ExchangeCraftInformationObjectMessage(); },
+            6579: () => { return new ExchangeCraftPaymentModificationRequestMessage(); },
+            6578: () => { return new ExchangeCraftPaymentModifiedMessage(); },
+            6188: () => { return new ExchangeCraftResultMagicWithObjectDescMessage(); },
+            5790: () => { return new ExchangeCraftResultMessage(); },
+            5999: () => { return new ExchangeCraftResultWithObjectDescMessage(); },
+            6000: () => { return new ExchangeCraftResultWithObjectIdMessage(); },
+            6598: () => { return new ExchangeCrafterJobLevelupMessage(); },
+            5513: () => { return new ExchangeErrorMessage(); },
+            5762: () => { return new ExchangeGuildTaxCollectorGetMessage(); },
+            6562: () => { return new ExchangeHandleMountsStableMessage(); },
+            5509: () => { return new ExchangeIsReadyMessage(); },
+            5810: () => { return new ExchangeItemAutoCraftStopedMessage(); },
+            5628: () => { return new ExchangeLeaveMessage(); },
+            6055: () => { return new ExchangeMountFreeFromPaddockMessage(); },
+            5981: () => { return new ExchangeMountStableErrorMessage(); },
+            6056: () => { return new ExchangeMountSterilizeFromPaddockMessage(); },
+            6561: () => { return new ExchangeMountsPaddockAddMessage(); },
+            6559: () => { return new ExchangeMountsPaddockRemoveMessage(); },
+            6555: () => { return new ExchangeMountsStableAddMessage(); },
+            6557: () => { return new ExchangeMountsStableBornAddMessage(); },
+            6556: () => { return new ExchangeMountsStableRemoveMessage(); },
+            6554: () => { return new ExchangeMountsTakenFromPaddockMessage(); },
+            5516: () => { return new ExchangeObjectAddedMessage(); },
+            5515: () => { return new ExchangeObjectMessage(); },
+            6238: () => { return new ExchangeObjectModifyPricedMessage(); },
+            5520: () => { return new ExchangeObjectMoveKamaMessage(); },
+            5518: () => { return new ExchangeObjectMoveMessage(); },
+            5514: () => { return new ExchangeObjectMovePricedMessage(); },
+            6184: () => { return new ExchangeObjectTransfertAllFromInvMessage(); },
+            6032: () => { return new ExchangeObjectTransfertAllToInvMessage(); },
+            6325: () => { return new ExchangeObjectTransfertExistingFromInvMessage(); },
+            6326: () => { return new ExchangeObjectTransfertExistingToInvMessage(); },
+            6183: () => { return new ExchangeObjectTransfertListFromInvMessage(); },
+            6039: () => { return new ExchangeObjectTransfertListToInvMessage(); },
+            6470: () => { return new ExchangeObjectTransfertListWithQuantityToInvMessage(); },
+            6004: () => { return new ExchangeObjectUseInWorkshopMessage(); },
+            6535: () => { return new ExchangeObjectsAddedMessage(); },
+            5768: () => { return new ExchangeOkMultiCraftMessage(); },
+            5772: () => { return new ExchangeOnHumanVendorRequestMessage(); },
+            5784: () => { return new ExchangePlayerMultiCraftRequestMessage(); },
+            5773: () => { return new ExchangePlayerRequestMessage(); },
+            5511: () => { return new ExchangeReadyMessage(); },
+            6001: () => { return new ExchangeReplayStopMessage(); },
+            5787: () => { return new ExchangeReplyTaxVendorMessage(); },
+            5505: () => { return new ExchangeRequestMessage(); },
+            5986: () => { return new ExchangeRequestOnMountStockMessage(); },
+            5753: () => { return new ExchangeRequestOnShopStockMessage(); },
+            5779: () => { return new ExchangeRequestOnTaxCollectorMessage(); },
+            5522: () => { return new ExchangeRequestedMessage(); },
+            5523: () => { return new ExchangeRequestedTradeMessage(); },
+            5778: () => { return new ExchangeSellMessage(); },
+            5792: () => { return new ExchangeSellOkMessage(); },
+            6389: () => { return new ExchangeSetCraftRecipeMessage(); },
+            5907: () => { return new ExchangeShopStockMovementRemovedMessage(); },
+            5909: () => { return new ExchangeShopStockMovementUpdatedMessage(); },
+            6037: () => { return new ExchangeShopStockMultiMovementRemovedMessage(); },
+            6038: () => { return new ExchangeShopStockMultiMovementUpdatedMessage(); },
+            5910: () => { return new ExchangeShopStockStartedMessage(); },
+            5783: () => { return new ExchangeShowVendorTaxMessage(); },
+            5775: () => { return new ExchangeStartAsVendorMessage(); },
+            5813: () => { return new ExchangeStartOkCraftMessage(); },
+            5941: () => { return new ExchangeStartOkCraftWithInformationMessage(); },
+            5767: () => { return new ExchangeStartOkHumanVendorMessage(); },
+            5819: () => { return new ExchangeStartOkJobIndexMessage(); },
+            5979: () => { return new ExchangeStartOkMountMessage(); },
+            5991: () => { return new ExchangeStartOkMountWithOutPaddockMessage(); },
+            5818: () => { return new ExchangeStartOkMulticraftCrafterMessage(); },
+            5817: () => { return new ExchangeStartOkMulticraftCustomerMessage(); },
+            5761: () => { return new ExchangeStartOkNpcShopMessage(); },
+            5785: () => { return new ExchangeStartOkNpcTradeMessage(); },
+            6600: () => { return new ExchangeStartOkRecycleTradeMessage(); },
+            6567: () => { return new ExchangeStartOkRunesTradeMessage(); },
+            5904: () => { return new ExchangeStartedBidBuyerMessage(); },
+            5905: () => { return new ExchangeStartedBidSellerMessage(); },
+            5512: () => { return new ExchangeStartedMessage(); },
+            5984: () => { return new ExchangeStartedMountStockMessage(); },
+            6129: () => { return new ExchangeStartedWithPodsMessage(); },
+            6236: () => { return new ExchangeStartedWithStorageMessage(); },
+            6589: () => { return new ExchangeStoppedMessage(); },
+            5765: () => { return new ExchangeTypesExchangerDescriptionForUserMessage(); },
+            5752: () => { return new ExchangeTypesItemsExchangerDescriptionForUserMessage(); },
+            5786: () => { return new ExchangeWaitingResultMessage(); },
+            5793: () => { return new ExchangeWeightMessage(); },
+            5769: () => { return new ItemNoMoreAvailableMessage(); },
+            6592: () => { return new JobBookSubscribeRequestMessage(); },
+            6601: () => { return new RecycleResultMessage(); },
+            6179: () => { return new UpdateMountBoostMessage(); },
+            5521: () => { return new ExchangeKamaModifiedMessage(); },
+            6020: () => { return new ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(); },
+            6021: () => { return new ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(); },
+            6008: () => { return new ExchangeObjectModifiedInBagMessage(); },
+            5519: () => { return new ExchangeObjectModifiedMessage(); },
+            6009: () => { return new ExchangeObjectPutInBagMessage(); },
+            6010: () => { return new ExchangeObjectRemovedFromBagMessage(); },
+            5517: () => { return new ExchangeObjectRemovedMessage(); },
+            6533: () => { return new ExchangeObjectsModifiedMessage(); },
+            6532: () => { return new ExchangeObjectsRemovedMessage(); },
+            6030: () => { return new GoldAddedMessage(); },
+            6162: () => { return new InventoryContentAndPresetMessage(); },
+            3016: () => { return new InventoryContentMessage(); },
+            3009: () => { return new InventoryWeightMessage(); },
+            5725: () => { return new LivingObjectChangeSkinRequestMessage(); },
+            5723: () => { return new LivingObjectDissociateMessage(); },
+            6065: () => { return new LivingObjectMessageMessage(); },
+            6066: () => { return new LivingObjectMessageRequestMessage(); },
+            6462: () => { return new MimicryObjectAssociatedMessage(); },
+            6457: () => { return new MimicryObjectEraseRequestMessage(); },
+            6461: () => { return new MimicryObjectErrorMessage(); },
+            6460: () => { return new MimicryObjectFeedAndAssociateRequestMessage(); },
+            6458: () => { return new MimicryObjectPreviewMessage(); },
+            3025: () => { return new ObjectAddedMessage(); },
+            3022: () => { return new ObjectDeleteMessage(); },
+            3024: () => { return new ObjectDeletedMessage(); },
+            3005: () => { return new ObjectDropMessage(); },
+            3004: () => { return new ObjectErrorMessage(); },
+            6290: () => { return new ObjectFeedMessage(); },
+            6017: () => { return new ObjectFoundWhileRecoltingMessage(); },
+            6014: () => { return new ObjectJobAddedMessage(); },
+            3029: () => { return new ObjectModifiedMessage(); },
+            3010: () => { return new ObjectMovementMessage(); },
+            3023: () => { return new ObjectQuantityMessage(); },
+            3021: () => { return new ObjectSetPositionMessage(); },
+            3019: () => { return new ObjectUseMessage(); },
+            6234: () => { return new ObjectUseMultipleMessage(); },
+            3013: () => { return new ObjectUseOnCellMessage(); },
+            3003: () => { return new ObjectUseOnCharacterMessage(); },
+            6033: () => { return new ObjectsAddedMessage(); },
+            6034: () => { return new ObjectsDeletedMessage(); },
+            6206: () => { return new ObjectsQuantityMessage(); },
+            6519: () => { return new ObtainedItemMessage(); },
+            6520: () => { return new ObtainedItemWithBonusMessage(); },
+            5503: () => { return new SetUpdateMessage(); },
+            6522: () => { return new SymbioticObjectAssociateRequestMessage(); },
+            6527: () => { return new SymbioticObjectAssociatedMessage(); },
+            6526: () => { return new SymbioticObjectErrorMessage(); },
+            6523: () => { return new WrapperObjectAssociatedMessage(); },
+            6524: () => { return new WrapperObjectDissociateRequestMessage(); },
+            6529: () => { return new WrapperObjectErrorMessage(); },
+            6602: () => { return new IdolsPresetDeleteMessage(); },
+            6605: () => { return new IdolsPresetDeleteResultMessage(); },
+            6603: () => { return new IdolsPresetSaveMessage(); },
+            6604: () => { return new IdolsPresetSaveResultMessage(); },
+            6606: () => { return new IdolsPresetUpdateMessage(); },
+            6169: () => { return new InventoryPresetDeleteMessage(); },
+            6173: () => { return new InventoryPresetDeleteResultMessage(); },
+            6211: () => { return new InventoryPresetItemUpdateErrorMessage(); },
+            6168: () => { return new InventoryPresetItemUpdateMessage(); },
+            6210: () => { return new InventoryPresetItemUpdateRequestMessage(); },
+            6329: () => { return new InventoryPresetSaveCustomMessage(); },
+            6165: () => { return new InventoryPresetSaveMessage(); },
+            6170: () => { return new InventoryPresetSaveResultMessage(); },
+            6171: () => { return new InventoryPresetUpdateMessage(); },
+            6167: () => { return new InventoryPresetUseMessage(); },
+            6163: () => { return new InventoryPresetUseResultMessage(); },
+            1200: () => { return new SpellListMessage(); },
+            5646: () => { return new StorageInventoryContentMessage(); },
+            5645: () => { return new StorageKamasUpdateMessage(); },
+            5648: () => { return new StorageObjectRemoveMessage(); },
+            5647: () => { return new StorageObjectUpdateMessage(); },
+            6035: () => { return new StorageObjectsRemoveMessage(); },
+            6036: () => { return new StorageObjectsUpdateMessage(); },
+            6521: () => { return new AccessoryPreviewErrorMessage(); },
+            6517: () => { return new AccessoryPreviewMessage(); },
+            6518: () => { return new AccessoryPreviewRequestMessage(); },
+            6134: () => { return new PopupWarningMessage(); },
+            6493: () => { return new AreaFightModificatorUpdateMessage(); },
+            6042: () => { return new PrismAttackRequestMessage(); },
+            6452: () => { return new PrismFightAddedMessage(); },
+            5893: () => { return new PrismFightAttackerAddMessage(); },
+            5897: () => { return new PrismFightAttackerRemoveMessage(); },
+            5895: () => { return new PrismFightDefenderAddMessage(); },
+            5892: () => { return new PrismFightDefenderLeaveMessage(); },
+            5843: () => { return new PrismFightJoinLeaveRequestMessage(); },
+            6453: () => { return new PrismFightRemovedMessage(); },
+            6040: () => { return new PrismFightStateUpdateMessage(); },
+            5901: () => { return new PrismFightSwapRequestMessage(); },
+            5853: () => { return new PrismInfoCloseMessage(); },
+            5859: () => { return new PrismInfoInValidMessage(); },
+            5844: () => { return new PrismInfoJoinLeaveRequestMessage(); },
+            6531: () => { return new PrismModuleExchangeRequestMessage(); },
+            6466: () => { return new PrismSetSabotagedRefusedMessage(); },
+            6468: () => { return new PrismSetSabotagedRequestMessage(); },
+            6442: () => { return new PrismSettingsErrorMessage(); },
+            6437: () => { return new PrismSettingsRequestMessage(); },
+            6041: () => { return new PrismUseRequestMessage(); },
+            6451: () => { return new PrismsInfoValidMessage(); },
+            6440: () => { return new PrismsListMessage(); },
+            6441: () => { return new PrismsListRegisterMessage(); },
+            6438: () => { return new PrismsListUpdateMessage(); },
+            6058: () => { return new AlignmentRankUpdateMessage(); },
+            6443: () => { return new SetEnableAVARequestMessage(); },
+            1810: () => { return new SetEnablePVPRequestMessage(); },
+            6454: () => { return new UpdateMapPlayersAgressableStatusMessage(); },
+            6456: () => { return new UpdateSelfAgressableStatusMessage(); },
+            6079: () => { return new CharacterReportMessage(); },
+            6053: () => { return new CinematicMessage(); },
+            6266: () => { return new URLOpenMessage(); },
+            6227: () => { return new ShortcutBarAddErrorMessage(); },
+            6225: () => { return new ShortcutBarAddRequestMessage(); },
+            6231: () => { return new ShortcutBarContentMessage(); },
+            6229: () => { return new ShortcutBarRefreshMessage(); },
+            6222: () => { return new ShortcutBarRemoveErrorMessage(); },
+            6228: () => { return new ShortcutBarRemoveRequestMessage(); },
+            6224: () => { return new ShortcutBarRemovedMessage(); },
+            6226: () => { return new ShortcutBarSwapErrorMessage(); },
+            6230: () => { return new ShortcutBarSwapRequestMessage(); },
+            6045: () => { return new ContactLookErrorMessage(); },
+            5934: () => { return new ContactLookMessage(); },
+            5935: () => { return new ContactLookRequestByIdMessage(); },
+            5932: () => { return new ContactLookRequestMessage(); },
+            6538: () => { return new StartupActionAddMessage(); },
+            1304: () => { return new StartupActionFinishedMessage(); },
+            6537: () => { return new StartupActionsAllAttributionMessage(); },
+            1302: () => { return new StartupActionsExecuteMessage(); },
+            1301: () => { return new StartupActionsListMessage(); },
+            1303: () => { return new StartupActionsObjetAttributionMessage(); },
+            5542: () => { return new SubscriptionLimitationMessage(); },
+            5573: () => { return new SubscriptionZoneMessage(); },
+            6368: () => { return new OrnamentGainedMessage(); },
+            6370: () => { return new OrnamentSelectErrorMessage(); },
+            6374: () => { return new OrnamentSelectRequestMessage(); },
+            6369: () => { return new OrnamentSelectedMessage(); },
+            6364: () => { return new TitleGainedMessage(); },
+            6371: () => { return new TitleLostMessage(); },
+            6373: () => { return new TitleSelectErrorMessage(); },
+            6365: () => { return new TitleSelectRequestMessage(); },
+            6366: () => { return new TitleSelectedMessage(); },
+            6367: () => { return new TitlesAndOrnamentsListMessage(); },
+            6363: () => { return new TitlesAndOrnamentsListRequestMessage(); },
+            6463: () => { return new ClientUIOpenedByObjectMessage(); },
+            6459: () => { return new ClientUIOpenedMessage(); },
+            1: () => { return new ProtocolRequired(); },
+            10: () => { return new LoginQueueStatusMessage(); },
+            6100: () => { return new QueueStatusMessage(); },
+            6267: () => { return new TrustStatusMessage(); },
+            6156: () => { return new CheckFileMessage(); },
+            6154: () => { return new CheckFileRequestMessage(); },
+            6372: () => { return new CheckIntegrityMessage(); },
+            5607: () => { return new ClientKeyMessage(); },
+            6253: () => { return new RawDataMessage(); },
+            189: () => { return new SystemMessageDisplayMessage(); },
+            1511: () => { return new DownloadCurrentSpeedMessage(); },
+            1513: () => { return new DownloadErrorMessage(); },
+            1510: () => { return new DownloadGetCurrentSpeedRequestMessage(); },
+            1503: () => { return new DownloadPartMessage(); },
+            1512: () => { return new DownloadSetSpeedRequestMessage(); },
+            1506: () => { return new GetPartInfoMessage(); },
+            1501: () => { return new GetPartsListMessage(); },
+            1508: () => { return new PartInfoMessage(); },
+            1502: () => { return new PartsListMessage(); },
+            6275: () => { return new MailStatusMessage(); },
+            6292: () => { return new NewMailMessage(); },
+            6345: () => { return new KrosmasterAuthTokenErrorMessage(); },
+            6351: () => { return new KrosmasterAuthTokenMessage(); },
+            6346: () => { return new KrosmasterAuthTokenRequestMessage(); },
+            6343: () => { return new KrosmasterInventoryErrorMessage(); },
+            6350: () => { return new KrosmasterInventoryMessage(); },
+            6344: () => { return new KrosmasterInventoryRequestMessage(); },
+            6347: () => { return new KrosmasterPlayingStatusMessage(); },
+            6348: () => { return new KrosmasterTransferMessage(); },
+            6349: () => { return new KrosmasterTransferRequestMessage(); },
+            6594: () => { return new ClientYouAreDrunkMessage(); }
+        };
 
         public static parse(param1: ICustomDataInput, param2: number, param3: number): INetworkMessage {
             let _loc4_ = MessageReceiver._list[param2];

@@ -2,7 +2,7 @@
   "name": "d2protocol",
   "version": "1.1.0",
   "description": "Protocol dofus 2.0",
-  "main": "lib/index.js",
+  "main": "lib/protocol.js",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,2093 +1,4 @@
-// Type definitions for Node.js v4.x
-// Project: http://nodejs.org/
-// Definitions by: Microsoft TypeScript <http://typescriptlang.org>, DefinitelyTyped <https://github.com/borisyankov/DefinitelyTyped>
-// Definitions: https://github.com/borisyankov/DefinitelyTyped
-
-/************************************************
-*                                               *
-*               Node.js v4.x API                *
-*                                               *
-************************************************/
-
-interface Error {
-    stack?: string;
-}
-
-
-// compat for TypeScript 1.5.3
-// if you use with --target es3 or --target es5 and use below definitions,
-// use the lib.es6.d.ts that is bundled with TypeScript 1.5.3.
-interface MapConstructor {}
-interface WeakMapConstructor {}
-interface SetConstructor {}
-interface WeakSetConstructor {}
-
-/************************************************
-*                                               *
-*                   GLOBAL                      *
-*                                               *
-************************************************/
-declare var process: NodeJS.Process;
-declare var global: NodeJS.Global;
-
-declare var __filename: string;
-declare var __dirname: string;
-
-declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): NodeJS.Timer;
-declare function clearTimeout(timeoutId: NodeJS.Timer): void;
-declare function setInterval(callback: (...args: any[]) => void, ms: number, ...args: any[]): NodeJS.Timer;
-declare function clearInterval(intervalId: NodeJS.Timer): void;
-declare function setImmediate(callback: (...args: any[]) => void, ...args: any[]): any;
-declare function clearImmediate(immediateId: any): void;
-
-interface NodeRequireFunction {
-    (id: string): any;
-}
-
-interface NodeRequire extends NodeRequireFunction {
-    resolve(id:string): string;
-    cache: any;
-    extensions: any;
-    main: any;
-}
-
-declare var require: NodeRequire;
-
-interface NodeModule {
-    exports: any;
-    require: NodeRequireFunction;
-    id: string;
-    filename: string;
-    loaded: boolean;
-    parent: any;
-    children: any[];
-}
-
-declare var module: NodeModule;
-
-// Same as module.exports
-declare var exports: any;
-declare var SlowBuffer: {
-    new (str: string, encoding?: string): Buffer;
-    new (size: number): Buffer;
-    new (size: Uint8Array): Buffer;
-    new (array: any[]): Buffer;
-    prototype: Buffer;
-    isBuffer(obj: any): boolean;
-    byteLength(string: string, encoding?: string): number;
-    concat(list: Buffer[], totalLength?: number): Buffer;
-};
-
-
-// Buffer class
-interface Buffer extends NodeBuffer {}
-
-/**
- * Raw data is stored in instances of the Buffer class.
- * A Buffer is similar to an array of integers but corresponds to a raw memory allocation outside the V8 heap.  A Buffer cannot be resized.
- * Valid string encodings: 'ascii'|'utf8'|'utf16le'|'ucs2'(alias of 'utf16le')|'base64'|'binary'(deprecated)|'hex'
- */
-declare var Buffer: {
-    /**
-     * Allocates a new buffer containing the given {str}.
-     *
-     * @param str String to store in buffer.
-     * @param encoding encoding to use, optional.  Default is 'utf8'
-     */
-    new (str: string, encoding?: string): Buffer;
-    /**
-     * Allocates a new buffer of {size} octets.
-     *
-     * @param size count of octets to allocate.
-     */
-    new (size: number): Buffer;
-    /**
-     * Allocates a new buffer containing the given {array} of octets.
-     *
-     * @param array The octets to store.
-     */
-    new (array: Uint8Array): Buffer;
-    /**
-     * Allocates a new buffer containing the given {array} of octets.
-     *
-     * @param array The octets to store.
-     */
-    new (array: any[]): Buffer;
-    prototype: Buffer;
-    /**
-     * Returns true if {obj} is a Buffer
-     *
-     * @param obj object to test.
-     */
-    isBuffer(obj: any): boolean;
-    /**
-     * Returns true if {encoding} is a valid encoding argument.
-     * Valid string encodings in Node 0.12: 'ascii'|'utf8'|'utf16le'|'ucs2'(alias of 'utf16le')|'base64'|'binary'(deprecated)|'hex'
-     *
-     * @param encoding string to test.
-     */
-    isEncoding(encoding: string): boolean;
-    /**
-     * Gives the actual byte length of a string. encoding defaults to 'utf8'.
-     * This is not the same as String.prototype.length since that returns the number of characters in a string.
-     *
-     * @param string string to test.
-     * @param encoding encoding used to evaluate (defaults to 'utf8')
-     */
-    byteLength(string: string, encoding?: string): number;
-    /**
-     * Returns a buffer which is the result of concatenating all the buffers in the list together.
-     *
-     * If the list has no items, or if the totalLength is 0, then it returns a zero-length buffer.
-     * If the list has exactly one item, then the first item of the list is returned.
-     * If the list has more than one item, then a new Buffer is created.
-     *
-     * @param list An array of Buffer objects to concatenate
-     * @param totalLength Total length of the buffers when concatenated.
-     *   If totalLength is not provided, it is read from the buffers in the list. However, this adds an additional loop to the function, so it is faster to provide the length explicitly.
-     */
-    concat(list: Buffer[], totalLength?: number): Buffer;
-    /**
-     * The same as buf1.compare(buf2).
-     */
-    compare(buf1: Buffer, buf2: Buffer): number;
-};
-
-/************************************************
-*                                               *
-*               GLOBAL INTERFACES               *
-*                                               *
-************************************************/
-declare module NodeJS {
-    export interface ErrnoException extends Error {
-        errno?: number;
-        code?: string;
-        path?: string;
-        syscall?: string;
-        stack?: string;
-    }
-
-    export interface EventEmitter {
-        addListener(event: string, listener: Function): EventEmitter;
-        on(event: string, listener: Function): EventEmitter;
-        once(event: string, listener: Function): EventEmitter;
-        removeListener(event: string, listener: Function): EventEmitter;
-        removeAllListeners(event?: string): EventEmitter;
-        setMaxListeners(n: number): void;
-        listeners(event: string): Function[];
-        emit(event: string, ...args: any[]): boolean;
-    }
-
-    export interface ReadableStream extends EventEmitter {
-        readable: boolean;
-        read(size?: number): string|Buffer;
-        setEncoding(encoding: string): void;
-        pause(): void;
-        resume(): void;
-        pipe<T extends WritableStream>(destination: T, options?: { end?: boolean; }): T;
-        unpipe<T extends WritableStream>(destination?: T): void;
-        unshift(chunk: string): void;
-        unshift(chunk: Buffer): void;
-        wrap(oldStream: ReadableStream): ReadableStream;
-    }
-
-    export interface WritableStream extends EventEmitter {
-        writable: boolean;
-        write(buffer: Buffer|string, cb?: Function): boolean;
-        write(str: string, encoding?: string, cb?: Function): boolean;
-        end(): void;
-        end(buffer: Buffer, cb?: Function): void;
-        end(str: string, cb?: Function): void;
-        end(str: string, encoding?: string, cb?: Function): void;
-    }
-
-    export interface ReadWriteStream extends ReadableStream, WritableStream {}
-
-    export interface Process extends EventEmitter {
-        stdout: WritableStream;
-        stderr: WritableStream;
-        stdin: ReadableStream;
-        argv: string[];
-        execPath: string;
-        abort(): void;
-        chdir(directory: string): void;
-        cwd(): string;
-        env: any;
-        exit(code?: number): void;
-        getgid(): number;
-        setgid(id: number): void;
-        setgid(id: string): void;
-        getuid(): number;
-        setuid(id: number): void;
-        setuid(id: string): void;
-        version: string;
-        versions: {
-            http_parser: string;
-            node: string;
-            v8: string;
-            ares: string;
-            uv: string;
-            zlib: string;
-            openssl: string;
-        };
-        config: {
-            target_defaults: {
-                cflags: any[];
-                default_configuration: string;
-                defines: string[];
-                include_dirs: string[];
-                libraries: string[];
-            };
-            variables: {
-                clang: number;
-                host_arch: string;
-                node_install_npm: boolean;
-                node_install_waf: boolean;
-                node_prefix: string;
-                node_shared_openssl: boolean;
-                node_shared_v8: boolean;
-                node_shared_zlib: boolean;
-                node_use_dtrace: boolean;
-                node_use_etw: boolean;
-                node_use_openssl: boolean;
-                target_arch: string;
-                v8_no_strict_aliasing: number;
-                v8_use_snapshot: boolean;
-                visibility: string;
-            };
-        };
-        kill(pid: number, signal?: string): void;
-        pid: number;
-        title: string;
-        arch: string;
-        platform: string;
-        memoryUsage(): { rss: number; heapTotal: number; heapUsed: number; };
-        nextTick(callback: Function): void;
-        umask(mask?: number): number;
-        uptime(): number;
-        hrtime(time?:number[]): number[];
-
-        // Worker
-        send?(message: any, sendHandle?: any): void;
-    }
-
-    export interface Global {
-        Array: typeof Array;
-        ArrayBuffer: typeof ArrayBuffer;
-        Boolean: typeof Boolean;
-        Buffer: typeof Buffer;
-        DataView: typeof DataView;
-        Date: typeof Date;
-        Error: typeof Error;
-        EvalError: typeof EvalError;
-        Float32Array: typeof Float32Array;
-        Float64Array: typeof Float64Array;
-        Function: typeof Function;
-        GLOBAL: Global;
-        Infinity: typeof Infinity;
-        Int16Array: typeof Int16Array;
-        Int32Array: typeof Int32Array;
-        Int8Array: typeof Int8Array;
-        Intl: typeof Intl;
-        JSON: typeof JSON;
-        Map: MapConstructor;
-        Math: typeof Math;
-        NaN: typeof NaN;
-        Number: typeof Number;
-        Object: typeof Object;
-        Promise: Function;
-        RangeError: typeof RangeError;
-        ReferenceError: typeof ReferenceError;
-        RegExp: typeof RegExp;
-        Set: SetConstructor;
-        String: typeof String;
-        Symbol: Function;
-        SyntaxError: typeof SyntaxError;
-        TypeError: typeof TypeError;
-        URIError: typeof URIError;
-        Uint16Array: typeof Uint16Array;
-        Uint32Array: typeof Uint32Array;
-        Uint8Array: typeof Uint8Array;
-        Uint8ClampedArray: Function;
-        WeakMap: WeakMapConstructor;
-        WeakSet: WeakSetConstructor;
-        clearImmediate: (immediateId: any) => void;
-        clearInterval: (intervalId: NodeJS.Timer) => void;
-        clearTimeout: (timeoutId: NodeJS.Timer) => void;
-        console: typeof console;
-        decodeURI: typeof decodeURI;
-        decodeURIComponent: typeof decodeURIComponent;
-        encodeURI: typeof encodeURI;
-        encodeURIComponent: typeof encodeURIComponent;
-        escape: (str: string) => string;
-        eval: typeof eval;
-        global: Global;
-        isFinite: typeof isFinite;
-        isNaN: typeof isNaN;
-        parseFloat: typeof parseFloat;
-        parseInt: typeof parseInt;
-        process: Process;
-        root: Global;
-        setImmediate: (callback: (...args: any[]) => void, ...args: any[]) => any;
-        setInterval: (callback: (...args: any[]) => void, ms: number, ...args: any[]) => NodeJS.Timer;
-        setTimeout: (callback: (...args: any[]) => void, ms: number, ...args: any[]) => NodeJS.Timer;
-        undefined: typeof undefined;
-        unescape: (str: string) => string;
-        gc: () => void;
-        v8debug?: any;
-    }
-
-    export interface Timer {
-        ref() : void;
-        unref() : void;
-    }
-}
-
-/**
- * @deprecated
- */
-interface NodeBuffer {
-    [index: number]: number;
-    write(string: string, offset?: number, length?: number, encoding?: string): number;
-    toString(encoding?: string, start?: number, end?: number): string;
-    toJSON(): any;
-    length: number;
-    equals(otherBuffer: Buffer): boolean;
-    compare(otherBuffer: Buffer): number;
-    copy(targetBuffer: Buffer, targetStart?: number, sourceStart?: number, sourceEnd?: number): number;
-    slice(start?: number, end?: number): Buffer;
-    writeUIntLE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
-    writeUIntBE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
-    writeIntLE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
-    writeIntBE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
-    readUIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
-    readUIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
-    readIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
-    readIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
-    readUInt8(offset: number, noAsset?: boolean): number;
-    readUInt16LE(offset: number, noAssert?: boolean): number;
-    readUInt16BE(offset: number, noAssert?: boolean): number;
-    readUInt32LE(offset: number, noAssert?: boolean): number;
-    readUInt32BE(offset: number, noAssert?: boolean): number;
-    readInt8(offset: number, noAssert?: boolean): number;
-    readInt16LE(offset: number, noAssert?: boolean): number;
-    readInt16BE(offset: number, noAssert?: boolean): number;
-    readInt32LE(offset: number, noAssert?: boolean): number;
-    readInt32BE(offset: number, noAssert?: boolean): number;
-    readFloatLE(offset: number, noAssert?: boolean): number;
-    readFloatBE(offset: number, noAssert?: boolean): number;
-    readDoubleLE(offset: number, noAssert?: boolean): number;
-    readDoubleBE(offset: number, noAssert?: boolean): number;
-    writeUInt8(value: number, offset: number, noAssert?: boolean): number;
-    writeUInt16LE(value: number, offset: number, noAssert?: boolean): number;
-    writeUInt16BE(value: number, offset: number, noAssert?: boolean): number;
-    writeUInt32LE(value: number, offset: number, noAssert?: boolean): number;
-    writeUInt32BE(value: number, offset: number, noAssert?: boolean): number;
-    writeInt8(value: number, offset: number, noAssert?: boolean): number;
-    writeInt16LE(value: number, offset: number, noAssert?: boolean): number;
-    writeInt16BE(value: number, offset: number, noAssert?: boolean): number;
-    writeInt32LE(value: number, offset: number, noAssert?: boolean): number;
-    writeInt32BE(value: number, offset: number, noAssert?: boolean): number;
-    writeFloatLE(value: number, offset: number, noAssert?: boolean): number;
-    writeFloatBE(value: number, offset: number, noAssert?: boolean): number;
-    writeDoubleLE(value: number, offset: number, noAssert?: boolean): number;
-    writeDoubleBE(value: number, offset: number, noAssert?: boolean): number;
-    fill(value: any, offset?: number, end?: number): Buffer;
-}
-
-/************************************************
-*                                               *
-*                   MODULES                     *
-*                                               *
-************************************************/
-declare module "buffer" {
-    export var INSPECT_MAX_BYTES: number;
-}
-
-declare module "querystring" {
-    export function stringify(obj: any, sep?: string, eq?: string): string;
-    export function parse(str: string, sep?: string, eq?: string, options?: { maxKeys?: number; }): any;
-    export function escape(str: string): string;
-    export function unescape(str: string): string;
-}
-
-declare module "events" {
-    export class EventEmitter implements NodeJS.EventEmitter {
-        static listenerCount(emitter: EventEmitter, event: string): number;
-
-        addListener(event: string, listener: Function): EventEmitter;
-        on(event: string, listener: Function): EventEmitter;
-        once(event: string, listener: Function): EventEmitter;
-        removeListener(event: string, listener: Function): EventEmitter;
-        removeAllListeners(event?: string): EventEmitter;
-        setMaxListeners(n: number): void;
-        listeners(event: string): Function[];
-        emit(event: string, ...args: any[]): boolean;
-   }
-}
-
-declare module "http" {
-    import * as events from "events";
-    import * as net from "net";
-    import * as stream from "stream";
-    
-    export interface RequestOptions {
-        protocol?: string;
-        host?: string;
-        hostname?: string;
-        family?: number;
-        port?: number
-        localAddress?: string;
-        socketPath?: string;
-        method?: string;
-        path?: string;
-        headers?: { [key: string]: any };
-        auth?: string;
-        agent?: Agent;
-    }
-
-    export interface Server extends events.EventEmitter {
-        listen(port: number, hostname?: string, backlog?: number, callback?: Function): Server;
-        listen(port: number, hostname?: string, callback?: Function): Server;
-        listen(path: string, callback?: Function): Server;
-        listen(handle: any, listeningListener?: Function): Server;
-        close(cb?: any): Server;
-        address(): { port: number; family: string; address: string; };
-        maxHeadersCount: number;
-    }
-    /**
-     * @deprecated Use IncomingMessage
-     */
-    export interface ServerRequest extends IncomingMessage {
-        connection: net.Socket;
-    }
-    export interface ServerResponse extends events.EventEmitter, stream.Writable {
-        // Extended base methods
-        write(buffer: Buffer): boolean;
-        write(buffer: Buffer, cb?: Function): boolean;
-        write(str: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, fd?: string): boolean;
-
-        writeContinue(): void;
-        writeHead(statusCode: number, reasonPhrase?: string, headers?: any): void;
-        writeHead(statusCode: number, headers?: any): void;
-        statusCode: number;
-        statusMessage: string;
-        setHeader(name: string, value: string): void;
-        sendDate: boolean;
-        getHeader(name: string): string;
-        removeHeader(name: string): void;
-        write(chunk: any, encoding?: string): any;
-        addTrailers(headers: any): void;
-
-        // Extended base methods
-        end(): void;
-        end(buffer: Buffer, cb?: Function): void;
-        end(str: string, cb?: Function): void;
-        end(str: string, encoding?: string, cb?: Function): void;
-        end(data?: any, encoding?: string): void;
-    }
-    export interface ClientRequest extends events.EventEmitter, stream.Writable {
-        // Extended base methods
-        write(buffer: Buffer): boolean;
-        write(buffer: Buffer, cb?: Function): boolean;
-        write(str: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, fd?: string): boolean;
-
-        write(chunk: any, encoding?: string): void;
-        abort(): void;
-        setTimeout(timeout: number, callback?: Function): void;
-        setNoDelay(noDelay?: boolean): void;
-        setSocketKeepAlive(enable?: boolean, initialDelay?: number): void;
-
-        // Extended base methods
-        end(): void;
-        end(buffer: Buffer, cb?: Function): void;
-        end(str: string, cb?: Function): void;
-        end(str: string, encoding?: string, cb?: Function): void;
-        end(data?: any, encoding?: string): void;
-    }
-    export interface IncomingMessage extends events.EventEmitter, stream.Readable {
-        httpVersion: string;
-        headers: any;
-        rawHeaders: string[];
-        trailers: any;
-        rawTrailers: any;
-        setTimeout(msecs: number, callback: Function): NodeJS.Timer;
-        /**
-         * Only valid for request obtained from http.Server.
-         */
-        method?: string;
-        /**
-         * Only valid for request obtained from http.Server.
-         */
-        url?: string;
-        /**
-         * Only valid for response obtained from http.ClientRequest.
-         */
-        statusCode?: number;
-        /**
-         * Only valid for response obtained from http.ClientRequest.
-         */
-        statusMessage?: string;
-        socket: net.Socket;
-    }
-    /**
-     * @deprecated Use IncomingMessage
-     */
-    export interface ClientResponse extends IncomingMessage { }
-
-	export interface AgentOptions {
-		/**
-		 * Keep sockets around in a pool to be used by other requests in the future. Default = false
-		 */
-		keepAlive?: boolean;
-		/**
-		 * When using HTTP KeepAlive, how often to send TCP KeepAlive packets over sockets being kept alive. Default = 1000.
-		 * Only relevant if keepAlive is set to true.
-		 */
-		keepAliveMsecs?: number;
-		/**
-		 * Maximum number of sockets to allow per host. Default for Node 0.10 is 5, default for Node 0.12 is Infinity
-		 */
-		maxSockets?: number;
-		/**
-		 * Maximum number of sockets to leave open in a free state. Only relevant if keepAlive is set to true. Default = 256.
-		 */
-		maxFreeSockets?: number;
-	}
-
-    export class Agent {
-		maxSockets: number;
-		sockets: any;
-		requests: any;
-
-		constructor(opts?: AgentOptions);
-
-		/**
-		 * Destroy any sockets that are currently in use by the agent.
-		 * It is usually not necessary to do this. However, if you are using an agent with KeepAlive enabled,
-		 * then it is best to explicitly shut down the agent when you know that it will no longer be used. Otherwise,
-		 * sockets may hang open for quite a long time before the server terminates them.
-		 */
-		destroy(): void;
-	}
-
-    export var METHODS: string[];
-
-    export var STATUS_CODES: {
-        [errorCode: number]: string;
-        [errorCode: string]: string;
-    };
-    export function createServer(requestListener?: (request: IncomingMessage, response: ServerResponse) =>void ): Server;
-    export function createClient(port?: number, host?: string): any;
-    export function request(options: RequestOptions, callback?: (res: IncomingMessage) => void): ClientRequest;
-    export function get(options: any, callback?: (res: IncomingMessage) => void): ClientRequest;
-    export var globalAgent: Agent;
-}
-
-declare module "cluster" {
-    import * as child from "child_process";
-    import * as events from "events";
-
-    export interface ClusterSettings {
-        exec?: string;
-        args?: string[];
-        silent?: boolean;
-    }
-
-    export class Worker extends events.EventEmitter {
-        id: string;
-        process: child.ChildProcess;
-        suicide: boolean;
-        send(message: any, sendHandle?: any): void;
-        kill(signal?: string): void;
-        destroy(signal?: string): void;
-        disconnect(): void;
-    }
-
-    export var settings: ClusterSettings;
-    export var isMaster: boolean;
-    export var isWorker: boolean;
-    export function setupMaster(settings?: ClusterSettings): void;
-    export function fork(env?: any): Worker;
-    export function disconnect(callback?: Function): void;
-    export var worker: Worker;
-    export var workers: Worker[];
-
-    // Event emitter
-    export function addListener(event: string, listener: Function): void;
-    export function on(event: string, listener: Function): any;
-    export function once(event: string, listener: Function): void;
-    export function removeListener(event: string, listener: Function): void;
-    export function removeAllListeners(event?: string): void;
-    export function setMaxListeners(n: number): void;
-    export function listeners(event: string): Function[];
-    export function emit(event: string, ...args: any[]): boolean;
-}
-
-declare module "zlib" {
-    import * as stream from "stream";
-    export interface ZlibOptions { chunkSize?: number; windowBits?: number; level?: number; memLevel?: number; strategy?: number; dictionary?: any; }
-
-    export interface Gzip extends stream.Transform { }
-    export interface Gunzip extends stream.Transform { }
-    export interface Deflate extends stream.Transform { }
-    export interface Inflate extends stream.Transform { }
-    export interface DeflateRaw extends stream.Transform { }
-    export interface InflateRaw extends stream.Transform { }
-    export interface Unzip extends stream.Transform { }
-
-    export function createGzip(options?: ZlibOptions): Gzip;
-    export function createGunzip(options?: ZlibOptions): Gunzip;
-    export function createDeflate(options?: ZlibOptions): Deflate;
-    export function createInflate(options?: ZlibOptions): Inflate;
-    export function createDeflateRaw(options?: ZlibOptions): DeflateRaw;
-    export function createInflateRaw(options?: ZlibOptions): InflateRaw;
-    export function createUnzip(options?: ZlibOptions): Unzip;
-
-    export function deflate(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function deflateSync(buf: Buffer, options?: ZlibOptions): any;
-    export function deflateRaw(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function deflateRawSync(buf: Buffer, options?: ZlibOptions): any;
-    export function gzip(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function gzipSync(buf: Buffer, options?: ZlibOptions): any;
-    export function gunzip(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function gunzipSync(buf: Buffer, options?: ZlibOptions): any;
-    export function inflate(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function inflateSync(buf: Buffer, options?: ZlibOptions): any;
-    export function inflateRaw(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function inflateRawSync(buf: Buffer, options?: ZlibOptions): any;
-    export function unzip(buf: Buffer, callback: (error: Error, result: any) =>void ): void;
-    export function unzipSync(buf: Buffer, options?: ZlibOptions): any;
-
-    // Constants
-    export var Z_NO_FLUSH: number;
-    export var Z_PARTIAL_FLUSH: number;
-    export var Z_SYNC_FLUSH: number;
-    export var Z_FULL_FLUSH: number;
-    export var Z_FINISH: number;
-    export var Z_BLOCK: number;
-    export var Z_TREES: number;
-    export var Z_OK: number;
-    export var Z_STREAM_END: number;
-    export var Z_NEED_DICT: number;
-    export var Z_ERRNO: number;
-    export var Z_STREAM_ERROR: number;
-    export var Z_DATA_ERROR: number;
-    export var Z_MEM_ERROR: number;
-    export var Z_BUF_ERROR: number;
-    export var Z_VERSION_ERROR: number;
-    export var Z_NO_COMPRESSION: number;
-    export var Z_BEST_SPEED: number;
-    export var Z_BEST_COMPRESSION: number;
-    export var Z_DEFAULT_COMPRESSION: number;
-    export var Z_FILTERED: number;
-    export var Z_HUFFMAN_ONLY: number;
-    export var Z_RLE: number;
-    export var Z_FIXED: number;
-    export var Z_DEFAULT_STRATEGY: number;
-    export var Z_BINARY: number;
-    export var Z_TEXT: number;
-    export var Z_ASCII: number;
-    export var Z_UNKNOWN: number;
-    export var Z_DEFLATED: number;
-    export var Z_NULL: number;
-}
-
-declare module "os" {
-    export function tmpdir(): string;
-    export function hostname(): string;
-    export function type(): string;
-    export function platform(): string;
-    export function arch(): string;
-    export function release(): string;
-    export function uptime(): number;
-    export function loadavg(): number[];
-    export function totalmem(): number;
-    export function freemem(): number;
-    export function cpus(): { model: string; speed: number; times: { user: number; nice: number; sys: number; idle: number; irq: number; }; }[];
-    export function networkInterfaces(): any;
-    export var EOL: string;
-}
-
-declare module "https" {
-    import * as tls from "tls";
-    import * as events from "events";
-    import * as http from "http";
-
-    export interface ServerOptions {
-        pfx?: any;
-        key?: any;
-        passphrase?: string;
-        cert?: any;
-        ca?: any;
-        crl?: any;
-        ciphers?: string;
-        honorCipherOrder?: boolean;
-        requestCert?: boolean;
-        rejectUnauthorized?: boolean;
-        NPNProtocols?: any;
-        SNICallback?: (servername: string) => any;
-    }
-
-    export interface RequestOptions extends http.RequestOptions{
-        pfx?: any;
-        key?: any;
-        passphrase?: string;
-        cert?: any;
-        ca?: any;
-        ciphers?: string;
-        rejectUnauthorized?: boolean;
-        secureProtocol?: string;
-    }
-
-    export interface Agent {
-        maxSockets: number;
-        sockets: any;
-        requests: any;
-    }
-    export var Agent: {
-        new (options?: RequestOptions): Agent;
-    };
-    export interface Server extends tls.Server { }
-    export function createServer(options: ServerOptions, requestListener?: Function): Server;
-    export function request(options: RequestOptions, callback?: (res: http.IncomingMessage) =>void ): http.ClientRequest;
-    export function get(options: RequestOptions, callback?: (res: http.IncomingMessage) =>void ): http.ClientRequest;
-    export var globalAgent: Agent;
-}
-
-declare module "punycode" {
-    export function decode(string: string): string;
-    export function encode(string: string): string;
-    export function toUnicode(domain: string): string;
-    export function toASCII(domain: string): string;
-    export var ucs2: ucs2;
-    interface ucs2 {
-        decode(string: string): number[];
-        encode(codePoints: number[]): string;
-    }
-    export var version: any;
-}
-
-declare module "repl" {
-    import * as stream from "stream";
-    import * as events from "events";
-
-    export interface ReplOptions {
-        prompt?: string;
-        input?: NodeJS.ReadableStream;
-        output?: NodeJS.WritableStream;
-        terminal?: boolean;
-        eval?: Function;
-        useColors?: boolean;
-        useGlobal?: boolean;
-        ignoreUndefined?: boolean;
-        writer?: Function;
-    }
-    export function start(options: ReplOptions): events.EventEmitter;
-}
-
-declare module "readline" {
-    import * as events from "events";
-    import * as stream from "stream";
-
-    export interface ReadLine extends events.EventEmitter {
-        setPrompt(prompt: string): void;
-        prompt(preserveCursor?: boolean): void;
-        question(query: string, callback: Function): void;
-        pause(): void;
-        resume(): void;
-        close(): void;
-        write(data: any, key?: any): void;
-    }
-    export interface ReadLineOptions {
-        input: NodeJS.ReadableStream;
-        output: NodeJS.WritableStream;
-        completer?: Function;
-        terminal?: boolean;
-    }
-    export function createInterface(options: ReadLineOptions): ReadLine;
-}
-
-declare module "vm" {
-    export interface Context { }
-    export interface Script {
-        runInThisContext(): void;
-        runInNewContext(sandbox?: Context): void;
-    }
-    export function runInThisContext(code: string, filename?: string): void;
-    export function runInNewContext(code: string, sandbox?: Context, filename?: string): void;
-    export function runInContext(code: string, context: Context, filename?: string): void;
-    export function createContext(initSandbox?: Context): Context;
-    export function createScript(code: string, filename?: string): Script;
-}
-
-declare module "child_process" {
-    import * as events from "events";
-    import * as stream from "stream";
-
-    export interface ChildProcess extends events.EventEmitter {
-        stdin:  stream.Writable;
-        stdout: stream.Readable;
-        stderr: stream.Readable;
-        pid: number;
-        kill(signal?: string): void;
-        send(message: any, sendHandle?: any): void;
-        disconnect(): void;
-        unref(): void;
-    }
-
-    export function spawn(command: string, args?: string[], options?: {
-        cwd?: string;
-        stdio?: any;
-        custom?: any;
-        env?: any;
-        detached?: boolean;
-    }): ChildProcess;
-    export function exec(command: string, options: {
-        cwd?: string;
-        stdio?: any;
-        customFds?: any;
-        env?: any;
-        encoding?: string;
-        timeout?: number;
-        maxBuffer?: number;
-        killSignal?: string;
-    }, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function exec(command: string, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function execFile(file: string,
-        callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function execFile(file: string, args?: string[],
-        callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function execFile(file: string, args?: string[], options?: {
-        cwd?: string;
-        stdio?: any;
-        customFds?: any;
-        env?: any;
-        encoding?: string;
-        timeout?: number;
-        maxBuffer?: number;
-        killSignal?: string;
-    }, callback?: (error: Error, stdout: Buffer, stderr: Buffer) =>void ): ChildProcess;
-    export function fork(modulePath: string, args?: string[], options?: {
-        cwd?: string;
-        env?: any;
-        encoding?: string;
-    }): ChildProcess;
-    export function spawnSync(command: string, args?: string[], options?: {
-        cwd?: string;
-        input?: string | Buffer;
-        stdio?: any;
-        env?: any;
-        uid?: number;
-        gid?: number;
-        timeout?: number;
-        maxBuffer?: number;
-        killSignal?: string;
-        encoding?: string;
-    }): {
-        pid: number;
-        output: string[];
-        stdout: string | Buffer;
-        stderr: string | Buffer;
-        status: number;
-        signal: string;
-        error: Error;
-    };
-    export function execSync(command: string, options?: {
-        cwd?: string;
-        input?: string|Buffer;
-        stdio?: any;
-        env?: any;
-        uid?: number;
-        gid?: number;
-        timeout?: number;
-        maxBuffer?: number;
-        killSignal?: string;
-        encoding?: string;
-    }): string | Buffer;
-    export function execFileSync(command: string, args?: string[], options?: {
-        cwd?: string;
-        input?: string|Buffer;
-        stdio?: any;
-        env?: any;
-        uid?: number;
-        gid?: number;
-        timeout?: number;
-        maxBuffer?: number;
-        killSignal?: string;
-        encoding?: string;
-    }): string | Buffer;
-}
-
-declare module "url" {
-    export interface Url {
-        href?: string;
-        protocol?: string;
-        auth?: string;
-        hostname?: string;
-        port?: string;
-        host?: string;
-        pathname?: string;
-        search?: string;
-        query?: any; // string | Object
-        slashes?: boolean;
-        hash?: string;
-        path?: string;
-    }
-
-    export function parse(urlStr: string, parseQueryString?: boolean , slashesDenoteHost?: boolean ): Url;
-    export function format(url: Url): string;
-    export function resolve(from: string, to: string): string;
-}
-
-declare module "dns" {
-    export function lookup(domain: string, family: number, callback: (err: Error, address: string, family: number) =>void ): string;
-    export function lookup(domain: string, callback: (err: Error, address: string, family: number) =>void ): string;
-    export function resolve(domain: string, rrtype: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolve(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolve4(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolve6(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolveMx(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolveTxt(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolveSrv(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolveNs(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function resolveCname(domain: string, callback: (err: Error, addresses: string[]) =>void ): string[];
-    export function reverse(ip: string, callback: (err: Error, domains: string[]) =>void ): string[];
-}
-
-declare module "net" {
-    import * as stream from "stream";
-
-    export interface Socket extends stream.Duplex {
-        // Extended base methods
-        write(buffer: Buffer): boolean;
-        write(buffer: Buffer, cb?: Function): boolean;
-        write(str: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, cb?: Function): boolean;
-        write(str: string, encoding?: string, fd?: string): boolean;
-
-        connect(port: number, host?: string, connectionListener?: Function): void;
-        connect(path: string, connectionListener?: Function): void;
-        bufferSize: number;
-        setEncoding(encoding?: string): void;
-        write(data: any, encoding?: string, callback?: Function): void;
-        destroy(): void;
-        pause(): void;
-        resume(): void;
-        setTimeout(timeout: number, callback?: Function): void;
-        setNoDelay(noDelay?: boolean): void;
-        setKeepAlive(enable?: boolean, initialDelay?: number): void;
-        address(): { port: number; family: string; address: string; };
-        unref(): void;
-        ref(): void;
-
-        remoteAddress: string;
-        remoteFamily: string;
-        remotePort: number;
-        localAddress: string;
-        localPort: number;
-        bytesRead: number;
-        bytesWritten: number;
-
-        // Extended base methods
-        end(): void;
-        end(buffer: Buffer, cb?: Function): void;
-        end(str: string, cb?: Function): void;
-        end(str: string, encoding?: string, cb?: Function): void;
-        end(data?: any, encoding?: string): void;
-    }
-
-    export var Socket: {
-        new (options?: { fd?: string; type?: string; allowHalfOpen?: boolean; }): Socket;
-    };
-
-    export interface Server extends Socket {
-        listen(port: number, host?: string, backlog?: number, listeningListener?: Function): Server;
-        listen(path: string, listeningListener?: Function): Server;
-        listen(handle: any, listeningListener?: Function): Server;
-        close(callback?: Function): Server;
-        address(): { port: number; family: string; address: string; };
-        maxConnections: number;
-        connections: number;
-    }
-    export function createServer(connectionListener?: (socket: Socket) =>void ): Server;
-    export function createServer(options?: { allowHalfOpen?: boolean; }, connectionListener?: (socket: Socket) =>void ): Server;
-    export function connect(options: { port: number, host?: string, localAddress? : string, localPort? : string, family? : number, allowHalfOpen?: boolean; }, connectionListener?: Function): Socket;
-    export function connect(port: number, host?: string, connectionListener?: Function): Socket;
-    export function connect(path: string, connectionListener?: Function): Socket;
-    export function createConnection(options: { port: number, host?: string, localAddress? : string, localPort? : string, family? : number, allowHalfOpen?: boolean; }, connectionListener?: Function): Socket;
-    export function createConnection(port: number, host?: string, connectionListener?: Function): Socket;
-    export function createConnection(path: string, connectionListener?: Function): Socket;
-    export function isIP(input: string): number;
-    export function isIPv4(input: string): boolean;
-    export function isIPv6(input: string): boolean;
-}
-
-declare module "dgram" {
-    import * as events from "events";
-
-    interface RemoteInfo {
-        address: string;
-        port: number;
-        size: number;
-    }
-
-    interface AddressInfo {
-        address: string;
-        family: string;
-        port: number;
-    }
-
-    export function createSocket(type: string, callback?: (msg: Buffer, rinfo: RemoteInfo) => void): Socket;
-
-    interface Socket extends events.EventEmitter {
-        send(buf: Buffer, offset: number, length: number, port: number, address: string, callback?: (error: Error, bytes: number) => void): void;
-        bind(port: number, address?: string, callback?: () => void): void;
-        close(): void;
-        address(): AddressInfo;
-        setBroadcast(flag: boolean): void;
-        setMulticastTTL(ttl: number): void;
-        setMulticastLoopback(flag: boolean): void;
-        addMembership(multicastAddress: string, multicastInterface?: string): void;
-        dropMembership(multicastAddress: string, multicastInterface?: string): void;
-    }
-}
-
-declare module "fs" {
-    import * as stream from "stream";
-    import * as events from "events";
-
-    interface Stats {
-        isFile(): boolean;
-        isDirectory(): boolean;
-        isBlockDevice(): boolean;
-        isCharacterDevice(): boolean;
-        isSymbolicLink(): boolean;
-        isFIFO(): boolean;
-        isSocket(): boolean;
-        dev: number;
-        ino: number;
-        mode: number;
-        nlink: number;
-        uid: number;
-        gid: number;
-        rdev: number;
-        size: number;
-        blksize: number;
-        blocks: number;
-        atime: Date;
-        mtime: Date;
-        ctime: Date;
-        birthtime: Date;
-    }
-
-    interface FSWatcher extends events.EventEmitter {
-        close(): void;
-    }
-
-    export interface ReadStream extends stream.Readable {
-        close(): void;
-    }
-    export interface WriteStream extends stream.Writable {
-        close(): void;
-        bytesWritten: number;
-    }
-
-    /**
-     * Asynchronous rename.
-     * @param oldPath
-     * @param newPath
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function rename(oldPath: string, newPath: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /**
-     * Synchronous rename
-     * @param oldPath
-     * @param newPath
-     */
-    export function renameSync(oldPath: string, newPath: string): void;
-    export function truncate(path: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function truncate(path: string, len: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function truncateSync(path: string, len?: number): void;
-    export function ftruncate(fd: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function ftruncate(fd: number, len: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function ftruncateSync(fd: number, len?: number): void;
-    export function chown(path: string, uid: number, gid: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function chownSync(path: string, uid: number, gid: number): void;
-    export function fchown(fd: number, uid: number, gid: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function fchownSync(fd: number, uid: number, gid: number): void;
-    export function lchown(path: string, uid: number, gid: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function lchownSync(path: string, uid: number, gid: number): void;
-    export function chmod(path: string, mode: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function chmod(path: string, mode: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function chmodSync(path: string, mode: number): void;
-    export function chmodSync(path: string, mode: string): void;
-    export function fchmod(fd: number, mode: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function fchmod(fd: number, mode: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function fchmodSync(fd: number, mode: number): void;
-    export function fchmodSync(fd: number, mode: string): void;
-    export function lchmod(path: string, mode: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function lchmod(path: string, mode: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function lchmodSync(path: string, mode: number): void;
-    export function lchmodSync(path: string, mode: string): void;
-    export function stat(path: string, callback?: (err: NodeJS.ErrnoException, stats: Stats) => any): void;
-    export function lstat(path: string, callback?: (err: NodeJS.ErrnoException, stats: Stats) => any): void;
-    export function fstat(fd: number, callback?: (err: NodeJS.ErrnoException, stats: Stats) => any): void;
-    export function statSync(path: string): Stats;
-    export function lstatSync(path: string): Stats;
-    export function fstatSync(fd: number): Stats;
-    export function link(srcpath: string, dstpath: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function linkSync(srcpath: string, dstpath: string): void;
-    export function symlink(srcpath: string, dstpath: string, type?: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function symlinkSync(srcpath: string, dstpath: string, type?: string): void;
-    export function readlink(path: string, callback?: (err: NodeJS.ErrnoException, linkString: string) => any): void;
-    export function readlinkSync(path: string): string;
-    export function realpath(path: string, callback?: (err: NodeJS.ErrnoException, resolvedPath: string) => any): void;
-    export function realpath(path: string, cache: {[path: string]: string}, callback: (err: NodeJS.ErrnoException, resolvedPath: string) =>any): void;
-    export function realpathSync(path: string, cache?: { [path: string]: string }): string;
-    /*
-     * Asynchronous unlink - deletes the file specified in {path}
-     *
-     * @param path
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function unlink(path: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /*
-     * Synchronous unlink - deletes the file specified in {path}
-     *
-     * @param path
-     */
-    export function unlinkSync(path: string): void;
-    /*
-     * Asynchronous rmdir - removes the directory specified in {path}
-     *
-     * @param path
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function rmdir(path: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /*
-     * Synchronous rmdir - removes the directory specified in {path}
-     *
-     * @param path
-     */
-    export function rmdirSync(path: string): void;
-    /*
-     * Asynchronous mkdir - creates the directory specified in {path}.  Parameter {mode} defaults to 0777.
-     *
-     * @param path
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function mkdir(path: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /*
-     * Asynchronous mkdir - creates the directory specified in {path}.  Parameter {mode} defaults to 0777.
-     *
-     * @param path
-     * @param mode
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function mkdir(path: string, mode: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /*
-     * Asynchronous mkdir - creates the directory specified in {path}.  Parameter {mode} defaults to 0777.
-     *
-     * @param path
-     * @param mode
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function mkdir(path: string, mode: string, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    /*
-     * Synchronous mkdir - creates the directory specified in {path}.  Parameter {mode} defaults to 0777.
-     *
-     * @param path
-     * @param mode
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function mkdirSync(path: string, mode?: number): void;
-    /*
-     * Synchronous mkdir - creates the directory specified in {path}.  Parameter {mode} defaults to 0777.
-     *
-     * @param path
-     * @param mode
-     * @param callback No arguments other than a possible exception are given to the completion callback.
-     */
-    export function mkdirSync(path: string, mode?: string): void;
-    export function readdir(path: string, callback?: (err: NodeJS.ErrnoException, files: string[]) => void): void;
-    export function readdirSync(path: string): string[];
-    export function close(fd: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function closeSync(fd: number): void;
-    export function open(path: string, flags: string, callback?: (err: NodeJS.ErrnoException, fd: number) => any): void;
-    export function open(path: string, flags: string, mode: number, callback?: (err: NodeJS.ErrnoException, fd: number) => any): void;
-    export function open(path: string, flags: string, mode: string, callback?: (err: NodeJS.ErrnoException, fd: number) => any): void;
-    export function openSync(path: string, flags: string, mode?: number): number;
-    export function openSync(path: string, flags: string, mode?: string): number;
-    export function utimes(path: string, atime: number, mtime: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function utimes(path: string, atime: Date, mtime: Date, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function utimesSync(path: string, atime: number, mtime: number): void;
-    export function utimesSync(path: string, atime: Date, mtime: Date): void;
-    export function futimes(fd: number, atime: number, mtime: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function futimes(fd: number, atime: Date, mtime: Date, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function futimesSync(fd: number, atime: number, mtime: number): void;
-    export function futimesSync(fd: number, atime: Date, mtime: Date): void;
-    export function fsync(fd: number, callback?: (err?: NodeJS.ErrnoException) => void): void;
-    export function fsyncSync(fd: number): void;
-    export function write(fd: number, buffer: Buffer, offset: number, length: number, position: number, callback?: (err: NodeJS.ErrnoException, written: number, buffer: Buffer) => void): void;
-    export function write(fd: number, buffer: Buffer, offset: number, length: number, callback?: (err: NodeJS.ErrnoException, written: number, buffer: Buffer) => void): void;
-    export function write(fd: number, data: any, callback?: (err: NodeJS.ErrnoException, written: number, str: string) => void): void;
-    export function write(fd: number, data: any, offset: number, callback?: (err: NodeJS.ErrnoException, written: number, str: string) => void): void;
-    export function write(fd: number, data: any, offset: number, encoding: string, callback?: (err: NodeJS.ErrnoException, written: number, str: string) => void): void;
-    export function writeSync(fd: number, buffer: Buffer, offset: number, length: number, position: number): number;
-    export function read(fd: number, buffer: Buffer, offset: number, length: number, position: number, callback?: (err: NodeJS.ErrnoException, bytesRead: number, buffer: Buffer) => void): void;
-    export function readSync(fd: number, buffer: Buffer, offset: number, length: number, position: number): number;
-    /*
-     * Asynchronous readFile - Asynchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param encoding
-     * @param callback - The callback is passed two arguments (err, data), where data is the contents of the file.
-     */
-    export function readFile(filename: string, encoding: string, callback: (err: NodeJS.ErrnoException, data: string) => void): void;
-    /*
-     * Asynchronous readFile - Asynchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param options An object with optional {encoding} and {flag} properties.  If {encoding} is specified, readFile returns a string; otherwise it returns a Buffer.
-     * @param callback - The callback is passed two arguments (err, data), where data is the contents of the file.
-     */
-    export function readFile(filename: string, options: { encoding: string; flag?: string; }, callback: (err: NodeJS.ErrnoException, data: string) => void): void;
-    /*
-     * Asynchronous readFile - Asynchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param options An object with optional {encoding} and {flag} properties.  If {encoding} is specified, readFile returns a string; otherwise it returns a Buffer.
-     * @param callback - The callback is passed two arguments (err, data), where data is the contents of the file.
-     */
-    export function readFile(filename: string, options: { flag?: string; }, callback: (err: NodeJS.ErrnoException, data: Buffer) => void): void;
-    /*
-     * Asynchronous readFile - Asynchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param callback - The callback is passed two arguments (err, data), where data is the contents of the file.
-     */
-    export function readFile(filename: string, callback: (err: NodeJS.ErrnoException, data: Buffer) => void): void;
-    /*
-     * Synchronous readFile - Synchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param encoding
-     */
-    export function readFileSync(filename: string, encoding: string): string;
-    /*
-     * Synchronous readFile - Synchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param options An object with optional {encoding} and {flag} properties.  If {encoding} is specified, readFileSync returns a string; otherwise it returns a Buffer.
-     */
-    export function readFileSync(filename: string, options: { encoding: string; flag?: string; }): string;
-    /*
-     * Synchronous readFile - Synchronously reads the entire contents of a file.
-     *
-     * @param fileName
-     * @param options An object with optional {encoding} and {flag} properties.  If {encoding} is specified, readFileSync returns a string; otherwise it returns a Buffer.
-     */
-    export function readFileSync(filename: string, options?: { flag?: string; }): Buffer;
-    export function writeFile(filename: string, data: any, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function writeFile(filename: string, data: any, options: { encoding?: string; mode?: number; flag?: string; }, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function writeFile(filename: string, data: any, options: { encoding?: string; mode?: string; flag?: string; }, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function writeFileSync(filename: string, data: any, options?: { encoding?: string; mode?: number; flag?: string; }): void;
-    export function writeFileSync(filename: string, data: any, options?: { encoding?: string; mode?: string; flag?: string; }): void;
-    export function appendFile(filename: string, data: any, options: { encoding?: string; mode?: number; flag?: string; }, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function appendFile(filename: string, data: any, options: { encoding?: string; mode?: string; flag?: string; }, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function appendFile(filename: string, data: any, callback?: (err: NodeJS.ErrnoException) => void): void;
-    export function appendFileSync(filename: string, data: any, options?: { encoding?: string; mode?: number; flag?: string; }): void;
-    export function appendFileSync(filename: string, data: any, options?: { encoding?: string; mode?: string; flag?: string; }): void;
-    export function watchFile(filename: string, listener: (curr: Stats, prev: Stats) => void): void;
-    export function watchFile(filename: string, options: { persistent?: boolean; interval?: number; }, listener: (curr: Stats, prev: Stats) => void): void;
-    export function unwatchFile(filename: string, listener?: (curr: Stats, prev: Stats) => void): void;
-    export function watch(filename: string, listener?: (event: string, filename: string) => any): FSWatcher;
-    export function watch(filename: string, options: { persistent?: boolean; }, listener?: (event: string, filename: string) => any): FSWatcher;
-    export function exists(path: string, callback?: (exists: boolean) => void): void;
-    export function existsSync(path: string): boolean;
-    /** Constant for fs.access(). File is visible to the calling process. */
-    export var F_OK: number;
-    /** Constant for fs.access(). File can be read by the calling process. */
-    export var R_OK: number;
-    /** Constant for fs.access(). File can be written by the calling process. */
-    export var W_OK: number;
-    /** Constant for fs.access(). File can be executed by the calling process. */
-    export var X_OK: number;
-    /** Tests a user's permissions for the file specified by path. */
-    export function access(path: string, callback: (err: NodeJS.ErrnoException) => void): void;
-    export function access(path: string, mode: number, callback: (err: NodeJS.ErrnoException) => void): void;
-    /** Synchronous version of fs.access. This throws if any accessibility checks fail, and does nothing otherwise. */
-    export function accessSync(path: string, mode ?: number): void;
-    export function createReadStream(path: string, options?: {
-        flags?: string;
-        encoding?: string;
-        fd?: number;
-        mode?: number;
-        autoClose?: boolean;
-    }): ReadStream;
-    export function createWriteStream(path: string, options?: {
-        flags?: string;
-        encoding?: string;
-        fd?: number;
-        mode?: number;
-    }): WriteStream;
-}
-
-declare module "path" {
-
-    /**
-     * A parsed path object generated by path.parse() or consumed by path.format().
-     */
-    export interface ParsedPath {
-        /**
-         * The root of the path such as '/' or 'c:\'
-         */
-        root: string;
-        /**
-         * The full directory path such as '/home/user/dir' or 'c:\path\dir'
-         */
-        dir: string;
-        /**
-         * The file name including extension (if any) such as 'index.html'
-         */
-        base: string;
-        /**
-         * The file extension (if any) such as '.html'
-         */
-        ext: string;
-        /**
-         * The file name without extension (if any) such as 'index'
-         */
-        name: string;
-    }
-
-    /**
-     * Normalize a string path, reducing '..' and '.' parts.
-     * When multiple slashes are found, they're replaced by a single one; when the path contains a trailing slash, it is preserved. On Windows backslashes are used.
-     *
-     * @param p string path to normalize.
-     */
-    export function normalize(p: string): string;
-    /**
-     * Join all arguments together and normalize the resulting path.
-     * Arguments must be strings. In v0.8, non-string arguments were silently ignored. In v0.10 and up, an exception is thrown.
-     *
-     * @param paths string paths to join.
-     */
-    export function join(...paths: any[]): string;
-    /**
-     * Join all arguments together and normalize the resulting path.
-     * Arguments must be strings. In v0.8, non-string arguments were silently ignored. In v0.10 and up, an exception is thrown.
-     *
-     * @param paths string paths to join.
-     */
-    export function join(...paths: string[]): string;
-    /**
-     * The right-most parameter is considered {to}.  Other parameters are considered an array of {from}.
-     *
-     * Starting from leftmost {from} paramter, resolves {to} to an absolute path.
-     *
-     * If {to} isn't already absolute, {from} arguments are prepended in right to left order, until an absolute path is found. If after using all {from} paths still no absolute path is found, the current working directory is used as well. The resulting path is normalized, and trailing slashes are removed unless the path gets resolved to the root directory.
-     *
-     * @param pathSegments string paths to join.  Non-string arguments are ignored.
-     */
-    export function resolve(...pathSegments: any[]): string;
-    /**
-     * Determines whether {path} is an absolute path. An absolute path will always resolve to the same location, regardless of the working directory.
-     *
-     * @param path path to test.
-     */
-    export function isAbsolute(path: string): boolean;
-    /**
-     * Solve the relative path from {from} to {to}.
-     * At times we have two absolute paths, and we need to derive the relative path from one to the other. This is actually the reverse transform of path.resolve.
-     *
-     * @param from
-     * @param to
-     */
-    export function relative(from: string, to: string): string;
-    /**
-     * Return the directory name of a path. Similar to the Unix dirname command.
-     *
-     * @param p the path to evaluate.
-     */
-    export function dirname(p: string): string;
-    /**
-     * Return the last portion of a path. Similar to the Unix basename command.
-     * Often used to extract the file name from a fully qualified path.
-     *
-     * @param p the path to evaluate.
-     * @param ext optionally, an extension to remove from the result.
-     */
-    export function basename(p: string, ext?: string): string;
-    /**
-     * Return the extension of the path, from the last '.' to end of string in the last portion of the path.
-     * If there is no '.' in the last portion of the path or the first character of it is '.', then it returns an empty string
-     *
-     * @param p the path to evaluate.
-     */
-    export function extname(p: string): string;
-    /**
-     * The platform-specific file separator. '\\' or '/'.
-     */
-    export var sep: string;
-    /**
-     * The platform-specific file delimiter. ';' or ':'.
-     */
-    export var delimiter: string;
-    /**
-     * Returns an object from a path string - the opposite of format().
-     *
-     * @param pathString path to evaluate.
-     */
-    export function parse(pathString: string): ParsedPath;
-    /**
-     * Returns a path string from an object - the opposite of parse().
-     *
-     * @param pathString path to evaluate.
-     */
-    export function format(pathObject: ParsedPath): string;
-
-    export module posix {
-      export function normalize(p: string): string;
-      export function join(...paths: any[]): string;
-      export function resolve(...pathSegments: any[]): string;
-      export function isAbsolute(p: string): boolean;
-      export function relative(from: string, to: string): string;
-      export function dirname(p: string): string;
-      export function basename(p: string, ext?: string): string;
-      export function extname(p: string): string;
-      export var sep: string;
-      export var delimiter: string;
-      export function parse(p: string): ParsedPath;
-      export function format(pP: ParsedPath): string;
-    }
-
-    export module win32 {
-      export function normalize(p: string): string;
-      export function join(...paths: any[]): string;
-      export function resolve(...pathSegments: any[]): string;
-      export function isAbsolute(p: string): boolean;
-      export function relative(from: string, to: string): string;
-      export function dirname(p: string): string;
-      export function basename(p: string, ext?: string): string;
-      export function extname(p: string): string;
-      export var sep: string;
-      export var delimiter: string;
-      export function parse(p: string): ParsedPath;
-      export function format(pP: ParsedPath): string;
-    }
-}
-
-declare module "string_decoder" {
-    export interface NodeStringDecoder {
-        write(buffer: Buffer): string;
-        detectIncompleteChar(buffer: Buffer): number;
-    }
-    export var StringDecoder: {
-        new (encoding: string): NodeStringDecoder;
-    };
-}
-
-declare module "tls" {
-    import * as crypto from "crypto";
-    import * as net from "net";
-    import * as stream from "stream";
-
-    var CLIENT_RENEG_LIMIT: number;
-    var CLIENT_RENEG_WINDOW: number;
-
-    export interface TlsOptions {
-        pfx?: any;   //string or buffer
-        key?: any;   //string or buffer
-        passphrase?: string;
-        cert?: any;
-        ca?: any;    //string or buffer
-        crl?: any;   //string or string array
-        ciphers?: string;
-        honorCipherOrder?: any;
-        requestCert?: boolean;
-        rejectUnauthorized?: boolean;
-        NPNProtocols?: any;  //array or Buffer;
-        SNICallback?: (servername: string) => any;
-    }
-
-    export interface ConnectionOptions {
-        host?: string;
-        port?: number;
-        socket?: net.Socket;
-        pfx?: any;   //string | Buffer
-        key?: any;   //string | Buffer
-        passphrase?: string;
-        cert?: any;  //string | Buffer
-        ca?: any;    //Array of string | Buffer
-        rejectUnauthorized?: boolean;
-        NPNProtocols?: any;  //Array of string | Buffer
-        servername?: string;
-    }
-
-    export interface Server extends net.Server {
-        // Extended base methods
-        listen(port: number, host?: string, backlog?: number, listeningListener?: Function): Server;
-        listen(path: string, listeningListener?: Function): Server;
-        listen(handle: any, listeningListener?: Function): Server;
-
-        listen(port: number, host?: string, callback?: Function): Server;
-        close(): Server;
-        address(): { port: number; family: string; address: string; };
-        addContext(hostName: string, credentials: {
-            key: string;
-            cert: string;
-            ca: string;
-        }): void;
-        maxConnections: number;
-        connections: number;
-    }
-
-    export interface ClearTextStream extends stream.Duplex {
-        authorized: boolean;
-        authorizationError: Error;
-        getPeerCertificate(): any;
-        getCipher: {
-            name: string;
-            version: string;
-        };
-        address: {
-            port: number;
-            family: string;
-            address: string;
-        };
-        remoteAddress: string;
-        remotePort: number;
-    }
-
-    export interface SecurePair {
-        encrypted: any;
-        cleartext: any;
-    }
-
-    export interface SecureContextOptions {
-        pfx?: any;   //string | buffer
-        key?: any;   //string | buffer
-        passphrase?: string;
-        cert?: any;  // string | buffer
-        ca?: any;    // string | buffer
-        crl?: any;   // string | string[]
-        ciphers?: string;
-        honorCipherOrder?: boolean;
-    }
-
-    export interface SecureContext {
-        context: any;
-    }
-
-    export function createServer(options: TlsOptions, secureConnectionListener?: (cleartextStream: ClearTextStream) =>void ): Server;
-    export function connect(options: TlsOptions, secureConnectionListener?: () =>void ): ClearTextStream;
-    export function connect(port: number, host?: string, options?: ConnectionOptions, secureConnectListener?: () =>void ): ClearTextStream;
-    export function connect(port: number, options?: ConnectionOptions, secureConnectListener?: () =>void ): ClearTextStream;
-    export function createSecurePair(credentials?: crypto.Credentials, isServer?: boolean, requestCert?: boolean, rejectUnauthorized?: boolean): SecurePair;
-    export function createSecureContext(details: SecureContextOptions): SecureContext;
-}
-
-declare module "crypto" {
-    export interface CredentialDetails {
-        pfx: string;
-        key: string;
-        passphrase: string;
-        cert: string;
-        ca: any;    //string | string array
-        crl: any;   //string | string array
-        ciphers: string;
-    }
-    export interface Credentials { context?: any; }
-    export function createCredentials(details: CredentialDetails): Credentials;
-    export function createHash(algorithm: string): Hash;
-    export function createHmac(algorithm: string, key: string): Hmac;
-    export function createHmac(algorithm: string, key: Buffer): Hmac;
-    interface Hash {
-        update(data: any, input_encoding?: string): Hash;
-        digest(encoding: 'buffer'): Buffer;
-        digest(encoding: string): any;
-        digest(): Buffer;
-    }
-    interface Hmac {
-        update(data: any, input_encoding?: string): Hmac;
-        digest(encoding: 'buffer'): Buffer;
-        digest(encoding: string): any;
-        digest(): Buffer;
-    }
-    export function createCipher(algorithm: string, password: any): Cipher;
-    export function createCipheriv(algorithm: string, key: any, iv: any): Cipher;
-    interface Cipher {
-        update(data: Buffer): Buffer;
-        update(data: string, input_encoding?: string, output_encoding?: string): string;
-        final(): Buffer;
-        final(output_encoding: string): string;
-        setAutoPadding(auto_padding: boolean): void;
-    }
-    export function createDecipher(algorithm: string, password: any): Decipher;
-    export function createDecipheriv(algorithm: string, key: any, iv: any): Decipher;
-    interface Decipher {
-        update(data: Buffer): Buffer;
-        update(data: string, input_encoding?: string, output_encoding?: string): string;
-        final(): Buffer;
-        final(output_encoding: string): string;
-        setAutoPadding(auto_padding: boolean): void;
-    }
-    export function createSign(algorithm: string): Signer;
-    interface Signer extends NodeJS.WritableStream {
-        update(data: any): void;
-        sign(private_key: string, output_format: string): string;
-    }
-    export function createVerify(algorith: string): Verify;
-    interface Verify extends NodeJS.WritableStream {
-        update(data: any): void;
-        verify(object: string, signature: string, signature_format?: string): boolean;
-    }
-    export function createDiffieHellman(prime_length: number): DiffieHellman;
-    export function createDiffieHellman(prime: number, encoding?: string): DiffieHellman;
-    interface DiffieHellman {
-        generateKeys(encoding?: string): string;
-        computeSecret(other_public_key: string, input_encoding?: string, output_encoding?: string): string;
-        getPrime(encoding?: string): string;
-        getGenerator(encoding: string): string;
-        getPublicKey(encoding?: string): string;
-        getPrivateKey(encoding?: string): string;
-        setPublicKey(public_key: string, encoding?: string): void;
-        setPrivateKey(public_key: string, encoding?: string): void;
-    }
-    export function getDiffieHellman(group_name: string): DiffieHellman;
-    export function pbkdf2(password: string, salt: string, iterations: number, keylen: number, callback: (err: Error, derivedKey: Buffer) => any): void;
-    export function pbkdf2(password: string, salt: string, iterations: number, keylen: number, digest: string, callback: (err: Error, derivedKey: Buffer) => any): void;
-    export function pbkdf2Sync(password: string, salt: string, iterations: number, keylen: number) : Buffer;
-    export function pbkdf2Sync(password: string, salt: string, iterations: number, keylen: number, digest: string) : Buffer;
-    export function randomBytes(size: number): Buffer;
-    export function randomBytes(size: number, callback: (err: Error, buf: Buffer) =>void ): void;
-    export function pseudoRandomBytes(size: number): Buffer;
-    export function pseudoRandomBytes(size: number, callback: (err: Error, buf: Buffer) =>void ): void;
-}
-
-declare module "stream" {
-    import * as events from "events";
-
-    export interface Stream extends events.EventEmitter {
-        pipe<T extends NodeJS.WritableStream>(destination: T, options?: { end?: boolean; }): T;
-    }
-
-    export interface ReadableOptions {
-        highWaterMark?: number;
-        encoding?: string;
-        objectMode?: boolean;
-    }
-
-    export class Readable extends events.EventEmitter implements NodeJS.ReadableStream {
-        readable: boolean;
-        constructor(opts?: ReadableOptions);
-        _read(size: number): void;
-        read(size?: number): any;
-        setEncoding(encoding: string): void;
-        pause(): void;
-        resume(): void;
-        pipe<T extends NodeJS.WritableStream>(destination: T, options?: { end?: boolean; }): T;
-        unpipe<T extends NodeJS.WritableStream>(destination?: T): void;
-        unshift(chunk: any): void;
-        wrap(oldStream: NodeJS.ReadableStream): NodeJS.ReadableStream;
-        push(chunk: any, encoding?: string): boolean;
-    }
-
-    export interface WritableOptions {
-        highWaterMark?: number;
-        decodeStrings?: boolean;
-        objectMode?: boolean;
-    }
-
-    export class Writable extends events.EventEmitter implements NodeJS.WritableStream {
-        writable: boolean;
-        constructor(opts?: WritableOptions);
-        _write(chunk: any, encoding: string, callback: Function): void;
-        write(chunk: any, cb?: Function): boolean;
-        write(chunk: any, encoding?: string, cb?: Function): boolean;
-        end(): void;
-        end(chunk: any, cb?: Function): void;
-        end(chunk: any, encoding?: string, cb?: Function): void;
-    }
-
-    export interface DuplexOptions extends ReadableOptions, WritableOptions {
-        allowHalfOpen?: boolean;
-    }
-
-    // Note: Duplex extends both Readable and Writable.
-    export class Duplex extends Readable implements NodeJS.ReadWriteStream {
-        writable: boolean;
-        constructor(opts?: DuplexOptions);
-        _write(chunk: any, encoding: string, callback: Function): void;
-        write(chunk: any, cb?: Function): boolean;
-        write(chunk: any, encoding?: string, cb?: Function): boolean;
-        end(): void;
-        end(chunk: any, cb?: Function): void;
-        end(chunk: any, encoding?: string, cb?: Function): void;
-    }
-
-    export interface TransformOptions extends ReadableOptions, WritableOptions {}
-
-    // Note: Transform lacks the _read and _write methods of Readable/Writable.
-    export class Transform extends events.EventEmitter implements NodeJS.ReadWriteStream {
-        readable: boolean;
-        writable: boolean;
-        constructor(opts?: TransformOptions);
-        _transform(chunk: any, encoding: string, callback: Function): void;
-        _flush(callback: Function): void;
-        read(size?: number): any;
-        setEncoding(encoding: string): void;
-        pause(): void;
-        resume(): void;
-        pipe<T extends NodeJS.WritableStream>(destination: T, options?: { end?: boolean; }): T;
-        unpipe<T extends NodeJS.WritableStream>(destination?: T): void;
-        unshift(chunk: any): void;
-        wrap(oldStream: NodeJS.ReadableStream): NodeJS.ReadableStream;
-        push(chunk: any, encoding?: string): boolean;
-        write(chunk: any, cb?: Function): boolean;
-        write(chunk: any, encoding?: string, cb?: Function): boolean;
-        end(): void;
-        end(chunk: any, cb?: Function): void;
-        end(chunk: any, encoding?: string, cb?: Function): void;
-    }
-
-    export class PassThrough extends Transform {}
-}
-
-declare module "util" {
-    export interface InspectOptions {
-        showHidden?: boolean;
-        depth?: number;
-        colors?: boolean;
-        customInspect?: boolean;
-    }
-
-    export function format(format: any, ...param: any[]): string;
-    export function debug(string: string): void;
-    export function error(...param: any[]): void;
-    export function puts(...param: any[]): void;
-    export function print(...param: any[]): void;
-    export function log(string: string): void;
-    export function inspect(object: any, showHidden?: boolean, depth?: number, color?: boolean): string;
-    export function inspect(object: any, options: InspectOptions): string;
-    export function isArray(object: any): boolean;
-    export function isRegExp(object: any): boolean;
-    export function isDate(object: any): boolean;
-    export function isError(object: any): boolean;
-    export function inherits(constructor: any, superConstructor: any): void;
-    export function debuglog(key:string): (msg:string,...param: any[])=>void;
-}
-
-declare module "assert" {
-    function internal (value: any, message?: string): void;
-    module internal {
-        export class AssertionError implements Error {
-            name: string;
-            message: string;
-            actual: any;
-            expected: any;
-            operator: string;
-            generatedMessage: boolean;
-
-            constructor(options?: {message?: string; actual?: any; expected?: any;
-                                  operator?: string; stackStartFunction?: Function});
-        }
-
-        export function fail(actual?: any, expected?: any, message?: string, operator?: string): void;
-        export function ok(value: any, message?: string): void;
-        export function equal(actual: any, expected: any, message?: string): void;
-        export function notEqual(actual: any, expected: any, message?: string): void;
-        export function deepEqual(actual: any, expected: any, message?: string): void;
-        export function notDeepEqual(acutal: any, expected: any, message?: string): void;
-        export function strictEqual(actual: any, expected: any, message?: string): void;
-        export function notStrictEqual(actual: any, expected: any, message?: string): void;
-        export var throws: {
-            (block: Function, message?: string): void;
-            (block: Function, error: Function, message?: string): void;
-            (block: Function, error: RegExp, message?: string): void;
-            (block: Function, error: (err: any) => boolean, message?: string): void;
-        };
-
-        export var doesNotThrow: {
-            (block: Function, message?: string): void;
-            (block: Function, error: Function, message?: string): void;
-            (block: Function, error: RegExp, message?: string): void;
-            (block: Function, error: (err: any) => boolean, message?: string): void;
-        };
-
-        export function ifError(value: any): void;
-    }
-
-    export = internal;
-}
-
-declare module "tty" {
-    import * as net from "net";
-
-    export function isatty(fd: number): boolean;
-    export interface ReadStream extends net.Socket {
-        isRaw: boolean;
-        setRawMode(mode: boolean): void;
-    }
-    export interface WriteStream extends net.Socket {
-        columns: number;
-        rows: number;
-    }
-}
-
-declare module "domain" {
-    import * as events from "events";
-
-    export class Domain extends events.EventEmitter {
-        run(fn: Function): void;
-        add(emitter: events.EventEmitter): void;
-        remove(emitter: events.EventEmitter): void;
-        bind(cb: (err: Error, data: any) => any): any;
-        intercept(cb: (data: any) => any): any;
-        dispose(): void;
-
-        addListener(event: string, listener: Function): Domain;
-        on(event: string, listener: Function): Domain;
-        once(event: string, listener: Function): Domain;
-        removeListener(event: string, listener: Function): Domain;
-        removeAllListeners(event?: string): Domain;
-    }
-
-    export function create(): Domain;
-}
-
-declare module "constants" {
-    export var E2BIG: number;
-    export var EACCES: number;
-    export var EADDRINUSE: number;
-    export var EADDRNOTAVAIL: number;
-    export var EAFNOSUPPORT: number;
-    export var EAGAIN: number;
-    export var EALREADY: number;
-    export var EBADF: number;
-    export var EBADMSG: number;
-    export var EBUSY: number;
-    export var ECANCELED: number;
-    export var ECHILD: number;
-    export var ECONNABORTED: number;
-    export var ECONNREFUSED: number;
-    export var ECONNRESET: number;
-    export var EDEADLK: number;
-    export var EDESTADDRREQ: number;
-    export var EDOM: number;
-    export var EEXIST: number;
-    export var EFAULT: number;
-    export var EFBIG: number;
-    export var EHOSTUNREACH: number;
-    export var EIDRM: number;
-    export var EILSEQ: number;
-    export var EINPROGRESS: number;
-    export var EINTR: number;
-    export var EINVAL: number;
-    export var EIO: number;
-    export var EISCONN: number;
-    export var EISDIR: number;
-    export var ELOOP: number;
-    export var EMFILE: number;
-    export var EMLINK: number;
-    export var EMSGSIZE: number;
-    export var ENAMETOOLONG: number;
-    export var ENETDOWN: number;
-    export var ENETRESET: number;
-    export var ENETUNREACH: number;
-    export var ENFILE: number;
-    export var ENOBUFS: number;
-    export var ENODATA: number;
-    export var ENODEV: number;
-    export var ENOENT: number;
-    export var ENOEXEC: number;
-    export var ENOLCK: number;
-    export var ENOLINK: number;
-    export var ENOMEM: number;
-    export var ENOMSG: number;
-    export var ENOPROTOOPT: number;
-    export var ENOSPC: number;
-    export var ENOSR: number;
-    export var ENOSTR: number;
-    export var ENOSYS: number;
-    export var ENOTCONN: number;
-    export var ENOTDIR: number;
-    export var ENOTEMPTY: number;
-    export var ENOTSOCK: number;
-    export var ENOTSUP: number;
-    export var ENOTTY: number;
-    export var ENXIO: number;
-    export var EOPNOTSUPP: number;
-    export var EOVERFLOW: number;
-    export var EPERM: number;
-    export var EPIPE: number;
-    export var EPROTO: number;
-    export var EPROTONOSUPPORT: number;
-    export var EPROTOTYPE: number;
-    export var ERANGE: number;
-    export var EROFS: number;
-    export var ESPIPE: number;
-    export var ESRCH: number;
-    export var ETIME: number;
-    export var ETIMEDOUT: number;
-    export var ETXTBSY: number;
-    export var EWOULDBLOCK: number;
-    export var EXDEV: number;
-    export var WSAEINTR: number;
-    export var WSAEBADF: number;
-    export var WSAEACCES: number;
-    export var WSAEFAULT: number;
-    export var WSAEINVAL: number;
-    export var WSAEMFILE: number;
-    export var WSAEWOULDBLOCK: number;
-    export var WSAEINPROGRESS: number;
-    export var WSAEALREADY: number;
-    export var WSAENOTSOCK: number;
-    export var WSAEDESTADDRREQ: number;
-    export var WSAEMSGSIZE: number;
-    export var WSAEPROTOTYPE: number;
-    export var WSAENOPROTOOPT: number;
-    export var WSAEPROTONOSUPPORT: number;
-    export var WSAESOCKTNOSUPPORT: number;
-    export var WSAEOPNOTSUPP: number;
-    export var WSAEPFNOSUPPORT: number;
-    export var WSAEAFNOSUPPORT: number;
-    export var WSAEADDRINUSE: number;
-    export var WSAEADDRNOTAVAIL: number;
-    export var WSAENETDOWN: number;
-    export var WSAENETUNREACH: number;
-    export var WSAENETRESET: number;
-    export var WSAECONNABORTED: number;
-    export var WSAECONNRESET: number;
-    export var WSAENOBUFS: number;
-    export var WSAEISCONN: number;
-    export var WSAENOTCONN: number;
-    export var WSAESHUTDOWN: number;
-    export var WSAETOOMANYREFS: number;
-    export var WSAETIMEDOUT: number;
-    export var WSAECONNREFUSED: number;
-    export var WSAELOOP: number;
-    export var WSAENAMETOOLONG: number;
-    export var WSAEHOSTDOWN: number;
-    export var WSAEHOSTUNREACH: number;
-    export var WSAENOTEMPTY: number;
-    export var WSAEPROCLIM: number;
-    export var WSAEUSERS: number;
-    export var WSAEDQUOT: number;
-    export var WSAESTALE: number;
-    export var WSAEREMOTE: number;
-    export var WSASYSNOTREADY: number;
-    export var WSAVERNOTSUPPORTED: number;
-    export var WSANOTINITIALISED: number;
-    export var WSAEDISCON: number;
-    export var WSAENOMORE: number;
-    export var WSAECANCELLED: number;
-    export var WSAEINVALIDPROCTABLE: number;
-    export var WSAEINVALIDPROVIDER: number;
-    export var WSAEPROVIDERFAILEDINIT: number;
-    export var WSASYSCALLFAILURE: number;
-    export var WSASERVICE_NOT_FOUND: number;
-    export var WSATYPE_NOT_FOUND: number;
-    export var WSA_E_NO_MORE: number;
-    export var WSA_E_CANCELLED: number;
-    export var WSAEREFUSED: number;
-    export var SIGHUP: number;
-    export var SIGINT: number;
-    export var SIGILL: number;
-    export var SIGABRT: number;
-    export var SIGFPE: number;
-    export var SIGKILL: number;
-    export var SIGSEGV: number;
-    export var SIGTERM: number;
-    export var SIGBREAK: number;
-    export var SIGWINCH: number;
-    export var SSL_OP_ALL: number;
-    export var SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION: number;
-    export var SSL_OP_CIPHER_SERVER_PREFERENCE: number;
-    export var SSL_OP_CISCO_ANYCONNECT: number;
-    export var SSL_OP_COOKIE_EXCHANGE: number;
-    export var SSL_OP_CRYPTOPRO_TLSEXT_BUG: number;
-    export var SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS: number;
-    export var SSL_OP_EPHEMERAL_RSA: number;
-    export var SSL_OP_LEGACY_SERVER_CONNECT: number;
-    export var SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER: number;
-    export var SSL_OP_MICROSOFT_SESS_ID_BUG: number;
-    export var SSL_OP_MSIE_SSLV2_RSA_PADDING: number;
-    export var SSL_OP_NETSCAPE_CA_DN_BUG: number;
-    export var SSL_OP_NETSCAPE_CHALLENGE_BUG: number;
-    export var SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG: number;
-    export var SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG: number;
-    export var SSL_OP_NO_COMPRESSION: number;
-    export var SSL_OP_NO_QUERY_MTU: number;
-    export var SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION: number;
-    export var SSL_OP_NO_SSLv2: number;
-    export var SSL_OP_NO_SSLv3: number;
-    export var SSL_OP_NO_TICKET: number;
-    export var SSL_OP_NO_TLSv1: number;
-    export var SSL_OP_NO_TLSv1_1: number;
-    export var SSL_OP_NO_TLSv1_2: number;
-    export var SSL_OP_PKCS1_CHECK_1: number;
-    export var SSL_OP_PKCS1_CHECK_2: number;
-    export var SSL_OP_SINGLE_DH_USE: number;
-    export var SSL_OP_SINGLE_ECDH_USE: number;
-    export var SSL_OP_SSLEAY_080_CLIENT_DH_BUG: number;
-    export var SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG: number;
-    export var SSL_OP_TLS_BLOCK_PADDING_BUG: number;
-    export var SSL_OP_TLS_D5_BUG: number;
-    export var SSL_OP_TLS_ROLLBACK_BUG: number;
-    export var ENGINE_METHOD_DSA: number;
-    export var ENGINE_METHOD_DH: number;
-    export var ENGINE_METHOD_RAND: number;
-    export var ENGINE_METHOD_ECDH: number;
-    export var ENGINE_METHOD_ECDSA: number;
-    export var ENGINE_METHOD_CIPHERS: number;
-    export var ENGINE_METHOD_DIGESTS: number;
-    export var ENGINE_METHOD_STORE: number;
-    export var ENGINE_METHOD_PKEY_METHS: number;
-    export var ENGINE_METHOD_PKEY_ASN1_METHS: number;
-    export var ENGINE_METHOD_ALL: number;
-    export var ENGINE_METHOD_NONE: number;
-    export var DH_CHECK_P_NOT_SAFE_PRIME: number;
-    export var DH_CHECK_P_NOT_PRIME: number;
-    export var DH_UNABLE_TO_CHECK_GENERATOR: number;
-    export var DH_NOT_SUITABLE_GENERATOR: number;
-    export var NPN_ENABLED: number;
-    export var RSA_PKCS1_PADDING: number;
-    export var RSA_SSLV23_PADDING: number;
-    export var RSA_NO_PADDING: number;
-    export var RSA_PKCS1_OAEP_PADDING: number;
-    export var RSA_X931_PADDING: number;
-    export var RSA_PKCS1_PSS_PADDING: number;
-    export var POINT_CONVERSION_COMPRESSED: number;
-    export var POINT_CONVERSION_UNCOMPRESSED: number;
-    export var POINT_CONVERSION_HYBRID: number;
-    export var O_RDONLY: number;
-    export var O_WRONLY: number;
-    export var O_RDWR: number;
-    export var S_IFMT: number;
-    export var S_IFREG: number;
-    export var S_IFDIR: number;
-    export var S_IFCHR: number;
-    export var S_IFLNK: number;
-    export var O_CREAT: number;
-    export var O_EXCL: number;
-    export var O_TRUNC: number;
-    export var O_APPEND: number;
-    export var F_OK: number;
-    export var R_OK: number;
-    export var W_OK: number;
-    export var X_OK: number;
-    export var UV_UDP_REUSEADDR: number;
-}
 declare module 'd2protocol' {
-	/// <reference path="../typings/node/node.d.ts" />
 	/// <reference path="../node_modules/ts-bytearray/ts-bytearray.d.ts" />
 	import ByteArray = require('ts-bytearray'); module Protocol {
 	    class Metadata {
@@ -3458,6 +1369,11908 @@ declare module 'd2protocol' {
 	        serializeAs_DebugInClientMessage(param1: ICustomDataOutput): void;
 	        deserialize(param1: ICustomDataInput): void;
 	        deserializeAs_DebugInClientMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementDetailedListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        startedAchievements: Achievement[];
+	        finishedAchievements: Achievement[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementDetailedListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementDetailedListMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementDetailedListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        categoryId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementDetailedListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementDetailedListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementDetailsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        achievement: Achievement;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementDetailsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementDetailsMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementDetailsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        achievementId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementDetailsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementDetailsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementFinishedInformationMessage extends AchievementFinishedMessage {
+	        static ID: number;
+	        name: string;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementFinishedInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementFinishedInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementFinishedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        finishedlevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementFinishedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementFinishedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        finishedAchievementsIds: number[];
+	        rewardableAchievements: AchievementRewardable[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementListMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementRewardErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        achievementId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementRewardErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementRewardErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementRewardRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        achievementId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementRewardRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementRewardRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AchievementRewardSuccessMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        achievementId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AchievementRewardSuccessMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AchievementRewardSuccessMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendGuildSetWarnOnAchievementCompleteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendGuildSetWarnOnAchievementCompleteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendGuildSetWarnOnAchievementCompleteMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendGuildWarnOnAchievementCompleteStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendGuildWarnOnAchievementCompleteStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendGuildWarnOnAchievementCompleteStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractGameActionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actionId: number;
+	        sourceId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractGameActionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractGameActionMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractGameActionWithAckMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        waitAckId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractGameActionWithAckMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractGameActionWithAckMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionAcknowledgementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        valid: boolean;
+	        actionId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionAcknowledgementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionAcknowledgementMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionNoopMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionNoopMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionNoopMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractGameActionFightTargetedAbilityMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        destinationCellId: number;
+	        critical: number;
+	        silentCast: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractGameActionFightTargetedAbilityMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractGameActionFightTargetedAbilityMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightActivateGlyphTrapMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        markId: number;
+	        active: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightActivateGlyphTrapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightActivateGlyphTrapMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightCarryCharacterMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightCarryCharacterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightCarryCharacterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightCastOnTargetRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightCastOnTargetRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightCastOnTargetRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightCastRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightCastRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightCastRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightChangeLookMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        entityLook: EntityLook;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightChangeLookMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightChangeLookMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightCloseCombatMessage extends AbstractGameActionFightTargetedAbilityMessage {
+	        static ID: number;
+	        weaponGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightCloseCombatMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightCloseCombatMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDeathMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDeathMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDeathMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDispellEffectMessage extends GameActionFightDispellMessage {
+	        static ID: number;
+	        boostUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDispellEffectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDispellEffectMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDispellMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDispellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDispellMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDispellSpellMessage extends GameActionFightDispellMessage {
+	        static ID: number;
+	        spellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDispellSpellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDispellSpellMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDispellableEffectMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        effect: AbstractFightDispellableEffect;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDispellableEffectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDispellableEffectMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDodgePointLossMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        amount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDodgePointLossMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDodgePointLossMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightDropCharacterMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightDropCharacterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightDropCharacterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightExchangePositionsMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        casterCellId: number;
+	        targetCellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightExchangePositionsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightExchangePositionsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightInvisibilityMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        state: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightInvisibilityMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightInvisibilityMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightInvisibleDetectedMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightInvisibleDetectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightInvisibleDetectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightKillMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightKillMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightKillMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightLifeAndShieldPointsLostMessage extends GameActionFightLifePointsLostMessage {
+	        static ID: number;
+	        shieldLoss: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightLifeAndShieldPointsLostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightLifeAndShieldPointsLostMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightLifePointsGainMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        delta: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightLifePointsGainMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightLifePointsGainMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightLifePointsLostMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        loss: number;
+	        permanentDamages: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightMarkCellsMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        mark: GameActionMark;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightMarkCellsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightMarkCellsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightModifyEffectsDurationMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        delta: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightModifyEffectsDurationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightModifyEffectsDurationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightNoSpellCastMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellLevelId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightNoSpellCastMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightNoSpellCastMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightPointsVariationMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        delta: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightPointsVariationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightPointsVariationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightReduceDamagesMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        amount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightReduceDamagesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightReduceDamagesMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightReflectDamagesMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightReflectDamagesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightReflectDamagesMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightReflectSpellMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightReflectSpellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightReflectSpellMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightSlideMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        startCellId: number;
+	        endCellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightSlideMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightSlideMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightSpellCastMessage extends AbstractGameActionFightTargetedAbilityMessage {
+	        static ID: number;
+	        spellId: number;
+	        spellLevel: number;
+	        portalsIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightSpellCastMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightSpellCastMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightSpellCooldownVariationMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        spellId: number;
+	        value: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightSpellCooldownVariationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightSpellCooldownVariationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightSpellImmunityMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        spellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightSpellImmunityMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightSpellImmunityMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightStealKamaMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        amount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightStealKamaMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightStealKamaMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightSummonMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        summon: GameFightFighterInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightSummonMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightSummonMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightTackledMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        tacklersIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightTackledMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightTackledMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightTeleportOnSameMapMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightTeleportOnSameMapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightTeleportOnSameMapMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightThrowCharacterMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightThrowCharacterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightThrowCharacterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightTriggerEffectMessage extends GameActionFightDispellEffectMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightTriggerEffectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightTriggerEffectMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightTriggerGlyphTrapMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        markId: number;
+	        triggeringCharacterId: number;
+	        triggeredSpellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightTriggerGlyphTrapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightTriggerGlyphTrapMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightUnmarkCellsMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        markId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightUnmarkCellsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightUnmarkCellsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameActionFightVanishMessage extends AbstractGameActionMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameActionFightVanishMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameActionFightVanishMessage(param1: ICustomDataInput): void;
+	    }
+	    class SequenceEndMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actionId: number;
+	        authorId: number;
+	        sequenceType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SequenceEndMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SequenceEndMessage(param1: ICustomDataInput): void;
+	    }
+	    class SequenceStartMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        sequenceType: number;
+	        authorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SequenceStartMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SequenceStartMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceChangeGuildRightsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildId: number;
+	        rights: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceChangeGuildRightsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceChangeGuildRightsMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceCreationResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceCreationResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceCreationResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceCreationStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceCreationStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceCreationStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceCreationValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceName: string;
+	        allianceTag: string;
+	        allianceEmblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceCreationValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceCreationValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceFactsErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceFactsErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceFactsErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceFactsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        infos: AllianceFactSheetInformations;
+	        guilds: GuildInAllianceInformations[];
+	        controlledSubareaIds: number[];
+	        leaderCharacterId: number;
+	        leaderCharacterName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceFactsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceFactsMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceFactsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceFactsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceFactsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceGuildLeavingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kicked: boolean;
+	        guildId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceGuildLeavingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceGuildLeavingMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInsiderInfoMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceInfos: AllianceFactSheetInformations;
+	        guilds: GuildInsiderFactSheetInformations[];
+	        prisms: PrismSubareaEmptyInfo[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInsiderInfoMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInsiderInfoMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInsiderInfoRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInsiderInfoRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInsiderInfoRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInvitationAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInvitationAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInvitationAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInvitationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInvitationStateRecrutedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        invitationState: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInvitationStateRecrutedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInvitationStateRecrutedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInvitationStateRecruterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        recrutedName: string;
+	        invitationState: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInvitationStateRecruterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInvitationStateRecruterMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceInvitedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        recruterId: number;
+	        recruterName: string;
+	        allianceInfo: BasicNamedAllianceInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceInvitedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceInvitedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceJoinedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceInfo: AllianceInformations;
+	        enabled: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceJoinedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceJoinedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceKickRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kickedId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceKickRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceKickRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceLeftMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceLeftMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceLeftMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        alliances: AllianceFactSheetInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceListMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceMembershipMessage extends AllianceJoinedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceMembershipMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceMembershipMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceModificationEmblemValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        Alliancemblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceModificationEmblemValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceModificationEmblemValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceModificationNameAndTagValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceName: string;
+	        allianceTag: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceModificationNameAndTagValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceModificationNameAndTagValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceModificationStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        canChangeName: boolean;
+	        canChangeTag: boolean;
+	        canChangeEmblem: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceModificationStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceModificationStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceModificationValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allianceName: string;
+	        allianceTag: string;
+	        Alliancemblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceModificationValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceModificationValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class AlliancePartialListMessage extends AllianceListMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AlliancePartialListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AlliancePartialListMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceVersatileInfoListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        alliances: AllianceVersatileInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceVersatileInfoListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceVersatileInfoListMessage(param1: ICustomDataInput): void;
+	    }
+	    class KohUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        alliances: AllianceInformations[];
+	        allianceNbMembers: number[];
+	        allianceRoundWeigth: number[];
+	        allianceMatchScore: number[];
+	        allianceMapWinner: BasicAllianceInformations;
+	        allianceMapWinnerScore: number;
+	        allianceMapMyAllianceScore: number;
+	        nextTickTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_KohUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_KohUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class AlmanachCalendarDateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        date: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AlmanachCalendarDateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AlmanachCalendarDateMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccountCapabilitiesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accountId: number;
+	        tutorialAvailable: boolean;
+	        breedsVisible: number;
+	        breedsAvailable: number;
+	        status: number;
+	        canCreateNewCharacter: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccountCapabilitiesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccountCapabilitiesMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccountLoggingKickedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        days: number;
+	        hours: number;
+	        minutes: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccountLoggingKickedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccountLoggingKickedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AlreadyConnectedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AlreadyConnectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AlreadyConnectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AuthenticationTicketAcceptedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AuthenticationTicketAcceptedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AuthenticationTicketAcceptedMessage(param1: ICustomDataInput): void;
+	    }
+	    class AuthenticationTicketMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        lang: string;
+	        ticket: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AuthenticationTicketMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AuthenticationTicketMessage(param1: ICustomDataInput): void;
+	    }
+	    class AuthenticationTicketRefusedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AuthenticationTicketRefusedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AuthenticationTicketRefusedMessage(param1: ICustomDataInput): void;
+	    }
+	    class HelloGameMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HelloGameMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HelloGameMessage(param1: ICustomDataInput): void;
+	    }
+	    class ReloginTokenRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ReloginTokenRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ReloginTokenRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ReloginTokenStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        validToken: boolean;
+	        ticket: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ReloginTokenStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ReloginTokenStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class ServerOptionalFeaturesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        features: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ServerOptionalFeaturesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ServerOptionalFeaturesMessage(param1: ICustomDataInput): void;
+	    }
+	    class ServerSessionConstantsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        variables: ServerSessionConstant[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ServerSessionConstantsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ServerSessionConstantsMessage(param1: ICustomDataInput): void;
+	    }
+	    class ServerSettingsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        lang: string;
+	        community: number;
+	        gameType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ServerSettingsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ServerSettingsMessage(param1: ICustomDataInput): void;
+	    }
+	    class AtlasPointInformationsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: AtlasPointsInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AtlasPointInformationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AtlasPointInformationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class CompassResetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CompassResetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CompassResetMessage(param1: ICustomDataInput): void;
+	    }
+	    class CompassUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: number;
+	        coords: MapCoordinates;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CompassUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CompassUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class CompassUpdatePartyMemberMessage extends CompassUpdateMessage {
+	        static ID: number;
+	        memberId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CompassUpdatePartyMemberMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CompassUpdatePartyMemberMessage(param1: ICustomDataInput): void;
+	    }
+	    class CompassUpdatePvpSeekMessage extends CompassUpdateMessage {
+	        static ID: number;
+	        memberId: number;
+	        memberName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CompassUpdatePvpSeekMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CompassUpdatePvpSeekMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicAckMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        seq: number;
+	        lastPacketId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicAckMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicAckMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicDateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        day: number;
+	        month: number;
+	        year: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicDateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicDateMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicLatencyStatsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        latency: number;
+	        sampleCount: number;
+	        max: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicLatencyStatsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicLatencyStatsMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicLatencyStatsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicLatencyStatsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicLatencyStatsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicNoOperationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicNoOperationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicNoOperationMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicTimeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        timestamp: number;
+	        timezoneOffset: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicTimeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicTimeMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicWhoAmIRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        verbose: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicWhoAmIRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicWhoAmIRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicWhoIsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        self: boolean;
+	        position: number;
+	        accountNickname: string;
+	        accountId: number;
+	        playerName: string;
+	        playerId: number;
+	        areaId: number;
+	        socialGroups: AbstractSocialGroupInfos[];
+	        verbose: boolean;
+	        playerState: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicWhoIsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicWhoIsMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicWhoIsNoMatchMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        search: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicWhoIsNoMatchMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicWhoIsNoMatchMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicWhoIsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        verbose: boolean;
+	        search: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicWhoIsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicWhoIsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CurrentServerStatusUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        status: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CurrentServerStatusUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CurrentServerStatusUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class NumericWhoIsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerId: number;
+	        accountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NumericWhoIsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NumericWhoIsMessage(param1: ICustomDataInput): void;
+	    }
+	    class NumericWhoIsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NumericWhoIsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NumericWhoIsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class SequenceNumberMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        number: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SequenceNumberMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SequenceNumberMessage(param1: ICustomDataInput): void;
+	    }
+	    class SequenceNumberRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SequenceNumberRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SequenceNumberRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TextInformationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        msgType: number;
+	        msgId: number;
+	        parameters: string[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TextInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TextInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class BasicCharactersListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        characters: CharacterBaseInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_BasicCharactersListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_BasicCharactersListMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterFirstSelectionMessage extends CharacterSelectionMessage {
+	        static ID: number;
+	        doTutorial: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterFirstSelectionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterFirstSelectionMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterReplayWithRemodelRequestMessage extends CharacterReplayRequestMessage {
+	        static ID: number;
+	        remodel: RemodelingInformation;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterReplayWithRemodelRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterReplayWithRemodelRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectedErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectedErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectedErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectedForceMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectedForceMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectedForceMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectedForceReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectedForceReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectedForceReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectedSuccessMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        infos: CharacterBaseInformations;
+	        isCollectingStats: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectedSuccessMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectedSuccessMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectionMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterSelectionWithRemodelMessage extends CharacterSelectionMessage {
+	        static ID: number;
+	        remodel: RemodelingInformation;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterSelectionWithRemodelMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterSelectionWithRemodelMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharactersListErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharactersListErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharactersListErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharactersListMessage extends BasicCharactersListMessage {
+	        static ID: number;
+	        hasStartupActions: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharactersListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharactersListMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharactersListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharactersListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharactersListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharactersListWithModificationsMessage extends CharactersListMessage {
+	        static ID: number;
+	        charactersToRecolor: CharacterToRecolorInformation[];
+	        charactersToRename: number[];
+	        unusableCharacters: number[];
+	        charactersToRelook: CharacterToRelookInformation[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharactersListWithModificationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharactersListWithModificationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharactersListWithRemodelingMessage extends CharactersListMessage {
+	        static ID: number;
+	        charactersToRemodel: CharacterToRemodelInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharactersListWithRemodelingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharactersListWithRemodelingMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterCreationRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        breed: number;
+	        sex: boolean;
+	        colors: number[];
+	        cosmeticId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterCreationRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterCreationRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterCreationResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterCreationResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterCreationResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterNameSuggestionFailureMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterNameSuggestionFailureMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterNameSuggestionFailureMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterNameSuggestionRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterNameSuggestionRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterNameSuggestionRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterNameSuggestionSuccessMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        suggestion: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterNameSuggestionSuccessMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterNameSuggestionSuccessMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterDeletionErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterDeletionErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterDeletionErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterDeletionRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        characterId: number;
+	        secretAnswerHash: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterDeletionRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterDeletionRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterReplayRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        characterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterReplayRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterReplayRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterExperienceGainMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        experienceCharacter: number;
+	        experienceMount: number;
+	        experienceGuild: number;
+	        experienceIncarnation: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterExperienceGainMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterExperienceGainMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterLevelUpInformationMessage extends CharacterLevelUpMessage {
+	        static ID: number;
+	        name: string;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterLevelUpInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterLevelUpInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterLevelUpMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        newLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterLevelUpMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterLevelUpMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterStatsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        stats: CharacterCharacteristicsInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterStatsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterStatsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class FighterStatsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        stats: CharacterCharacteristicsInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FighterStatsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FighterStatsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class LifePointsRegenBeginMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        regenRate: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LifePointsRegenBeginMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LifePointsRegenBeginMessage(param1: ICustomDataInput): void;
+	    }
+	    class LifePointsRegenEndMessage extends UpdateLifePointsMessage {
+	        static ID: number;
+	        lifePointsGained: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LifePointsRegenEndMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LifePointsRegenEndMessage(param1: ICustomDataInput): void;
+	    }
+	    class UpdateLifePointsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        lifePoints: number;
+	        maxLifePoints: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_UpdateLifePointsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_UpdateLifePointsMessage(param1: ICustomDataInput): void;
+	    }
+	    class PlayerStatusUpdateErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PlayerStatusUpdateErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PlayerStatusUpdateErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class PlayerStatusUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accountId: number;
+	        playerId: number;
+	        status: PlayerStatus;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PlayerStatusUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PlayerStatusUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PlayerStatusUpdateRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        status: PlayerStatus;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PlayerStatusUpdateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PlayerStatusUpdateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatAbstractClientMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        content: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatAbstractClientMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatAbstractClientMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatAbstractServerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        channel: number;
+	        content: string;
+	        timestamp: number;
+	        fingerprint: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatAbstractServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatAbstractServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatAdminServerMessage extends ChatServerMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatAdminServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatAdminServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatClientMultiMessage extends ChatAbstractClientMessage {
+	        static ID: number;
+	        channel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatClientMultiMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatClientMultiMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatClientMultiWithObjectMessage extends ChatClientMultiMessage {
+	        static ID: number;
+	        objects: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatClientMultiWithObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatClientMultiWithObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatClientPrivateMessage extends ChatAbstractClientMessage {
+	        static ID: number;
+	        receiver: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatClientPrivateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatClientPrivateMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatClientPrivateWithObjectMessage extends ChatClientPrivateMessage {
+	        static ID: number;
+	        objects: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatClientPrivateWithObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatClientPrivateWithObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatServerCopyMessage extends ChatAbstractServerMessage {
+	        static ID: number;
+	        receiverId: number;
+	        receiverName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatServerCopyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatServerCopyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatServerCopyWithObjectMessage extends ChatServerCopyMessage {
+	        static ID: number;
+	        objects: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatServerCopyWithObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatServerCopyWithObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatServerMessage extends ChatAbstractServerMessage {
+	        static ID: number;
+	        senderId: number;
+	        senderName: string;
+	        senderAccountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatServerWithObjectMessage extends ChatServerMessage {
+	        static ID: number;
+	        objects: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatServerWithObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatServerWithObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChannelEnablingChangeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        channel: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChannelEnablingChangeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChannelEnablingChangeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChannelEnablingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        channel: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChannelEnablingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChannelEnablingMessage(param1: ICustomDataInput): void;
+	    }
+	    class EnabledChannelsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        channels: number[];
+	        disallowed: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EnabledChannelsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EnabledChannelsMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatMessageReportMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        senderName: string;
+	        content: string;
+	        timestamp: number;
+	        channel: number;
+	        fingerprint: string;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatMessageReportMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatMessageReportMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatSmileyExtraPackListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        packIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatSmileyExtraPackListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatSmileyExtraPackListMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatSmileyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        entityId: number;
+	        smileyId: number;
+	        accountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatSmileyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatSmileyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChatSmileyRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        smileyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChatSmileyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChatSmileyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class LocalizedChatSmileyMessage extends ChatSmileyMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LocalizedChatSmileyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LocalizedChatSmileyMessage(param1: ICustomDataInput): void;
+	    }
+	    class MoodSmileyRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        smileyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MoodSmileyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MoodSmileyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MoodSmileyResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        resultCode: number;
+	        smileyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MoodSmileyResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MoodSmileyResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class MoodSmileyUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accountId: number;
+	        playerId: number;
+	        smileyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MoodSmileyUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MoodSmileyUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameCautiousMapMovementMessage extends GameMapMovementMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameCautiousMapMovementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameCautiousMapMovementMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameCautiousMapMovementRequestMessage extends GameMapMovementRequestMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameCautiousMapMovementRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameCautiousMapMovementRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextCreateErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextCreateErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextCreateErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextCreateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        context: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextCreateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextCreateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextCreateRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextCreateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextCreateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextDestroyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextDestroyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextDestroyMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextKickMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextKickMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextKickMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextMoveElementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        movement: EntityMovementInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextMoveElementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextMoveElementMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextMoveMultipleElementsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        movements: EntityMovementInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextMoveMultipleElementsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextMoveMultipleElementsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextQuitMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextQuitMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextQuitMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextRefreshEntityLookMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        look: EntityLook;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextRefreshEntityLookMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextRefreshEntityLookMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextRemoveElementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextRemoveElementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextRemoveElementMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextRemoveElementWithEventMessage extends GameContextRemoveElementMessage {
+	        static ID: number;
+	        elementEventId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextRemoveElementWithEventMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextRemoveElementWithEventMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextRemoveMultipleElementsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextRemoveMultipleElementsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextRemoveMultipleElementsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameContextRemoveMultipleElementsWithEventsMessage extends GameContextRemoveMultipleElementsMessage {
+	        static ID: number;
+	        elementEventIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameContextRemoveMultipleElementsWithEventsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameContextRemoveMultipleElementsWithEventsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameEntitiesDispositionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dispositions: IdentifiedEntityDispositionInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameEntitiesDispositionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameEntitiesDispositionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameEntityDispositionErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameEntityDispositionErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameEntityDispositionErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameEntityDispositionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        disposition: IdentifiedEntityDispositionInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameEntityDispositionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameEntityDispositionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapChangeOrientationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        orientation: ActorOrientation;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapChangeOrientationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapChangeOrientationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapChangeOrientationRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        direction: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapChangeOrientationRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapChangeOrientationRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapChangeOrientationsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        orientations: ActorOrientation[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapChangeOrientationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapChangeOrientationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapMovementCancelMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapMovementCancelMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapMovementCancelMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapMovementConfirmMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapMovementConfirmMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapMovementConfirmMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapMovementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        keyMovements: number[];
+	        actorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapMovementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapMovementMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapMovementRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        keyMovements: number[];
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapMovementRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapMovementRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameMapNoMovementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameMapNoMovementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameMapNoMovementMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShowCellMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        sourceId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShowCellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShowCellMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShowCellRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShowCellRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShowCellRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShowCellSpectatorMessage extends ShowCellMessage {
+	        static ID: number;
+	        playerName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShowCellSpectatorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShowCellSpectatorMessage(param1: ICustomDataInput): void;
+	    }
+	    class DisplayNumericalValuePaddockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        rideId: number;
+	        value: number;
+	        type: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DisplayNumericalValuePaddockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DisplayNumericalValuePaddockMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonKeyRingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        availables: number[];
+	        unavailables: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonKeyRingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonKeyRingMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonKeyRingUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        available: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonKeyRingUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonKeyRingUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightEndMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        duration: number;
+	        ageBonus: number;
+	        lootShareLimitMalus: number;
+	        results: FightResultListEntry[];
+	        namedPartyTeamsOutcomes: NamedPartyTeamWithOutcome[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightEndMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightEndMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightHumanReadyStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        characterId: number;
+	        isReady: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightHumanReadyStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightHumanReadyStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightJoinMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        canBeCancelled: boolean;
+	        canSayReady: boolean;
+	        isFightStarted: boolean;
+	        timeMaxBeforeFightStart: number;
+	        fightType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightJoinMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightJoinMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightJoinRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fighterId: number;
+	        fightId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightJoinRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightJoinRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightLeaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        charId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightLeaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightLeaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightNewRoundMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        roundNumber: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightNewRoundMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightNewRoundMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightNewWaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        teamId: number;
+	        nbTurnBeforeNextWave: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightNewWaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightNewWaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightOptionStateUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        teamId: number;
+	        option: number;
+	        state: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightOptionStateUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightOptionStateUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightOptionToggleMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        option: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightOptionToggleMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightOptionToggleMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementPositionRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementPositionRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementPositionRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementPossiblePositionsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        positionsForChallengers: number[];
+	        positionsForDefenders: number[];
+	        teamNumber: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementPossiblePositionsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementPossiblePositionsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsAcceptMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsAcceptMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsAcceptMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsCancelMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsCancelMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsCancelMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsCancelledMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        cancellerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsCancelledMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsCancelledMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dispositions: IdentifiedEntityDispositionInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsOfferMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        requesterId: number;
+	        requesterCellId: number;
+	        requestedId: number;
+	        requestedCellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsOfferMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsOfferMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightPlacementSwapPositionsRequestMessage extends GameFightPlacementPositionRequestMessage {
+	        static ID: number;
+	        requestedId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightPlacementSwapPositionsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightPlacementSwapPositionsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        isReady: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightRemoveTeamMemberMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        teamId: number;
+	        charId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightRemoveTeamMemberMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightRemoveTeamMemberMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightResumeMessage extends GameFightSpectateMessage {
+	        static ID: number;
+	        spellCooldowns: GameFightSpellCooldown[];
+	        summonCount: number;
+	        bombCount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightResumeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightResumeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightResumeWithSlavesMessage extends GameFightResumeMessage {
+	        static ID: number;
+	        slavesInfo: GameFightResumeSlaveInfo[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightResumeWithSlavesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightResumeWithSlavesMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightSpectateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        effects: FightDispellableEffectExtendedInformations[];
+	        marks: GameActionMark[];
+	        gameTurn: number;
+	        fightStart: number;
+	        idols: Idol[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightSpectateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightSpectateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightSpectatePlayerRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightSpectatePlayerRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightSpectatePlayerRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightSpectatorJoinMessage extends GameFightJoinMessage {
+	        static ID: number;
+	        namedPartyTeams: NamedPartyTeam[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightSpectatorJoinMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightSpectatorJoinMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightStartMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idols: Idol[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightStartMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightStartMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightStartingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightType: number;
+	        attackerId: number;
+	        defenderId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightStartingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightStartingMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightSynchronizeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fighters: GameFightFighterInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightSynchronizeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightSynchronizeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnEndMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnEndMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnEndMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnFinishMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnFinishMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnFinishMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ids: number[];
+	        deadsIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnListMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        isReady: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnReadyRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnReadyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnReadyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnResumeMessage extends GameFightTurnStartMessage {
+	        static ID: number;
+	        remainingTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnResumeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnResumeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnStartMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        waitTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnStartMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnStartMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightTurnStartPlayingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightTurnStartPlayingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightTurnStartPlayingMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightUpdateTeamMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        team: FightTeamInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightUpdateTeamMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightUpdateTeamMessage(param1: ICustomDataInput): void;
+	    }
+	    class SlaveSwitchContextMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        masterId: number;
+	        slaveId: number;
+	        slaveSpells: SpellItem[];
+	        slaveStats: CharacterCharacteristicsInformations;
+	        shortcuts: Shortcut[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SlaveSwitchContextMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SlaveSwitchContextMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeInfoMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        challengeId: number;
+	        targetId: number;
+	        xpBonus: number;
+	        dropBonus: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeInfoMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeInfoMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        challengeId: number;
+	        success: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeTargetUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        challengeId: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeTargetUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeTargetUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeTargetsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetIds: number[];
+	        targetCells: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeTargetsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeTargetsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeTargetsListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        challengeId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeTargetsListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeTargetsListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightRefreshFighterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        informations: GameContextActorInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightRefreshFighterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightRefreshFighterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightShowFighterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        informations: GameFightFighterInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightShowFighterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightShowFighterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameFightShowFighterRandomStaticPoseMessage extends GameFightShowFighterMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameFightShowFighterRandomStaticPoseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameFightShowFighterRandomStaticPoseMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameDataPaddockObjectAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockItemDescription: PaddockItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameDataPaddockObjectAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameDataPaddockObjectAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameDataPaddockObjectListAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockItemDescription: PaddockItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameDataPaddockObjectListAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameDataPaddockObjectListAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameDataPaddockObjectRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameDataPaddockObjectRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameDataPaddockObjectRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountDataErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountDataErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountDataErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountDataMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountData: MountClientData;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountDataMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountDataMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountEmoteIconUsedOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountId: number;
+	        reactionType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountEmoteIconUsedOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountEmoteIconUsedOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountEquipedErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        errorType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountEquipedErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountEquipedErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountFeedRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountUid: number;
+	        mountLocation: number;
+	        mountFoodUid: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountFeedRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountFeedRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountInformationInPaddockRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapRideId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountInformationInPaddockRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountInformationInPaddockRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountInformationRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        time: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountInformationRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountInformationRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountReleaseRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountReleaseRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountReleaseRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountReleasedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountReleasedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountReleasedMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountRenameRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        mountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountRenameRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountRenameRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountRenamedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountId: number;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountRenamedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountRenamedMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountRidingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        isRiding: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountRidingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountRidingMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountSetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountData: MountClientData;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountSetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountSetMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountSetXpRatioRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        xpRatio: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountSetXpRatioRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountSetXpRatioRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountSterilizeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountSterilizeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountSterilizeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountSterilizedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountSterilizedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountSterilizedMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountToggleRidingRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountToggleRidingRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountToggleRidingRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountUnSetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountUnSetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountUnSetMessage(param1: ICustomDataInput): void;
+	    }
+	    class MountXpRatioMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ratio: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MountXpRatioMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MountXpRatioMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockBuyRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        proposedPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockBuyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockBuyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockBuyResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockId: number;
+	        bought: boolean;
+	        realPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockBuyResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockBuyResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockMoveItemRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        oldCellId: number;
+	        newCellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockMoveItemRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockMoveItemRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockRemoveItemRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockRemoveItemRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockRemoveItemRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockSellRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        price: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockSellRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockSellRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class NotificationByServerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        parameters: string[];
+	        forceOpen: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NotificationByServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NotificationByServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class NotificationListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        flags: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NotificationListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NotificationListMessage(param1: ICustomDataInput): void;
+	    }
+	    class NotificationResetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NotificationResetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NotificationResetMessage(param1: ICustomDataInput): void;
+	    }
+	    class NotificationUpdateFlagMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        index: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NotificationUpdateFlagMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NotificationUpdateFlagMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChangeMapMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChangeMapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChangeMapMessage(param1: ICustomDataInput): void;
+	    }
+	    class CurrentMapMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        mapKey: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CurrentMapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CurrentMapMessage(param1: ICustomDataInput): void;
+	    }
+	    class ErrorMapNotFoundMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ErrorMapNotFoundMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ErrorMapNotFoundMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayShowActorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        informations: GameRolePlayActorInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayShowActorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayShowActorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayShowActorWithEventMessage extends GameRolePlayShowActorMessage {
+	        static ID: number;
+	        actorEventId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayShowActorWithEventMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayShowActorWithEventMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapComplementaryInformationsDataInHouseMessage extends MapComplementaryInformationsDataMessage {
+	        static ID: number;
+	        currentHouse: HouseInformationsInside;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapComplementaryInformationsDataMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        mapId: number;
+	        houses: HouseInformations[];
+	        actors: GameRolePlayActorInformations[];
+	        interactiveElements: InteractiveElement[];
+	        statedElements: StatedElement[];
+	        obstacles: MapObstacle[];
+	        fights: FightCommonInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapComplementaryInformationsDataMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapComplementaryInformationsDataMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapComplementaryInformationsWithCoordsMessage extends MapComplementaryInformationsDataMessage {
+	        static ID: number;
+	        worldX: number;
+	        worldY: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapComplementaryInformationsWithCoordsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapComplementaryInformationsWithCoordsMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapFightCountMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightCount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapFightCountMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapFightCountMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapInformationsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapInformationsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapInformationsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapObstacleUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        obstacles: MapObstacle[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapObstacleUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapObstacleUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapRunningFightDetailsExtendedMessage extends MapRunningFightDetailsMessage {
+	        static ID: number;
+	        namedPartyTeams: NamedPartyTeam[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapRunningFightDetailsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        attackers: GameFightFighterLightInformations[];
+	        defenders: GameFightFighterLightInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapRunningFightDetailsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapRunningFightDetailsMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapRunningFightDetailsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapRunningFightDetailsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapRunningFightDetailsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapRunningFightListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fights: FightExternalInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapRunningFightListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapRunningFightListMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapRunningFightListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapRunningFightListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapRunningFightListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class StopToListenRunningFightRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StopToListenRunningFightRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StopToListenRunningFightRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportOnSameMapMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetId: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportOnSameMapMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportOnSameMapMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayFreeSoulRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayFreeSoulRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayFreeSoulRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayGameOverMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayGameOverMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayGameOverMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayPlayerLifeStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        state: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayPlayerLifeStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayPlayerLifeStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class WarnOnPermaDeathMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_WarnOnPermaDeathMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_WarnOnPermaDeathMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayDelayedActionFinishedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        delayedCharacterId: number;
+	        delayTypeId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayDelayedActionFinishedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayDelayedActionFinishedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayDelayedActionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        delayedCharacterId: number;
+	        delayTypeId: number;
+	        delayEndTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayDelayedActionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayDelayedActionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayDelayedObjectUseMessage extends GameRolePlayDelayedActionMessage {
+	        static ID: number;
+	        objectGID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayDelayedObjectUseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayDelayedObjectUseMessage(param1: ICustomDataInput): void;
+	    }
+	    class ComicReadingBeginMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        comicId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ComicReadingBeginMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ComicReadingBeginMessage(param1: ICustomDataInput): void;
+	    }
+	    class DocumentReadingBeginMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        documentId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DocumentReadingBeginMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DocumentReadingBeginMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmoteAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmoteAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmoteAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmoteListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmoteListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmoteListMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmotePlayAbstractMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteId: number;
+	        emoteStartTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmotePlayAbstractMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmotePlayAbstractMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmotePlayErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmotePlayErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmotePlayErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmotePlayMassiveMessage extends EmotePlayAbstractMessage {
+	        static ID: number;
+	        actorIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmotePlayMassiveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmotePlayMassiveMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmotePlayMessage extends EmotePlayAbstractMessage {
+	        static ID: number;
+	        actorId: number;
+	        accountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmotePlayMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmotePlayMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmotePlayRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmotePlayRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmotePlayRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class EmoteRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        emoteId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EmoteRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EmoteRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayAggressionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        attackerId: number;
+	        defenderId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayAggressionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayAggressionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayAttackMonsterRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        monsterGroupId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayAttackMonsterRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayAttackMonsterRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayFightRequestCanceledMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        sourceId: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayFightRequestCanceledMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayFightRequestCanceledMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayPlayerFightFriendlyAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayPlayerFightFriendlyAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayPlayerFightFriendlyAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayPlayerFightFriendlyAnsweredMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        sourceId: number;
+	        targetId: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayPlayerFightFriendlyAnsweredMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayPlayerFightFriendlyAnsweredMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayPlayerFightFriendlyRequestedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        sourceId: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayPlayerFightFriendlyRequestedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayPlayerFightFriendlyRequestedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayPlayerFightRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetId: number;
+	        targetCellId: number;
+	        friendly: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayPlayerFightRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayPlayerFightRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayRemoveChallengeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayRemoveChallengeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayRemoveChallengeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayShowChallengeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        commonsInfos: FightCommonInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayShowChallengeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayShowChallengeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaFightAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaFightAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaFightAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaFightPropositionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        alliesId: number[];
+	        duration: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaFightPropositionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaFightPropositionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaFighterStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        playerId: number;
+	        accepted: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaFighterStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaFighterStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaRegisterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        battleMode: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaRegisterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaRegisterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaRegistrationStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        registered: boolean;
+	        step: number;
+	        battleMode: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaRegistrationStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaRegistrationStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaSwitchToFightServerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        address: string;
+	        port: number;
+	        ticket: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaSwitchToFightServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaSwitchToFightServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaSwitchToGameServerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        validToken: boolean;
+	        ticket: number[];
+	        homeServerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaSwitchToGameServerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaSwitchToGameServerMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaUnregisterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaUnregisterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaUnregisterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayArenaUpdatePlayerInfosMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        rank: number;
+	        bestDailyRank: number;
+	        bestRank: number;
+	        victoryCount: number;
+	        arenaFightcount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayArenaUpdatePlayerInfosMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayArenaUpdatePlayerInfosMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccountHouseMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houses: AccountHouseInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccountHouseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccountHouseMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseBuyRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        proposedPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseBuyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseBuyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseBuyResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        bought: boolean;
+	        realPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseBuyResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseBuyResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseKickIndoorMerchantRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseKickIndoorMerchantRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseKickIndoorMerchantRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseKickRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseKickRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseKickRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseLockFromInsideRequestMessage extends LockableChangeCodeMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseLockFromInsideRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseLockFromInsideRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HousePropertiesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        properties: HouseInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HousePropertiesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HousePropertiesMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseSellFromInsideRequestMessage extends HouseSellRequestMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseSellRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        amount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseSellRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseSellRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseSoldMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        realPrice: number;
+	        buyerName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseSoldMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseSoldMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseToSellFilterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        areaId: number;
+	        atLeastNbRoom: number;
+	        atLeastNbChest: number;
+	        skillRequested: number;
+	        maxPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseToSellFilterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseToSellFilterMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseToSellListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        pageIndex: number;
+	        totalPage: number;
+	        houseList: HouseInformationsForSell[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseToSellListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseToSellListMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseToSellListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        pageIndex: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseToSellListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseToSellListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseGuildNoneMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseGuildNoneMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseGuildNoneMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseGuildRightsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        guildInfo: GuildInformations;
+	        rights: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseGuildRightsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseGuildRightsMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseGuildRightsViewMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseGuildRightsViewMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseGuildRightsViewMessage(param1: ICustomDataInput): void;
+	    }
+	    class HouseGuildShareRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        rights: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_HouseGuildShareRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_HouseGuildShareRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobAllowMultiCraftRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enabled: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobAllowMultiCraftRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobAllowMultiCraftRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobBookSubscriptionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        addedOrDeleted: boolean;
+	        jobId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobBookSubscriptionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobBookSubscriptionMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        listEntry: JobCrafterDirectoryListEntry;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryDefineSettingsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        settings: JobCrafterDirectorySettings;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryDefineSettingsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryDefineSettingsMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryEntryMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerInfo: JobCrafterDirectoryEntryPlayerInfo;
+	        jobInfoList: JobCrafterDirectoryEntryJobInfo[];
+	        playerLook: EntityLook;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryEntryMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryEntryMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryEntryRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryEntryRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryEntryRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        listEntries: JobCrafterDirectoryListEntry[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryListMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectoryRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobId: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectoryRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectoryRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobCrafterDirectorySettingsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        craftersSettings: JobCrafterDirectorySettings[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobCrafterDirectorySettingsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobCrafterDirectorySettingsMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobDescriptionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobsDescription: JobDescription[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobDescriptionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobDescriptionMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobExperienceMultiUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        experiencesUpdate: JobExperience[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobExperienceMultiUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobExperienceMultiUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobExperienceOtherPlayerUpdateMessage extends JobExperienceUpdateMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobExperienceOtherPlayerUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobExperienceOtherPlayerUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobExperienceUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        experiencesUpdate: JobExperience;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobExperienceUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobExperienceUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobLevelUpMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        newLevel: number;
+	        jobsDescription: JobDescription;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobLevelUpMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobLevelUpMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobMultiCraftAvailableSkillsMessage extends JobAllowMultiCraftRequestMessage {
+	        static ID: number;
+	        playerId: number;
+	        skills: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobMultiCraftAvailableSkillsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobMultiCraftAvailableSkillsMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableChangeCodeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        code: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableChangeCodeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableChangeCodeMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableCodeResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableCodeResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableCodeResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableShowCodeDialogMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        changeOrUse: boolean;
+	        codeSize: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableShowCodeDialogMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableShowCodeDialogMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableStateUpdateAbstractMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        locked: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableStateUpdateAbstractMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableStateUpdateAbstractMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableStateUpdateHouseDoorMessage extends LockableStateUpdateAbstractMessage {
+	        static ID: number;
+	        houseId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableStateUpdateHouseDoorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableStateUpdateHouseDoorMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableStateUpdateStorageMessage extends LockableStateUpdateAbstractMessage {
+	        static ID: number;
+	        mapId: number;
+	        elementId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableStateUpdateStorageMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableStateUpdateStorageMessage(param1: ICustomDataInput): void;
+	    }
+	    class LockableUseCodeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        code: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LockableUseCodeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LockableUseCodeMessage(param1: ICustomDataInput): void;
+	    }
+	    class AlliancePrismDialogQuestionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AlliancePrismDialogQuestionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AlliancePrismDialogQuestionMessage(param1: ICustomDataInput): void;
+	    }
+	    class AllianceTaxCollectorDialogQuestionExtendedMessage extends TaxCollectorDialogQuestionExtendedMessage {
+	        static ID: number;
+	        alliance: BasicNamedAllianceInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AllianceTaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AllianceTaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataInput): void;
+	    }
+	    class EntityTalkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        entityId: number;
+	        textId: number;
+	        parameters: string[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_EntityTalkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_EntityTalkMessage(param1: ICustomDataInput): void;
+	    }
+	    class MapNpcsQuestStatusUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        npcsIdsWithQuest: number[];
+	        questFlags: GameRolePlayNpcQuestFlag[];
+	        npcsIdsWithoutQuest: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MapNpcsQuestStatusUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MapNpcsQuestStatusUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class NpcDialogCreationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        npcId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NpcDialogCreationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NpcDialogCreationMessage(param1: ICustomDataInput): void;
+	    }
+	    class NpcDialogQuestionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        messageId: number;
+	        dialogParams: string[];
+	        visibleReplies: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NpcDialogQuestionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NpcDialogQuestionMessage(param1: ICustomDataInput): void;
+	    }
+	    class NpcDialogReplyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        replyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NpcDialogReplyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NpcDialogReplyMessage(param1: ICustomDataInput): void;
+	    }
+	    class NpcGenericActionFailureMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NpcGenericActionFailureMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NpcGenericActionFailureMessage(param1: ICustomDataInput): void;
+	    }
+	    class NpcGenericActionRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        npcId: number;
+	        npcActionId: number;
+	        npcMapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_NpcGenericActionRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_NpcGenericActionRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorDialogQuestionBasicMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildInfo: BasicGuildInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorDialogQuestionExtendedMessage extends TaxCollectorDialogQuestionBasicMessage {
+	        static ID: number;
+	        maxPods: number;
+	        prospecting: number;
+	        wisdom: number;
+	        taxCollectorsCount: number;
+	        taxCollectorAttack: number;
+	        kamas: number;
+	        experience: number;
+	        pods: number;
+	        itemsValue: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectGroundAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number;
+	        objectGID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectGroundAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectGroundAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectGroundListAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cells: number[];
+	        referenceIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectGroundListAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectGroundListAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectGroundRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cell: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectGroundRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectGroundRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectGroundRemovedMultipleMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cells: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectGroundRemovedMultipleMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectGroundRemovedMultipleMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameDataPlayFarmObjectAnimationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cellId: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameDataPlayFarmObjectAnimationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameDataPlayFarmObjectAnimationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockPropertiesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        properties: PaddockInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockPropertiesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockPropertiesMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockSellBuyDialogMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        bsell: boolean;
+	        ownerId: number;
+	        price: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockSellBuyDialogMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockSellBuyDialogMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockToSellFilterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        areaId: number;
+	        atLeastNbMount: number;
+	        atLeastNbMachine: number;
+	        maxPrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockToSellFilterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockToSellFilterMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockToSellListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        pageIndex: number;
+	        totalPage: number;
+	        paddockList: PaddockInformationsForSell[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockToSellListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockToSellListMessage(param1: ICustomDataInput): void;
+	    }
+	    class PaddockToSellListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        pageIndex: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PaddockToSellListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PaddockToSellListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractPartyEventMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractPartyEventMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractPartyEventMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractPartyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        partyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractPartyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractPartyMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderAvailableDungeonsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderAvailableDungeonsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderAvailableDungeonsMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderAvailableDungeonsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderAvailableDungeonsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderAvailableDungeonsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderListenErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderListenErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderListenErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderListenRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderListenRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderListenRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderRegisterErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderRegisterErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderRegisterErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderRegisterRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderRegisterRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderRegisterRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderRegisterSuccessMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderRegisterSuccessMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderRegisterSuccessMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderRoomContentMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        players: DungeonPartyFinderPlayer[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderRoomContentMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderRoomContentMessage(param1: ICustomDataInput): void;
+	    }
+	    class DungeonPartyFinderRoomContentUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        addedPlayers: DungeonPartyFinderPlayer[];
+	        removedPlayersIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DungeonPartyFinderRoomContentUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DungeonPartyFinderRoomContentUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyAbdicateThroneMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyAbdicateThroneMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyAbdicateThroneMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyAcceptInvitationMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyAcceptInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyAcceptInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyCancelInvitationMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        guestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyCancelInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyCancelInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyCancelInvitationNotificationMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        cancelerId: number;
+	        guestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyCancelInvitationNotificationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyCancelInvitationNotificationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyCannotJoinErrorMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyCannotJoinErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyCannotJoinErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyDeletedMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyDeletedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyDeletedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyFollowMemberRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyFollowMemberRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyFollowMemberRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyFollowStatusUpdateMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        success: boolean;
+	        followedId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyFollowStatusUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyFollowStatusUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyFollowThisMemberRequestMessage extends PartyFollowMemberRequestMessage {
+	        static ID: number;
+	        enabled: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyFollowThisMemberRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyFollowThisMemberRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationArenaRequestMessage extends PartyInvitationRequestMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationArenaRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationArenaRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationCancelledForGuestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        cancelerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationCancelledForGuestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationCancelledForGuestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationDetailsMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        partyType: number;
+	        partyName: string;
+	        fromId: number;
+	        fromName: string;
+	        leaderId: number;
+	        members: PartyInvitationMemberInformations[];
+	        guests: PartyGuestInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationDetailsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationDetailsMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationDetailsRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationDetailsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationDetailsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationDungeonDetailsMessage extends PartyInvitationDetailsMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        playersDungeonReady: boolean[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationDungeonDetailsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationDungeonDetailsMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationDungeonMessage extends PartyInvitationMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationDungeonMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationDungeonMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationDungeonRequestMessage extends PartyInvitationRequestMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationDungeonRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationDungeonRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        partyType: number;
+	        partyName: string;
+	        maxParticipants: number;
+	        fromId: number;
+	        fromName: string;
+	        toId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyInvitationRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyInvitationRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyInvitationRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyJoinMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        partyType: number;
+	        partyLeaderId: number;
+	        maxParticipants: number;
+	        members: PartyMemberInformations[];
+	        guests: PartyGuestInformations[];
+	        restricted: boolean;
+	        partyName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyJoinMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyJoinMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyKickRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyKickRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyKickRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyKickedByMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        kickerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyKickedByMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyKickedByMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyLeaderUpdateMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        partyLeaderId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyLeaderUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyLeaderUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyLeaveMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyLeaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyLeaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyLeaveRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyLeaveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyLeaveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyLocateMembersMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        geopositions: PartyMemberGeoPosition[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyLocateMembersMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyLocateMembersMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyLoyaltyStatusMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        loyal: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyLoyaltyStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyLoyaltyStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyMemberEjectedMessage extends PartyMemberRemoveMessage {
+	        static ID: number;
+	        kickerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyMemberEjectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyMemberEjectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyMemberInFightMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        reason: number;
+	        memberId: number;
+	        memberAccountId: number;
+	        memberName: string;
+	        fightId: number;
+	        fightMap: MapCoordinatesExtended;
+	        timeBeforeFightStart: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyMemberInFightMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyMemberInFightMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyMemberRemoveMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        leavingPlayerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyMemberRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyMemberRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyModifiableStatusMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        enabled: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyModifiableStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyModifiableStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyNameSetErrorMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyNameSetErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyNameSetErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyNameSetRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        partyName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyNameSetRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyNameSetRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyNameUpdateMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        partyName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyNameUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyNameUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyNewGuestMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        guest: PartyGuestInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyNewGuestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyNewGuestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyNewMemberMessage extends PartyUpdateMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyNewMemberMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyNewMemberMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyPledgeLoyaltyRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        loyal: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyPledgeLoyaltyRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyPledgeLoyaltyRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyRefuseInvitationMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyRefuseInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyRefuseInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyRefuseInvitationNotificationMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        guestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyRefuseInvitationNotificationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyRefuseInvitationNotificationMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyRestrictedMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        restricted: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyRestrictedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyRestrictedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyStopFollowRequestMessage extends AbstractPartyMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyStopFollowRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyStopFollowRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyUpdateLightMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        id: number;
+	        lifePoints: number;
+	        maxLifePoints: number;
+	        prospecting: number;
+	        regenRate: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyUpdateLightMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyUpdateLightMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyUpdateMessage extends AbstractPartyEventMessage {
+	        static ID: number;
+	        memberInformations: PartyMemberInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PartyCompanionUpdateLightMessage extends PartyUpdateLightMessage {
+	        static ID: number;
+	        indexId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PartyCompanionUpdateLightMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PartyCompanionUpdateLightMessage(param1: ICustomDataInput): void;
+	    }
+	    class PurchasableDialogMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        buyOrSell: boolean;
+	        purchasableId: number;
+	        price: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PurchasableDialogMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PurchasableDialogMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuidedModeQuitRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuidedModeQuitRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuidedModeQuitRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuidedModeReturnRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuidedModeReturnRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuidedModeReturnRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        finishedQuestsIds: number[];
+	        finishedQuestsCounts: number[];
+	        activeQuests: QuestActiveInformations[];
+	        reinitDoneQuestsIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestListMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestObjectiveValidatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        objectiveId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestObjectiveValidatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestObjectiveValidatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestObjectiveValidationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        objectiveId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestObjectiveValidationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestObjectiveValidationMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStartRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStartRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStartRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStepInfoMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        infos: QuestActiveInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStepInfoMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStepInfoMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStepInfoRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStepInfoRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStepInfoRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStepStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        stepId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStepStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStepStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestStepValidatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        stepId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestStepValidatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestStepValidatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class QuestValidatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_QuestValidatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_QuestValidatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellForgetUIMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        open: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellForgetUIMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellForgetUIMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellForgottenMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellsId: number[];
+	        boostPoint: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellForgottenMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellForgottenMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellItemBoostMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        statId: number;
+	        spellId: number;
+	        value: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellItemBoostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellItemBoostMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellUpgradeFailureMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellUpgradeFailureMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellUpgradeFailureMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellUpgradeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        spellLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellUpgradeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellUpgradeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellUpgradeSuccessMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        spellLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellUpgradeSuccessMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellUpgradeSuccessMessage(param1: ICustomDataInput): void;
+	    }
+	    class ValidateSpellForgetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ValidateSpellForgetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ValidateSpellForgetMessage(param1: ICustomDataInput): void;
+	    }
+	    class StatsUpgradeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        useAdditionnal: boolean;
+	        statId: number;
+	        boostPoint: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StatsUpgradeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StatsUpgradeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class StatsUpgradeResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: number;
+	        nbCharacBoost: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StatsUpgradeResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StatsUpgradeResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class PortalUseRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        portalId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PortalUseRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PortalUseRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntAvailableRetryCountUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        availableRetryCount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntAvailableRetryCountUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntAvailableRetryCountUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntDigRequestAnswerFailedMessage extends TreasureHuntDigRequestAnswerMessage {
+	        static ID: number;
+	        wrongFlagCount: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntDigRequestAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntDigRequestAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntDigRequestAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntDigRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntDigRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntDigRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntFinishedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntFinishedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntFinishedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntFlagRemoveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        index: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntFlagRemoveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntFlagRemoveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntFlagRequestAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        result: number;
+	        index: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntFlagRequestAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntFlagRequestAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntFlagRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        index: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntFlagRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntFlagRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntGiveUpRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntGiveUpRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntGiveUpRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntLegendaryRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        legendaryId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntLegendaryRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntLegendaryRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        startMapId: number;
+	        knownStepsList: TreasureHuntStep[];
+	        totalStepCount: number;
+	        checkPointCurrent: number;
+	        checkPointTotal: number;
+	        availableRetryCount: number;
+	        flags: TreasureHuntFlag[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntRequestAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questType: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntRequestAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntRequestAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        questLevel: number;
+	        questType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TreasureHuntShowLegendaryUIMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        availableLegendaryIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TreasureHuntShowLegendaryUIMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TreasureHuntShowLegendaryUIMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlaySpellAnimMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        casterId: number;
+	        targetCellId: number;
+	        spellId: number;
+	        spellLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlaySpellAnimMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlaySpellAnimMessage(param1: ICustomDataInput): void;
+	    }
+	    class LeaveDialogMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dialogType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LeaveDialogMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LeaveDialogMessage(param1: ICustomDataInput): void;
+	    }
+	    class LeaveDialogRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LeaveDialogRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LeaveDialogRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PauseDialogMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dialogType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PauseDialogMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PauseDialogMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendAddFailureMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendAddFailureMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendAddFailureMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendAddRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendAddRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendAddRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        friendAdded: FriendInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendDeleteRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accountId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendDeleteRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendDeleteRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendDeleteResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        success: boolean;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendDeleteResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendDeleteResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendJoinRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendJoinRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendJoinRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendSetWarnOnConnectionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendSetWarnOnConnectionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendSetWarnOnConnectionMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendSetWarnOnLevelGainMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendSetWarnOnLevelGainMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendSetWarnOnLevelGainMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendSpouseFollowWithCompassRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendSpouseFollowWithCompassRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendSpouseFollowWithCompassRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendSpouseJoinRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendSpouseJoinRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendSpouseJoinRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        friendUpdated: FriendInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendWarnOnConnectionStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendWarnOnConnectionStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendWarnOnConnectionStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendWarnOnLevelGainStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendWarnOnLevelGainStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendWarnOnLevelGainStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendsGetListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendsGetListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendsGetListMessage(param1: ICustomDataInput): void;
+	    }
+	    class FriendsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        friendsList: FriendInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_FriendsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_FriendsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMemberSetWarnOnConnectionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMemberSetWarnOnConnectionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMemberSetWarnOnConnectionMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMemberWarnOnConnectionStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMemberWarnOnConnectionStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMemberWarnOnConnectionStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredAddFailureMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredAddFailureMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredAddFailureMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredAddRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        session: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredAddRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredAddRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ignoreAdded: IgnoredInformations;
+	        session: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredDeleteRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accountId: number;
+	        session: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredDeleteRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredDeleteRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredDeleteResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        success: boolean;
+	        name: string;
+	        session: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredDeleteResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredDeleteResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredGetListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredGetListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredGetListMessage(param1: ICustomDataInput): void;
+	    }
+	    class IgnoredListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ignoredList: IgnoredInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IgnoredListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IgnoredListMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpouseGetInformationsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpouseGetInformationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpouseGetInformationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpouseInformationsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spouse: FriendSpouseInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpouseInformationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpouseInformationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpouseStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        hasSpouse: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpouseStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpouseStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class WarnOnPermaDeathStateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_WarnOnPermaDeathStateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_WarnOnPermaDeathStateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuestLimitationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuestLimitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuestLimitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuestModeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        active: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuestModeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuestModeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ChallengeFightJoinRefusedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerId: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ChallengeFightJoinRefusedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ChallengeFightJoinRefusedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildChangeMemberParametersMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        memberId: number;
+	        rank: number;
+	        experienceGivenPercent: number;
+	        rights: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildChangeMemberParametersMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildChangeMemberParametersMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildCharacsUpgradeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        charaTypeTarget: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildCharacsUpgradeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildCharacsUpgradeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildCreationResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildCreationResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildCreationResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildCreationStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildCreationStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildCreationStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildCreationValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildName: string;
+	        guildEmblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildCreationValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildCreationValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFactsErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFactsErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFactsErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFactsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        infos: GuildFactSheetInformations;
+	        creationDate: number;
+	        nbTaxCollectors: number;
+	        enabled: boolean;
+	        members: CharacterMinimalInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFactsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFactsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFactsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFactsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFactsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildGetInformationsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        infoType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildGetInformationsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildGetInformationsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildHouseRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildHouseRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildHouseRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildHouseTeleportRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        houseId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildHouseTeleportRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildHouseTeleportRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildHouseUpdateInformationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        housesInformations: HouseInformationsForGuild;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildHouseUpdateInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildHouseUpdateInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildHousesInformationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        housesInformations: HouseInformationsForGuild[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildHousesInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildHousesInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInAllianceFactsMessage extends GuildFactsMessage {
+	        static ID: number;
+	        allianceInfos: BasicNamedAllianceInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInAllianceFactsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInAllianceFactsMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInformationsGeneralMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enabled: boolean;
+	        abandonnedPaddock: boolean;
+	        level: number;
+	        expLevelFloor: number;
+	        experience: number;
+	        expNextLevelFloor: number;
+	        creationDate: number;
+	        nbTotalMembers: number;
+	        nbConnectedMembers: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInformationsGeneralMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInformationsGeneralMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInformationsMemberUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        member: GuildMember;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInformationsMemberUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInformationsMemberUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInformationsMembersMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        members: GuildMember[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInformationsMembersMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInformationsMembersMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInformationsPaddocksMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        nbPaddockMax: number;
+	        paddocksInformations: PaddockContentInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInformationsPaddocksMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInformationsPaddocksMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInfosUpgradeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        maxTaxCollectorsCount: number;
+	        taxCollectorsCount: number;
+	        taxCollectorLifePoints: number;
+	        taxCollectorDamagesBonuses: number;
+	        taxCollectorPods: number;
+	        taxCollectorProspecting: number;
+	        taxCollectorWisdom: number;
+	        boostPoints: number;
+	        spellId: number[];
+	        spellLevel: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInfosUpgradeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInfosUpgradeMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitationAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitationAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitationAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitationByNameMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitationByNameMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitationByNameMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitationStateRecrutedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        invitationState: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitationStateRecrutedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitationStateRecrutedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitationStateRecruterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        recrutedName: string;
+	        invitationState: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitationStateRecruterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitationStateRecruterMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildInvitedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        recruterId: number;
+	        recruterName: string;
+	        guildInfo: BasicGuildInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildInvitedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildInvitedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildJoinedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildInfo: GuildInformations;
+	        memberRights: number;
+	        enabled: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildJoinedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildJoinedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildKickRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kickedId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildKickRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildKickRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildLeftMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildLeftMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildLeftMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildLevelUpMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        newLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildLevelUpMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildLevelUpMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guilds: GuildInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildListMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMemberLeavingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kicked: boolean;
+	        memberId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMemberLeavingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMemberLeavingMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMemberOnlineStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        memberId: number;
+	        online: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMemberOnlineStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMemberOnlineStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMembershipMessage extends GuildJoinedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMembershipMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMembershipMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildModificationEmblemValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildEmblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildModificationEmblemValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildModificationEmblemValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildModificationNameValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildModificationNameValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildModificationNameValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildModificationStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        canChangeName: boolean;
+	        canChangeEmblem: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildModificationStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildModificationStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildModificationValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildName: string;
+	        guildEmblem: GuildEmblem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildModificationValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildModificationValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMotdMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        content: string;
+	        timestamp: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMotdMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMotdMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildMotdSetErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildMotdSetErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildMotdSetErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildPaddockBoughtMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockInfo: PaddockContentInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildPaddockBoughtMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildPaddockBoughtMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildPaddockRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildPaddockRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildPaddockRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildPaddockTeleportRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        paddockId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildPaddockTeleportRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildPaddockTeleportRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildSpellUpgradeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildSpellUpgradeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildSpellUpgradeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildVersatileInfoListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guilds: GuildVersatileInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildVersatileInfoListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildVersatileInfoListMessage(param1: ICustomDataInput): void;
+	    }
+	    class AbstractTaxCollectorListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        informations: TaxCollectorInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AbstractTaxCollectorListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AbstractTaxCollectorListMessage(param1: ICustomDataInput): void;
+	    }
+	    class GameRolePlayTaxCollectorFightRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        taxCollectorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GameRolePlayTaxCollectorFightRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GameRolePlayTaxCollectorFightRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightJoinRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        taxCollectorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightJoinRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightJoinRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightLeaveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        taxCollectorId: number;
+	        characterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightLeaveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightLeaveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightPlayersEnemiesListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        playerInfo: CharacterMinimalPlusLookInformations[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightPlayersEnemiesListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightPlayersEnemiesListMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightPlayersEnemyRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightPlayersEnemyRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightPlayersEnemyRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightPlayersHelpersJoinMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        playerInfo: CharacterMinimalPlusLookInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightPlayersHelpersJoinMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightPlayersHelpersJoinMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightPlayersHelpersLeaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fightId: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightPlayersHelpersLeaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightPlayersHelpersLeaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class GuildFightTakePlaceRequestMessage extends GuildFightJoinRequestMessage {
+	        static ID: number;
+	        replacedCharacterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GuildFightTakePlaceRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GuildFightTakePlaceRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorAttackedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        firstNameId: number;
+	        lastNameId: number;
+	        worldX: number;
+	        worldY: number;
+	        mapId: number;
+	        subAreaId: number;
+	        guild: BasicGuildInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorAttackedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorAttackedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorAttackedResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        deadOrAlive: boolean;
+	        basicInfos: TaxCollectorBasicInformations;
+	        guild: BasicGuildInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorAttackedResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorAttackedResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorListMessage extends AbstractTaxCollectorListMessage {
+	        static ID: number;
+	        nbcollectorMax: number;
+	        fightersInformations: TaxCollectorFightersInformation[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorListMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorMovementAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        informations: TaxCollectorInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorMovementAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorMovementAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorMovementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        hireOrFire: boolean;
+	        basicInfos: TaxCollectorBasicInformations;
+	        playerId: number;
+	        playerName: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorMovementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorMovementMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorMovementRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        collectorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorMovementRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorMovementRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class TaxCollectorStateUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        uniqueId: number;
+	        state: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TaxCollectorStateUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TaxCollectorStateUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class TopTaxCollectorListMessage extends AbstractTaxCollectorListMessage {
+	        static ID: number;
+	        isDungeon: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TopTaxCollectorListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TopTaxCollectorListMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolFightPreparationUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idolSource: number;
+	        idols: Idol[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolFightPreparationUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolFightPreparationUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        chosenIdols: number[];
+	        partyChosenIdols: number[];
+	        partyIdols: PartyIdol[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolListMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolPartyLostMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idolId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolPartyLostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolPartyLostMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolPartyRefreshMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        partyIdol: PartyIdol;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolPartyRefreshMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolPartyRefreshMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolPartyRegisterRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        register: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolPartyRegisterRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolPartyRegisterRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolSelectErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        idolId: number;
+	        activate: boolean;
+	        party: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolSelectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolSelectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolSelectRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idolId: number;
+	        activate: boolean;
+	        party: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolSelectRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolSelectRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolSelectedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idolId: number;
+	        activate: boolean;
+	        party: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolSelectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolSelectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterCapabilitiesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        guildEmblemSymbolCategories: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterCapabilitiesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterCapabilitiesMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterLoadingCompleteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterLoadingCompleteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterLoadingCompleteMessage(param1: ICustomDataInput): void;
+	    }
+	    class OnConnectionEventMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        eventType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_OnConnectionEventMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_OnConnectionEventMessage(param1: ICustomDataInput): void;
+	    }
+	    class ServerExperienceModificatorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        experiencePercent: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ServerExperienceModificatorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ServerExperienceModificatorMessage(param1: ICustomDataInput): void;
+	    }
+	    class SetCharacterRestrictionsMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actorId: number;
+	        restrictions: ActorRestrictionsInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SetCharacterRestrictionsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SetCharacterRestrictionsMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveElementUpdatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        interactiveElement: InteractiveElement;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveElementUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveElementUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveMapUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        interactiveElements: InteractiveElement[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveMapUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveMapUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveUseEndedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        elemId: number;
+	        skillId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveUseEndedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveUseEndedMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveUseErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        elemId: number;
+	        skillInstanceUid: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveUseErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveUseErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveUseRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        elemId: number;
+	        skillInstanceUid: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveUseRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveUseRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class InteractiveUsedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        entityId: number;
+	        elemId: number;
+	        skillId: number;
+	        duration: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InteractiveUsedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InteractiveUsedMessage(param1: ICustomDataInput): void;
+	    }
+	    class StatedElementUpdatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        statedElement: StatedElement;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StatedElementUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StatedElementUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class StatedMapUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        statedElements: StatedElement[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StatedMapUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StatedMapUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportBuddiesAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportBuddiesAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportBuddiesAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportBuddiesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportBuddiesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportBuddiesMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportBuddiesRequestedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        inviterId: number;
+	        invalidBuddiesIds: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportBuddiesRequestedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportBuddiesRequestedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportToBuddyAnswerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        buddyId: number;
+	        accept: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportToBuddyAnswerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportToBuddyAnswerMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportToBuddyCloseMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        buddyId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportToBuddyCloseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportToBuddyCloseMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportToBuddyOfferMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        dungeonId: number;
+	        buddyId: number;
+	        timeLeft: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportToBuddyOfferMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportToBuddyOfferMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportDestinationsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        teleporterType: number;
+	        mapIds: number[];
+	        subAreaIds: number[];
+	        costs: number[];
+	        destTeleporterType: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportDestinationsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportDestinationsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class TeleportRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        teleporterType: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TeleportRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TeleportRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ZaapListMessage extends TeleportDestinationsListMessage {
+	        static ID: number;
+	        spawnMapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ZaapListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ZaapListMessage(param1: ICustomDataInput): void;
+	    }
+	    class ZaapRespawnSaveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ZaapRespawnSaveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ZaapRespawnSaveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ZaapRespawnUpdatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mapId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ZaapRespawnUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ZaapRespawnUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class KamasUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kamasTotal: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_KamasUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_KamasUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectAveragePricesErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectAveragePricesErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectAveragePricesErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectAveragePricesGetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectAveragePricesGetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectAveragePricesGetMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectAveragePricesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ids: number[];
+	        avgPrices: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectAveragePricesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectAveragePricesMessage(param1: ICustomDataInput): void;
+	    }
+	    class DecraftResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        results: DecraftedItemStackInfo[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_DecraftResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_DecraftResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeAcceptMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeAcceptMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeAcceptMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseBuyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        uid: number;
+	        qty: number;
+	        price: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseBuyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseBuyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseBuyResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        uid: number;
+	        bought: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseBuyResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseBuyResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseGenericItemAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseGenericItemAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseGenericItemAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseGenericItemRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseGenericItemRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseGenericItemRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseInListAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        itemUID: number;
+	        objGenericId: number;
+	        effects: ObjectEffect[];
+	        prices: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseInListAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseInListAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseInListRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        itemUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseInListRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseInListRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseInListUpdatedMessage extends ExchangeBidHouseInListAddedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseInListUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseInListUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseItemAddOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        itemInfo: ObjectItemToSellInBid;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseItemAddOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseItemAddOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseItemRemoveOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        sellerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseItemRemoveOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseItemRemoveOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseListMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHousePriceMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        genId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHousePriceMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHousePriceMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseSearchMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: number;
+	        genId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseSearchMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseSearchMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidHouseTypeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidHouseTypeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidHouseTypeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidPriceForSellerMessage extends ExchangeBidPriceMessage {
+	        static ID: number;
+	        allIdentical: boolean;
+	        minimalPrices: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidPriceForSellerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidPriceForSellerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidPriceMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        genericId: number;
+	        averagePrice: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidPriceMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidPriceMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBidSearchOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBidSearchOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBidSearchOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBuyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectToBuyId: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBuyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBuyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeBuyOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeBuyOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeBuyOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftCountModifiedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        count: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftCountModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftCountModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftCountRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        count: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftCountRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftCountRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftInformationObjectMessage extends ExchangeCraftResultWithObjectIdMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftInformationObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftInformationObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftPaymentModificationRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftPaymentModificationRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftPaymentModificationRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftPaymentModifiedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        goldSum: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftPaymentModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftPaymentModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftResultMagicWithObjectDescMessage extends ExchangeCraftResultWithObjectDescMessage {
+	        static ID: number;
+	        magicPoolStatus: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        craftResult: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftResultWithObjectDescMessage extends ExchangeCraftResultMessage {
+	        static ID: number;
+	        objectInfo: ObjectItemNotInContainer;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftResultWithObjectDescMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftResultWithObjectDescMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCraftResultWithObjectIdMessage extends ExchangeCraftResultMessage {
+	        static ID: number;
+	        objectGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeCrafterJobLevelupMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        crafterJobLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeCrafterJobLevelupMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeCrafterJobLevelupMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        errorType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeGuildTaxCollectorGetMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        collectorName: string;
+	        worldX: number;
+	        worldY: number;
+	        mapId: number;
+	        subAreaId: number;
+	        userName: string;
+	        experience: number;
+	        objectsInfos: ObjectItemGenericQuantity[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeGuildTaxCollectorGetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeGuildTaxCollectorGetMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeHandleMountsStableMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actionType: number;
+	        ridesId: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeHandleMountsStableMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeHandleMountsStableMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeIsReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        ready: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeIsReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeIsReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeItemAutoCraftStopedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeItemAutoCraftStopedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeItemAutoCraftStopedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeLeaveMessage extends LeaveDialogMessage {
+	        static ID: number;
+	        success: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeLeaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeLeaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountFreeFromPaddockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        worldX: number;
+	        worldY: number;
+	        liberator: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountFreeFromPaddockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountFreeFromPaddockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountStableErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountStableErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountStableErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountSterilizeFromPaddockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        worldX: number;
+	        worldY: number;
+	        sterilizator: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountSterilizeFromPaddockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountSterilizeFromPaddockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsPaddockAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountDescription: MountClientData[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsPaddockAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsPaddockAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsPaddockRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountsId: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsPaddockRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsPaddockRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsStableAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountDescription: MountClientData[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsStableAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsStableAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsStableBornAddMessage extends ExchangeMountsStableAddMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsStableBornAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsStableBornAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsStableRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        mountsId: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsStableRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsStableRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMountsTakenFromPaddockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        name: string;
+	        worldX: number;
+	        worldY: number;
+	        ownername: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMountsTakenFromPaddockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMountsTakenFromPaddockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectAddedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        remote: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectModifyPricedMessage extends ExchangeObjectMovePricedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectMoveKamaMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectMoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectMoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectMoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectMovePricedMessage extends ExchangeObjectMoveMessage {
+	        static ID: number;
+	        price: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectMovePricedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectMovePricedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertAllFromInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertAllFromInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertAllFromInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertAllToInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertAllToInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertAllToInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertExistingFromInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertExistingFromInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertExistingFromInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertExistingToInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertExistingToInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertExistingToInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertListFromInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ids: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertListFromInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertListFromInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertListToInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ids: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertListToInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertListToInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectTransfertListWithQuantityToInvMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ids: number[];
+	        qtys: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectTransfertListWithQuantityToInvMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectTransfertListWithQuantityToInvMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectUseInWorkshopMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectUseInWorkshopMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectUseInWorkshopMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectsAddedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectsAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectsAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeOkMultiCraftMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        initiatorId: number;
+	        otherId: number;
+	        role: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeOkMultiCraftMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeOkMultiCraftMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeOnHumanVendorRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        humanVendorId: number;
+	        humanVendorCell: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeOnHumanVendorRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeOnHumanVendorRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangePlayerMultiCraftRequestMessage extends ExchangeRequestMessage {
+	        static ID: number;
+	        target: number;
+	        skillId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangePlayerMultiCraftRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangePlayerMultiCraftRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangePlayerRequestMessage extends ExchangeRequestMessage {
+	        static ID: number;
+	        target: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangePlayerRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangePlayerRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeReadyMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ready: boolean;
+	        step: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeReadyMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeReadyMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeReplayStopMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeReplayStopMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeReplayStopMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeReplyTaxVendorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectValue: number;
+	        totalTaxValue: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeReplyTaxVendorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeReplyTaxVendorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        exchangeType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestOnMountStockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestOnMountStockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestOnMountStockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestOnShopStockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestOnShopStockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestOnShopStockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestOnTaxCollectorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        taxCollectorId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestOnTaxCollectorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestOnTaxCollectorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        exchangeType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeRequestedTradeMessage extends ExchangeRequestedMessage {
+	        static ID: number;
+	        source: number;
+	        target: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeRequestedTradeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeRequestedTradeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeSellMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectToSellId: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeSellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeSellMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeSellOkMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeSellOkMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeSellOkMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeSetCraftRecipeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectGID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeSetCraftRecipeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeSetCraftRecipeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShopStockMovementRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShopStockMovementRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShopStockMovementRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShopStockMovementUpdatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectInfo: ObjectItemToSell;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShopStockMovementUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShopStockMovementUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShopStockMultiMovementRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectIdList: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShopStockMultiMovementRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShopStockMultiMovementRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShopStockMultiMovementUpdatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectInfoList: ObjectItemToSell[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShopStockMultiMovementUpdatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShopStockMultiMovementUpdatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShopStockStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectsInfos: ObjectItemToSell[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShopStockStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShopStockStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeShowVendorTaxMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeShowVendorTaxMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeShowVendorTaxMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartAsVendorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartAsVendorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartAsVendorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkCraftMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkCraftMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkCraftMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkCraftWithInformationMessage extends ExchangeStartOkCraftMessage {
+	        static ID: number;
+	        skillId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkCraftWithInformationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkCraftWithInformationMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkHumanVendorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        sellerId: number;
+	        objectsInfos: ObjectItemToSellInHumanVendorShop[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkHumanVendorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkHumanVendorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkJobIndexMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobs: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkJobIndexMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkJobIndexMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkMountMessage extends ExchangeStartOkMountWithOutPaddockMessage {
+	        static ID: number;
+	        paddockedMountsDescription: MountClientData[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkMountMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkMountMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkMountWithOutPaddockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        stabledMountsDescription: MountClientData[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkMulticraftCrafterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        skillId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkMulticraftCrafterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkMulticraftCrafterMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkMulticraftCustomerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        skillId: number;
+	        crafterJobLevel: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkMulticraftCustomerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkMulticraftCustomerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkNpcShopMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        npcSellerId: number;
+	        tokenId: number;
+	        objectsInfos: ObjectItemToSellInNpcShop[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkNpcShopMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkNpcShopMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkNpcTradeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        npcId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkNpcTradeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkNpcTradeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkRecycleTradeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        percentToPrism: number;
+	        percentToPlayer: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkRecycleTradeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkRecycleTradeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartOkRunesTradeMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartOkRunesTradeMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartOkRunesTradeMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedBidBuyerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        buyerDescriptor: SellerBuyerDescriptor;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedBidBuyerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedBidBuyerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedBidSellerMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        sellerDescriptor: SellerBuyerDescriptor;
+	        objectsInfos: ObjectItemToSellInBid[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedBidSellerMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedBidSellerMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        exchangeType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedMountStockMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectsInfos: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedMountStockMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedMountStockMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedWithPodsMessage extends ExchangeStartedMessage {
+	        static ID: number;
+	        firstCharacterId: number;
+	        firstCharacterCurrentWeight: number;
+	        firstCharacterMaxWeight: number;
+	        secondCharacterId: number;
+	        secondCharacterCurrentWeight: number;
+	        secondCharacterMaxWeight: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedWithPodsMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedWithPodsMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStartedWithStorageMessage extends ExchangeStartedMessage {
+	        static ID: number;
+	        storageMaxSlot: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStartedWithStorageMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStartedWithStorageMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeStoppedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        id: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeStoppedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeStoppedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeTypesExchangerDescriptionForUserMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        typeDescription: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeTypesExchangerDescriptionForUserMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeTypesExchangerDescriptionForUserMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeTypesItemsExchangerDescriptionForUserMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        itemTypeDescriptions: BidExchangerObjectInfo[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeTypesItemsExchangerDescriptionForUserMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeTypesItemsExchangerDescriptionForUserMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeWaitingResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        bwait: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeWaitingResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeWaitingResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeWeightMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        currentWeight: number;
+	        maxWeight: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeWeightMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeWeightMessage(param1: ICustomDataInput): void;
+	    }
+	    class ItemNoMoreAvailableMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ItemNoMoreAvailableMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ItemNoMoreAvailableMessage(param1: ICustomDataInput): void;
+	    }
+	    class JobBookSubscribeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_JobBookSubscribeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_JobBookSubscribeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class RecycleResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        nuggetsForPrism: number;
+	        nuggetsForPlayer: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_RecycleResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_RecycleResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class UpdateMountBoostMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        rideId: number;
+	        boostToUpdateList: UpdateMountBoost[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_UpdateMountBoostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_UpdateMountBoostMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeKamaModifiedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeKamaModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeKamaModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMultiCraftCrafterCanUseHisRessourcesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allowed: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        allow: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectModifiedInBagMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectModifiedInBagMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectModifiedInBagMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectModifiedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectPutInBagMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectPutInBagMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectPutInBagMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectRemovedFromBagMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        objectUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectRemovedFromBagMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectRemovedFromBagMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectRemovedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        objectUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectsModifiedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        object: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectsModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectsModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ExchangeObjectsRemovedMessage extends ExchangeObjectMessage {
+	        static ID: number;
+	        objectUID: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ExchangeObjectsRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ExchangeObjectsRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class GoldAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        gold: GoldItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_GoldAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_GoldAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryContentAndPresetMessage extends InventoryContentMessage {
+	        static ID: number;
+	        presets: Preset[];
+	        idolsPresets: IdolsPreset[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryContentAndPresetMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryContentAndPresetMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryContentMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objects: ObjectItem[];
+	        kamas: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryContentMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryContentMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryWeightMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        weight: number;
+	        weightMax: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryWeightMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryWeightMessage(param1: ICustomDataInput): void;
+	    }
+	    class LivingObjectChangeSkinRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        livingUID: number;
+	        livingPosition: number;
+	        skinId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LivingObjectChangeSkinRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LivingObjectChangeSkinRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class LivingObjectDissociateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        livingUID: number;
+	        livingPosition: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LivingObjectDissociateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LivingObjectDissociateMessage(param1: ICustomDataInput): void;
+	    }
+	    class LivingObjectMessageMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        msgId: number;
+	        timeStamp: number;
+	        owner: string;
+	        objectGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LivingObjectMessageMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LivingObjectMessageMessage(param1: ICustomDataInput): void;
+	    }
+	    class LivingObjectMessageRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        msgId: number;
+	        parameters: string[];
+	        livingObject: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_LivingObjectMessageRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_LivingObjectMessageRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MimicryObjectAssociatedMessage extends SymbioticObjectAssociatedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MimicryObjectAssociatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MimicryObjectAssociatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class MimicryObjectEraseRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        hostUID: number;
+	        hostPos: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MimicryObjectEraseRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MimicryObjectEraseRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MimicryObjectErrorMessage extends SymbioticObjectErrorMessage {
+	        static ID: number;
+	        preview: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MimicryObjectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MimicryObjectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class MimicryObjectFeedAndAssociateRequestMessage extends SymbioticObjectAssociateRequestMessage {
+	        static ID: number;
+	        foodUID: number;
+	        foodPos: number;
+	        preview: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MimicryObjectFeedAndAssociateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MimicryObjectFeedAndAssociateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class MimicryObjectPreviewMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        result: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_MimicryObjectPreviewMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_MimicryObjectPreviewMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectDeleteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectDeleteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectDeleteMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectDeletedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectDeletedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectDeletedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectDropMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectDropMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectDropMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectFeedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        foodUID: number;
+	        foodQuantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectFeedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectFeedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectFoundWhileRecoltingMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        genericId: number;
+	        quantity: number;
+	        resourceGenericId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectFoundWhileRecoltingMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectFoundWhileRecoltingMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectJobAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        jobId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectJobAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectJobAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectModifiedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectModifiedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectModifiedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectMovementMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        position: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectMovementMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectMovementMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectQuantityMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectQuantityMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectQuantityMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectSetPositionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        position: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectSetPositionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectSetPositionMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectUseMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectUseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectUseMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectUseMultipleMessage extends ObjectUseMessage {
+	        static ID: number;
+	        quantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectUseMultipleMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectUseMultipleMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectUseOnCellMessage extends ObjectUseMessage {
+	        static ID: number;
+	        cells: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectUseOnCellMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectUseOnCellMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectUseOnCharacterMessage extends ObjectUseMessage {
+	        static ID: number;
+	        characterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectUseOnCharacterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectUseOnCharacterMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectsAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        object: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectsAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectsAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectsDeletedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectsDeletedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectsDeletedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObjectsQuantityMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectsUIDAndQty: ObjectItemQuantity[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObjectsQuantityMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObjectsQuantityMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObtainedItemMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        genericId: number;
+	        baseQuantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObtainedItemMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObtainedItemMessage(param1: ICustomDataInput): void;
+	    }
+	    class ObtainedItemWithBonusMessage extends ObtainedItemMessage {
+	        static ID: number;
+	        bonusQuantity: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ObtainedItemWithBonusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ObtainedItemWithBonusMessage(param1: ICustomDataInput): void;
+	    }
+	    class SetUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        setId: number;
+	        setObjects: number[];
+	        setEffects: ObjectEffect[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SetUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SetUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class SymbioticObjectAssociateRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        symbioteUID: number;
+	        symbiotePos: number;
+	        hostUID: number;
+	        hostPos: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class SymbioticObjectAssociatedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        hostUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class SymbioticObjectErrorMessage extends ObjectErrorMessage {
+	        static ID: number;
+	        errorCode: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SymbioticObjectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SymbioticObjectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class WrapperObjectAssociatedMessage extends SymbioticObjectAssociatedMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_WrapperObjectAssociatedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_WrapperObjectAssociatedMessage(param1: ICustomDataInput): void;
+	    }
+	    class WrapperObjectDissociateRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        hostUID: number;
+	        hostPos: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_WrapperObjectDissociateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_WrapperObjectDissociateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class WrapperObjectErrorMessage extends SymbioticObjectErrorMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_WrapperObjectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_WrapperObjectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolsPresetDeleteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolsPresetDeleteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolsPresetDeleteMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolsPresetDeleteResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        code: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolsPresetDeleteResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolsPresetDeleteResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolsPresetSaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        symbolId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolsPresetSaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolsPresetSaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolsPresetSaveResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        code: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolsPresetSaveResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolsPresetSaveResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class IdolsPresetUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        idolsPreset: IdolsPreset;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_IdolsPresetUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_IdolsPresetUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetDeleteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetDeleteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetDeleteMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetDeleteResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        code: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetDeleteResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetDeleteResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetItemUpdateErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        code: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetItemUpdateErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetItemUpdateErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetItemUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        presetItem: PresetItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetItemUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetItemUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetItemUpdateRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        position: number;
+	        objUid: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetItemUpdateRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetItemUpdateRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetSaveCustomMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        symbolId: number;
+	        itemsPositions: number[];
+	        itemsUids: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetSaveCustomMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetSaveCustomMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetSaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        symbolId: number;
+	        saveEquipment: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetSaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetSaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetSaveResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        code: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetSaveResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetSaveResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        preset: Preset;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetUseMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetUseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetUseMessage(param1: ICustomDataInput): void;
+	    }
+	    class InventoryPresetUseResultMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        presetId: number;
+	        code: number;
+	        unlinkedPosition: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_InventoryPresetUseResultMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_InventoryPresetUseResultMessage(param1: ICustomDataInput): void;
+	    }
+	    class SpellListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellPrevisualization: boolean;
+	        spells: SpellItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SpellListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SpellListMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageInventoryContentMessage extends InventoryContentMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageInventoryContentMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageInventoryContentMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageKamasUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        kamasTotal: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageKamasUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageKamasUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageObjectRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageObjectRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageObjectRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageObjectUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        object: ObjectItem;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageObjectUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageObjectUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageObjectsRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectUIDList: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageObjectsRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageObjectsRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class StorageObjectsUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        objectList: ObjectItem[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StorageObjectsUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StorageObjectsUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccessoryPreviewErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        error: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccessoryPreviewErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccessoryPreviewErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccessoryPreviewMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        look: EntityLook;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccessoryPreviewMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccessoryPreviewMessage(param1: ICustomDataInput): void;
+	    }
+	    class AccessoryPreviewRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        genericId: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AccessoryPreviewRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AccessoryPreviewRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PopupWarningMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        lockDuration: number;
+	        author: string;
+	        content: string;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PopupWarningMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PopupWarningMessage(param1: ICustomDataInput): void;
+	    }
+	    class AreaFightModificatorUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        spellPairId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AreaFightModificatorUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AreaFightModificatorUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismAttackRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismAttackRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismAttackRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightAddedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fight: PrismFightersInformation;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightAddedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightAddedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightAttackerAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        fightId: number;
+	        attacker: CharacterMinimalPlusLookInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightAttackerAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightAttackerAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightAttackerRemoveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        fightId: number;
+	        fighterToRemoveId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightAttackerRemoveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightAttackerRemoveMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightDefenderAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        fightId: number;
+	        defender: CharacterMinimalPlusLookInformations;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightDefenderAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightDefenderAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightDefenderLeaveMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        fightId: number;
+	        fighterToRemoveId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightDefenderLeaveMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightDefenderLeaveMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightJoinLeaveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        join: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightJoinLeaveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightJoinLeaveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightStateUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        state: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightStateUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightStateUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismFightSwapRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        targetId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismFightSwapRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismFightSwapRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismInfoCloseMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismInfoCloseMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismInfoCloseMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismInfoInValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismInfoInValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismInfoInValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismInfoJoinLeaveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        join: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismInfoJoinLeaveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismInfoJoinLeaveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismModuleExchangeRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismModuleExchangeRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismModuleExchangeRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismSetSabotagedRefusedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismSetSabotagedRefusedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismSetSabotagedRefusedMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismSetSabotagedRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismSetSabotagedRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismSetSabotagedRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismSettingsErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismSettingsErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismSettingsErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismSettingsRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        subAreaId: number;
+	        startDefenseTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismSettingsRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismSettingsRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismUseRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        moduleToUse: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismUseRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismUseRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismsInfoValidMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        fights: PrismFightersInformation[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismsInfoValidMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismsInfoValidMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        prisms: PrismSubareaEmptyInfo[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismsListRegisterMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        listen: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismsListRegisterMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismsListRegisterMessage(param1: ICustomDataInput): void;
+	    }
+	    class PrismsListUpdateMessage extends PrismsListMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_PrismsListUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_PrismsListUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class AlignmentRankUpdateMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        alignmentRank: number;
+	        verbose: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_AlignmentRankUpdateMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_AlignmentRankUpdateMessage(param1: ICustomDataInput): void;
+	    }
+	    class SetEnableAVARequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SetEnableAVARequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SetEnableAVARequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class SetEnablePVPRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        enable: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SetEnablePVPRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SetEnablePVPRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class UpdateMapPlayersAgressableStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        playerIds: number[];
+	        enable: number[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_UpdateMapPlayersAgressableStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_UpdateMapPlayersAgressableStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class UpdateSelfAgressableStatusMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        status: number;
+	        probationTime: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_UpdateSelfAgressableStatusMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_UpdateSelfAgressableStatusMessage(param1: ICustomDataInput): void;
+	    }
+	    class CharacterReportMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reportedId: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CharacterReportMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CharacterReportMessage(param1: ICustomDataInput): void;
+	    }
+	    class CinematicMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        cinematicId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_CinematicMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_CinematicMessage(param1: ICustomDataInput): void;
+	    }
+	    class URLOpenMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        urlId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_URLOpenMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_URLOpenMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarAddErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        error: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarAddErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarAddErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarAddRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        shortcut: Shortcut;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarAddRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarAddRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarContentMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        shortcuts: Shortcut[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarContentMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarContentMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarRefreshMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        shortcut: Shortcut;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarRefreshMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarRefreshMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarRemoveErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        error: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarRemoveErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarRemoveErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarRemoveRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        slot: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarRemoveRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarRemoveRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarRemovedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        slot: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarRemovedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarRemovedMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarSwapErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        error: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarSwapErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarSwapErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ShortcutBarSwapRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        barType: number;
+	        firstSlot: number;
+	        secondSlot: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ShortcutBarSwapRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ShortcutBarSwapRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ContactLookErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ContactLookErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ContactLookErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class ContactLookMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        playerName: string;
+	        playerId: number;
+	        look: EntityLook;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ContactLookMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ContactLookMessage(param1: ICustomDataInput): void;
+	    }
+	    class ContactLookRequestByIdMessage extends ContactLookRequestMessage {
+	        static ID: number;
+	        playerId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ContactLookRequestByIdMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ContactLookRequestByIdMessage(param1: ICustomDataInput): void;
+	    }
+	    class ContactLookRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        requestId: number;
+	        contactType: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ContactLookRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ContactLookRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionAddMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        newAction: StartupActionAddObject;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionAddMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionAddMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionFinishedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        success: boolean;
+	        actionId: number;
+	        automaticAction: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionFinishedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionFinishedMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionsAllAttributionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        characterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionsAllAttributionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionsAllAttributionMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionsExecuteMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionsExecuteMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionsExecuteMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actions: StartupActionAddObject[];
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class StartupActionsObjetAttributionMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        actionId: number;
+	        characterId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_StartupActionsObjetAttributionMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_StartupActionsObjetAttributionMessage(param1: ICustomDataInput): void;
+	    }
+	    class SubscriptionLimitationMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SubscriptionLimitationMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SubscriptionLimitationMessage(param1: ICustomDataInput): void;
+	    }
+	    class SubscriptionZoneMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        active: boolean;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_SubscriptionZoneMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_SubscriptionZoneMessage(param1: ICustomDataInput): void;
+	    }
+	    class OrnamentGainedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ornamentId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_OrnamentGainedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_OrnamentGainedMessage(param1: ICustomDataInput): void;
+	    }
+	    class OrnamentSelectErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_OrnamentSelectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_OrnamentSelectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class OrnamentSelectRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ornamentId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_OrnamentSelectRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_OrnamentSelectRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class OrnamentSelectedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        ornamentId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_OrnamentSelectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_OrnamentSelectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitleGainedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        titleId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitleGainedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitleGainedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitleLostMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        titleId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitleLostMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitleLostMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitleSelectErrorMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        reason: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitleSelectErrorMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitleSelectErrorMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitleSelectRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        titleId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitleSelectRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitleSelectRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitleSelectedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        titleId: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitleSelectedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitleSelectedMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitlesAndOrnamentsListMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        titles: number[];
+	        ornaments: number[];
+	        activeTitle: number;
+	        activeOrnament: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitlesAndOrnamentsListMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitlesAndOrnamentsListMessage(param1: ICustomDataInput): void;
+	    }
+	    class TitlesAndOrnamentsListRequestMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_TitlesAndOrnamentsListRequestMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_TitlesAndOrnamentsListRequestMessage(param1: ICustomDataInput): void;
+	    }
+	    class ClientUIOpenedByObjectMessage extends ClientUIOpenedMessage {
+	        static ID: number;
+	        uid: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ClientUIOpenedByObjectMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ClientUIOpenedByObjectMessage(param1: ICustomDataInput): void;
+	    }
+	    class ClientUIOpenedMessage extends NetworkMessage implements INetworkMessage {
+	        static ID: number;
+	        type: number;
+	        constructor();
+	        getMessageId(): number;
+	        reset(): void;
+	        pack(param1: ICustomDataOutput): void;
+	        unpack(param1: ICustomDataInput, param2: number): void;
+	        serialize(param1: ICustomDataOutput): void;
+	        serializeAs_ClientUIOpenedMessage(param1: ICustomDataOutput): void;
+	        deserialize(param1: ICustomDataInput): void;
+	        deserializeAs_ClientUIOpenedMessage(param1: ICustomDataInput): void;
 	    }
 	    class ProtocolRequired extends NetworkMessage implements INetworkMessage {
 	        static ID: number;

@@ -3,6 +3,1849 @@
 import ByteArray = require('ts-bytearray');
 
 module Protocol {
+    export class Binary64 {
+        low: number;
+        high: number;
+
+        constructor(low: number = 0, high: number = 0) {
+            this.high = high;
+            this.low = low;
+        }
+
+        div(n: number): number {
+            var modHigh = 0;
+            modHigh = (this.high % n);
+            var mod = (((this.low % n) + (modHigh * 6)) % n);
+            this.high = (this.high / n);
+            var newLow = (((modHigh * 4294967296) + this.low) / n);
+            this.high = (this.high + Number((newLow / 4294967296)));
+            this.low = newLow;
+            return mod;
+        };
+
+        mul(n: number): void {
+            var newLow = (Number(this.low) * n);
+            this.high = (this.high * n);
+            this.high = (this.high + Number((newLow / 4294967296)));
+            this.low = (this.low * n);
+        };
+
+        add(n: number): void {
+            var newLow = (Number(this.low) + n);
+            this.high = (this.high + Number((newLow / 4294967296)));
+            this.low = newLow;
+        };
+
+        bitwiseNot(n: number): void {
+            this.low = ~(this.low);
+            this.high = ~(this.high);
+        };
+    }
+
+    export class BooleanByteWrapper {
+        static setFlag(param1?: number, param2?: number, param3?: boolean): number {
+            switch (param2) {
+                case 0:
+                    if (param3) {
+                        param1 = param1 | 1;
+                    } else {
+                        param1 = param1 & 255 - 1;
+                    }
+                    break;
+                case 1:
+                    if (param3) {
+                        param1 = param1 | 2;
+                    } else {
+                        param1 = param1 & 255 - 2;
+                    }
+                    break;
+                case 2:
+                    if (param3) {
+                        param1 = param1 | 4;
+                    } else {
+                        param1 = param1 & 255 - 4;
+                    }
+                    break;
+                case 3:
+                    if (param3) {
+                        param1 = param1 | 8;
+                    } else {
+                        param1 = param1 & 255 - 8;
+                    }
+                    break;
+                case 4:
+                    if (param3) {
+                        param1 = param1 | 16;
+                    } else {
+                        param1 = param1 & 255 - 16;
+                    }
+                    break;
+                case 5:
+                    if (param3) {
+                        param1 = param1 | 32;
+                    } else {
+                        param1 = param1 & 255 - 32;
+                    }
+                    break;
+                case 6:
+                    if (param3) {
+                        param1 = param1 | 64;
+                    } else {
+                        param1 = param1 & 255 - 64;
+                    }
+                    break;
+                case 7:
+                    if (param3) {
+                        param1 = param1 | 128;
+                    } else {
+                        param1 = param1 & 255 - 128;
+                    }
+                    break;
+                default:
+                    throw new Error('Bytebox overflow.');
+            }
+            return param1;
+        }
+
+        static getFlag(param1: number, param2: number): boolean {
+            switch (param2) {
+                case 0:
+                    return !((param1 & 1) === 0);
+                case 1:
+                    return !((param1 & 2) === 0);
+                case 2:
+                    return !((param1 & 4) === 0);
+                case 3:
+                    return !((param1 & 8) === 0);
+                case 4:
+                    return !((param1 & 16) === 0);
+                case 5:
+                    return !((param1 & 32) === 0);
+                case 6:
+                    return !((param1 & 64) === 0);
+                case 7:
+                    return !((param1 & 128) === 0);
+                default:
+                    throw new Error('Bytebox overflow.');
+            }
+        }
+    }
+    export interface ICustomDataOutput {
+        writeVarInt(param1: number): void;
+        writeVarShort(param1: number): void;
+        writeVarLong(param1: number): void;
+        writeBytes(param1: ByteArray, param2?: number, param3?: number): void;
+        writeBoolean(param1: boolean): void;
+        writeByte(param1: number): void;
+        writeShort(param1: number): void;
+        writeInt(param1: number): void;
+        writeUnsignedInt(param1: number): void;
+        writeFloat(param1: number): void;
+        writeDouble(param1: number): void;
+        writeMultiByte(param1: string, param2: string): void;
+        writeUTF(param1: string): void;
+        writeUTFBytes(param1: string): void;
+        writeObject(param1: any): void;
+    }
+    export interface ICustomDataInput {
+        readVarInt(): number;
+        readVarUhInt(): number;
+        readVarShort(): number;
+        readVarUhShort(): number;
+        readVarLong(): number;
+        readVarUhLong(): number;
+        readBytes(param1: ByteArray, param2?: number, param3?: number): void;
+        readBoolean(): boolean;
+        readByte(): number;
+        readUnsignedByte(): number;
+        readShort(): number;
+        readUnsignedShort(): number;
+        readInt(): number;
+        readUnsignedInt(): number;
+        readFloat(): number;
+        readDouble(): number;
+        readMultiByte(param1: number, param2: string): string;
+        readUTF(): string;
+        readUTFBytes(param1: number): string;
+        bytesAvailable: number;
+        readObject(): any;
+    }
+    export class CustomDataWrapper implements ICustomDataOutput, ICustomDataInput {
+        private static INT_SIZE: number = 32;
+        private static SHORT_SIZE: number = 16;
+        private static SHORT_MIN_VALUE: number = -32768;
+        private static SHORT_MAX_VALUE: number = 32767;
+        private static UNSIGNED_SHORT_MAX_VALUE: number = 65536;
+        private static CHUNCK_BIT_SIZE: number = 7;
+        private static MAX_ENCODING_LENGTH: number = Math.ceil(CustomDataWrapper.INT_SIZE / CustomDataWrapper.CHUNCK_BIT_SIZE);
+        private static MASK_10000000: number = 128;
+        private static MASK_01111111: number = 127;
+        private _data: ByteArray;
+
+        constructor(data: ByteArray) {
+            this._data = data;
+        }
+
+        public set position(param1: number) {
+            this._data.position = param1;
+        }
+
+        public get position(): number {
+            return this._data.position;
+        }
+
+        public readVarInt(): number {
+            var _loc4_: number = 0;
+            var _loc1_: number = 0;
+            var _loc2_: number = 0;
+            var _loc3_: boolean = false;
+            while (_loc2_ < CustomDataWrapper.INT_SIZE) {
+                _loc4_ = this._data.readByte();
+                _loc3_ = (_loc4_ & CustomDataWrapper.MASK_10000000) === CustomDataWrapper.MASK_10000000;
+                if (_loc2_ > 0) {
+                    _loc1_ = _loc1_ + ((_loc4_ & CustomDataWrapper.MASK_01111111) << _loc2_);
+                } else {
+                    _loc1_ = _loc1_ + (_loc4_ & CustomDataWrapper.MASK_01111111);
+                }
+                _loc2_ = _loc2_ + CustomDataWrapper.CHUNCK_BIT_SIZE;
+                if (!_loc3_) {
+                    return _loc1_;
+                }
+            }
+            throw new Error('Too much data');
+        }
+
+        public readVarUhInt(): number {
+            return this.readVarInt();
+        }
+
+        public readVarShort(): number {
+            var _loc4_: number = 0;
+            var _loc1_: number = 0;
+            var _loc2_: number = 0;
+            var _loc3_: boolean = false;
+            while (_loc2_ < CustomDataWrapper.SHORT_SIZE) {
+                _loc4_ = this._data.readByte();
+                _loc3_ = (_loc4_ & CustomDataWrapper.MASK_10000000) === CustomDataWrapper.MASK_10000000;
+                if (_loc2_ > 0) {
+                    _loc1_ = _loc1_ + ((_loc4_ & CustomDataWrapper.MASK_01111111) << _loc2_);
+                } else {
+                    _loc1_ = _loc1_ + (_loc4_ & CustomDataWrapper.MASK_01111111);
+                }
+                _loc2_ = _loc2_ + CustomDataWrapper.CHUNCK_BIT_SIZE;
+                if (!_loc3_) {
+                    if (_loc1_ > CustomDataWrapper.SHORT_MAX_VALUE) {
+                        _loc1_ = _loc1_ - CustomDataWrapper.UNSIGNED_SHORT_MAX_VALUE;
+                    }
+                    return _loc1_;
+                }
+            }
+            throw new Error('Too much data');
+        }
+
+        public readVarUhShort(): number {
+            return this.readVarShort();
+        }
+
+        public readVarLong(): number {
+            return this.readInt64(this._data).value();
+        }
+
+        public readVarUhLong(): number {
+            return this.readUInt64(this._data).value();
+        }
+
+        public readBytes(param1: ByteArray, param2: number = 0, param3: number = 0): void {
+            this._data.readBytes(param1, param2, param3);
+        }
+
+        public readBoolean(): boolean {
+            return this._data.readBoolean();
+        }
+
+        public readByte(): number {
+            return this._data.readByte();
+        }
+
+        public readUnsignedByte(): number {
+            return this._data.readUnsignedByte();
+        }
+
+        public readShort(): number {
+            return this._data.readShort();
+        }
+
+        public readUnsignedShort(): number {
+            return this._data.readUnsignedShort();
+        }
+
+        public readInt(): number {
+            return this._data.readInt();
+        }
+
+        public readUnsignedInt(): number {
+            return this._data.readUnsignedInt();
+        }
+
+        public readFloat(): number {
+            return this._data.readFloat();
+        }
+
+        public readDouble(): number {
+            return this._data.readDouble();
+        }
+
+        public readMultiByte(param1: number, param2: string): string {
+            return this._data.readMultiByte(param1, param2);
+        }
+
+        public readUTF(): string {
+            return this._data.readUTF();
+        }
+
+        public readUTFBytes(param1: number): string {
+            return this._data.readUTFBytes(param1);
+        }
+
+        public get bytesAvailable(): number {
+            return this._data.bytesAvailable;
+        }
+
+        public readObject(): any {
+            //return this._data.readObject();
+            return null;
+        }
+
+        /*public get objectEncoding(): number {
+              return this._data.objectEncoding;
+        }
+   
+        public set objectEncoding(param1: number) {
+              this._data.objectEncoding = param1;
+        }*/
+
+        public get endian(): string {
+            return this._data.endian;
+        }
+
+        public set endian(param1: string) {
+            this._data.endian = param1;
+        }
+
+        public writeVarInt(param1: number): void {
+            var _loc5_: number = 0;
+            var _loc2_: ByteArray = new ByteArray();
+            if (param1 >= 0 && param1 <= CustomDataWrapper.MASK_01111111) {
+                _loc2_.writeByte(param1);
+                this._data.writeBytes(_loc2_);
+                return;
+            }
+            var _loc3_: number = param1;
+            var _loc4_: ByteArray = new ByteArray();
+            while (_loc3_ !== 0) {
+                _loc4_.writeByte(_loc3_ & CustomDataWrapper.MASK_01111111);
+                _loc4_.position = _loc4_.length - 1;
+                _loc5_ = _loc4_.readByte();
+                _loc3_ = _loc3_ >>> CustomDataWrapper.CHUNCK_BIT_SIZE;
+                if (_loc3_ > 0) {
+                    _loc5_ = _loc5_ | CustomDataWrapper.MASK_10000000;
+                }
+                _loc2_.writeByte(_loc5_);
+            }
+            this._data.writeBytes(_loc2_);
+        }
+
+        public writeVarShort(param1: number): void {
+            var _loc5_: number = 0;
+            if (param1 > CustomDataWrapper.SHORT_MAX_VALUE || param1 < CustomDataWrapper.SHORT_MIN_VALUE) {
+                throw new Error('Forbidden value');
+            }
+            var _loc2_: ByteArray = new ByteArray();
+            if (param1 >= 0 && param1 <= CustomDataWrapper.MASK_01111111) {
+                _loc2_.writeByte(param1);
+                this._data.writeBytes(_loc2_);
+                return;
+            }
+            var _loc3_: any = param1 & 65535;
+            var _loc4_: ByteArray = new ByteArray();
+            while (_loc3_ !== 0) {
+                _loc4_.writeByte(_loc3_ & CustomDataWrapper.MASK_01111111);
+                _loc4_.position = _loc4_.length - 1;
+                _loc5_ = _loc4_.readByte();
+                _loc3_ = _loc3_ >>> CustomDataWrapper.CHUNCK_BIT_SIZE;
+                if (_loc3_ > 0) {
+                    _loc5_ = _loc5_ | CustomDataWrapper.MASK_10000000;
+                }
+                _loc2_.writeByte(_loc5_);
+            }
+            this._data.writeBytes(_loc2_);
+        }
+
+        public writeVarLong(param1: number): void {
+            var _loc3_: number = 0;
+            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(param1, 0);
+            if (_loc2_.high === 0) {
+                this.writeint32(this._data, _loc2_.low);
+            } else {
+                _loc3_ = 0;
+                while (_loc3_ < 4) {
+                    this._data.writeByte(_loc2_.low & 127 | 128);
+                    _loc2_.low = _loc2_.low >>> 7;
+                    _loc3_++;
+                }
+                if ((_loc2_.high & 268435455 << 3) === 0) {
+                    this._data.writeByte(_loc2_.high << 4 | _loc2_.low);
+                } else {
+                    this._data.writeByte((_loc2_.high << 4 | _loc2_.low) & 127 | 128);
+                    this.writeint32(this._data, _loc2_.high >>> 3);
+                }
+            }
+        }
+
+        public writeBytes(param1: ByteArray, param2: number = 0, param3: number = 0): void {
+            this._data.writeBytes(param1, param2, param3);
+        }
+
+        public writeBoolean(param1: boolean): void {
+            this._data.writeBoolean(param1);
+        }
+
+        public writeByte(param1: number): void {
+            this._data.writeByte(param1);
+        }
+
+        public writeShort(param1: number): void {
+            this._data.writeShort(param1);
+        }
+
+        public writeInt(param1: number): void {
+            this._data.writeInt(param1);
+        }
+
+        public writeUnsignedInt(param1: number): void {
+            this._data.writeUnsignedInt(param1);
+        }
+
+        public writeFloat(param1: number): void {
+            this._data.writeFloat(param1);
+        }
+
+        public writeDouble(param1: number): void {
+            this._data.writeDouble(param1);
+        }
+
+        public writeMultiByte(param1: string, param2: string): void {
+            this._data.writeMultiByte(param1, param2);
+        }
+
+        public writeUTF(param1: string): void {
+            this._data.writeUTF(param1);
+        }
+
+        public writeUTFBytes(param1: string): void {
+            this._data.writeUTFBytes(param1);
+        }
+
+        public writeObject(param1: any): void {
+            //this._data.writeObject(param1);
+        }
+
+        private readInt64(param1: ByteArray): ByteArray.Int64 {
+            var _loc3_: number = 0;
+            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(0, 0);
+            var _loc4_: number = 0;
+            while (true) {
+                _loc3_ = param1.readUnsignedByte();
+                if (_loc4_ === 28) {
+                    break;
+                }
+                if (_loc3_ >= 128) {
+                    _loc2_.low = _loc2_.low | (_loc3_ & 127) << _loc4_;
+                    _loc4_ = _loc4_ + 7;
+                    continue;
+                }
+                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+                return _loc2_;
+            }
+            if (_loc3_ >= 128) {
+                _loc3_ = _loc3_ & 127;
+                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+                _loc2_.high = _loc3_ >>> 4;
+                _loc4_ = 3;
+                while (true) {
+                    _loc3_ = param1.readUnsignedByte();
+                    if (_loc4_ < 32) {
+                        if (_loc3_ >= 128) {
+                            _loc2_.high = _loc2_.high | (_loc3_ & 127) << _loc4_;
+                        } else {
+                            break;
+                        }
+                    }
+                    _loc4_ = _loc4_ + 7;
+                }
+                _loc2_.high = _loc2_.high | _loc3_ << _loc4_;
+                return _loc2_;
+            }
+            _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+            _loc2_.high = _loc3_ >>> 4;
+            return _loc2_;
+        }
+
+        private readUInt64(param1: ByteArray): ByteArray.UInt64 {
+            var _loc3_: number = 0;
+            var _loc2_: ByteArray.UInt64 = new ByteArray.UInt64();
+            var _loc4_: number = 0;
+            while (true) {
+                _loc3_ = param1.readUnsignedByte();
+                if (_loc4_ === 28) {
+                    break;
+                }
+                if (_loc3_ >= 128) {
+                    _loc2_.low = _loc2_.low | (_loc3_ & 127) << _loc4_;
+                    _loc4_ = _loc4_ + 7;
+                    continue;
+                }
+                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+                return _loc2_;
+            }
+            if (_loc3_ >= 128) {
+                _loc3_ = _loc3_ & 127;
+                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+                _loc2_.high = _loc3_ >>> 4;
+                _loc4_ = 3;
+                while (true) {
+                    _loc3_ = param1.readUnsignedByte();
+                    if (_loc4_ < 32) {
+                        if (_loc3_ >= 128) {
+                            _loc2_.high = _loc2_.high | (_loc3_ & 127) << _loc4_;
+                        } else {
+                            break;
+                        }
+                    }
+                    _loc4_ = _loc4_ + 7;
+                }
+                _loc2_.high = _loc2_.high | _loc3_ << _loc4_;
+                return _loc2_;
+            }
+            _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
+            _loc2_.high = _loc3_ >>> 4;
+            return _loc2_;
+        }
+
+        private writeint32(param1: ByteArray, param2: number): void {
+            while (param2 >= 128) {
+                param1.writeByte(param2 & 127 | 128);
+                param2 = param2 >>> 7;
+            }
+            param1.writeByte(param2);
+        }
+    }
+    export class NetworkMessage {
+        public static BIT_RIGHT_SHIFT_LEN_PACKET_ID: number = 2;
+        public static writePacket(param1: ICustomDataOutput, param2: number, param3: ByteArray): void {
+            var _loc5_: number = 0;
+            var _loc6_: number = 0;
+            var _loc4_: number = this.computeTypeLen(param3.buffer.byteLength);
+            param1.writeShort(this.subComputeStaticHeader(param2, _loc4_));
+            switch (_loc4_) {
+                case 0:
+                    return;
+                case 1:
+                    param1.writeByte(param3.buffer.byteLength);
+                    break;
+                case 2:
+                    param1.writeShort(param3.buffer.byteLength);
+                    break;
+                case 3:
+                    _loc5_ = param3.buffer.byteLength >> 16 & 255;
+                    _loc6_ = param3.buffer.byteLength & 65535;
+                    param1.writeByte(_loc5_);
+                    param1.writeShort(_loc6_);
+                    break;
+            }
+            param1.writeBytes(param3, 0, param3.buffer.byteLength);
+        }
+
+        private static computeTypeLen(param1: number): number {
+            if (param1 > 65535) {
+                return 3;
+            }
+            if (param1 > 255) {
+                return 2;
+            }
+            if (param1 > 0) {
+                return 1;
+            }
+            return 0;
+        }
+
+        private static subComputeStaticHeader(param1: number, param2: number): number {
+            return param1 << NetworkMessage.BIT_RIGHT_SHIFT_LEN_PACKET_ID | param2;
+        }
+    }
+    export interface INetworkMessage {
+        pack(param1: ICustomDataOutput): void;
+        unpack(param1: ICustomDataInput, param2: number): void;
+        getMessageId(): number;
+        reset(): void;
+    }
+    export interface INetworkType {
+        serialize(param1: ICustomDataOutput): void;
+        deserialize(param1: ICustomDataInput): void;
+        getTypeId(): number;
+        reset(): void;
+    }
+    export class ProtocolTypeManager {
+        private static _list: { [idx: number]: () => INetworkType };
+
+        constructor() {
+            ProtocolTypeManager._list = {};
+            ProtocolTypeManager._list[StatisticData.ID] = () => { return new StatisticData(); };
+            ProtocolTypeManager._list[StatisticDataBoolean.ID] = () => { return new StatisticDataBoolean(); };
+            ProtocolTypeManager._list[StatisticDataByte.ID] = () => { return new StatisticDataByte(); };
+            ProtocolTypeManager._list[StatisticDataInt.ID] = () => { return new StatisticDataInt(); };
+            ProtocolTypeManager._list[StatisticDataShort.ID] = () => { return new StatisticDataShort(); };
+            ProtocolTypeManager._list[StatisticDataString.ID] = () => { return new StatisticDataString(); };
+            ProtocolTypeManager._list[GameServerInformations.ID] = () => { return new GameServerInformations(); };
+            ProtocolTypeManager._list[Achievement.ID] = () => { return new Achievement(); };
+            ProtocolTypeManager._list[AchievementObjective.ID] = () => { return new AchievementObjective(); };
+            ProtocolTypeManager._list[AchievementRewardable.ID] = () => { return new AchievementRewardable(); };
+            ProtocolTypeManager._list[AchievementStartedObjective.ID] = () => { return new AchievementStartedObjective(); };
+            ProtocolTypeManager._list[FightDispellableEffectExtendedInformations.ID] = () => { return new FightDispellableEffectExtendedInformations(); };
+            ProtocolTypeManager._list[AbstractFightDispellableEffect.ID] = () => { return new AbstractFightDispellableEffect(); };
+            ProtocolTypeManager._list[FightTemporaryBoostEffect.ID] = () => { return new FightTemporaryBoostEffect(); };
+            ProtocolTypeManager._list[FightTemporaryBoostStateEffect.ID] = () => { return new FightTemporaryBoostStateEffect(); };
+            ProtocolTypeManager._list[FightTemporaryBoostWeaponDamagesEffect.ID] = () => { return new FightTemporaryBoostWeaponDamagesEffect(); };
+            ProtocolTypeManager._list[FightTemporarySpellBoostEffect.ID] = () => { return new FightTemporarySpellBoostEffect(); };
+            ProtocolTypeManager._list[FightTemporarySpellImmunityEffect.ID] = () => { return new FightTemporarySpellImmunityEffect(); };
+            ProtocolTypeManager._list[FightTriggeredEffect.ID] = () => { return new FightTriggeredEffect(); };
+            ProtocolTypeManager._list[GameActionMark.ID] = () => { return new GameActionMark(); };
+            ProtocolTypeManager._list[GameActionMarkedCell.ID] = () => { return new GameActionMarkedCell(); };
+            ProtocolTypeManager._list[ServerSessionConstant.ID] = () => { return new ServerSessionConstant(); };
+            ProtocolTypeManager._list[ServerSessionConstantInteger.ID] = () => { return new ServerSessionConstantInteger(); };
+            ProtocolTypeManager._list[ServerSessionConstantLong.ID] = () => { return new ServerSessionConstantLong(); };
+            ProtocolTypeManager._list[ServerSessionConstantString.ID] = () => { return new ServerSessionConstantString(); };
+            ProtocolTypeManager._list[AbstractCharacterInformation.ID] = () => { return new AbstractCharacterInformation(); };
+            ProtocolTypeManager._list[CharacterMinimalAllianceInformations.ID] = () => { return new CharacterMinimalAllianceInformations(); };
+            ProtocolTypeManager._list[CharacterMinimalGuildInformations.ID] = () => { return new CharacterMinimalGuildInformations(); };
+            ProtocolTypeManager._list[CharacterMinimalInformations.ID] = () => { return new CharacterMinimalInformations(); };
+            ProtocolTypeManager._list[CharacterMinimalPlusLookAndGradeInformations.ID] = () => { return new CharacterMinimalPlusLookAndGradeInformations(); };
+            ProtocolTypeManager._list[CharacterMinimalPlusLookInformations.ID] = () => { return new CharacterMinimalPlusLookInformations(); };
+            ProtocolTypeManager._list[ActorAlignmentInformations.ID] = () => { return new ActorAlignmentInformations(); };
+            ProtocolTypeManager._list[ActorExtendedAlignmentInformations.ID] = () => { return new ActorExtendedAlignmentInformations(); };
+            ProtocolTypeManager._list[CharacterBaseCharacteristic.ID] = () => { return new CharacterBaseCharacteristic(); };
+            ProtocolTypeManager._list[CharacterCharacteristicsInformations.ID] = () => { return new CharacterCharacteristicsInformations(); };
+            ProtocolTypeManager._list[CharacterSpellModification.ID] = () => { return new CharacterSpellModification(); };
+            ProtocolTypeManager._list[AbstractCharacterToRefurbishInformation.ID] = () => { return new AbstractCharacterToRefurbishInformation(); };
+            ProtocolTypeManager._list[CharacterBaseInformations.ID] = () => { return new CharacterBaseInformations(); };
+            ProtocolTypeManager._list[CharacterHardcoreOrEpicInformations.ID] = () => { return new CharacterHardcoreOrEpicInformations(); };
+            ProtocolTypeManager._list[CharacterRemodelingInformation.ID] = () => { return new CharacterRemodelingInformation(); };
+            ProtocolTypeManager._list[CharacterToRecolorInformation.ID] = () => { return new CharacterToRecolorInformation(); };
+            ProtocolTypeManager._list[CharacterToRelookInformation.ID] = () => { return new CharacterToRelookInformation(); };
+            ProtocolTypeManager._list[CharacterToRemodelInformations.ID] = () => { return new CharacterToRemodelInformations(); };
+            ProtocolTypeManager._list[RemodelingInformation.ID] = () => { return new RemodelingInformation(); };
+            ProtocolTypeManager._list[ActorRestrictionsInformations.ID] = () => { return new ActorRestrictionsInformations(); };
+            ProtocolTypeManager._list[PlayerStatus.ID] = () => { return new PlayerStatus(); };
+            ProtocolTypeManager._list[PlayerStatusExtended.ID] = () => { return new PlayerStatusExtended(); };
+            ProtocolTypeManager._list[ActorOrientation.ID] = () => { return new ActorOrientation(); };
+            ProtocolTypeManager._list[EntityDispositionInformations.ID] = () => { return new EntityDispositionInformations(); };
+            ProtocolTypeManager._list[EntityMovementInformations.ID] = () => { return new EntityMovementInformations(); };
+            ProtocolTypeManager._list[FightEntityDispositionInformations.ID] = () => { return new FightEntityDispositionInformations(); };
+            ProtocolTypeManager._list[GameContextActorInformations.ID] = () => { return new GameContextActorInformations(); };
+            ProtocolTypeManager._list[GameRolePlayTaxCollectorInformations.ID] = () => { return new GameRolePlayTaxCollectorInformations(); };
+            ProtocolTypeManager._list[IdentifiedEntityDispositionInformations.ID] = () => { return new IdentifiedEntityDispositionInformations(); };
+            ProtocolTypeManager._list[MapCoordinates.ID] = () => { return new MapCoordinates(); };
+            ProtocolTypeManager._list[MapCoordinatesAndId.ID] = () => { return new MapCoordinatesAndId(); };
+            ProtocolTypeManager._list[MapCoordinatesExtended.ID] = () => { return new MapCoordinatesExtended(); };
+            ProtocolTypeManager._list[TaxCollectorStaticExtendedInformations.ID] = () => { return new TaxCollectorStaticExtendedInformations(); };
+            ProtocolTypeManager._list[TaxCollectorStaticInformations.ID] = () => { return new TaxCollectorStaticInformations(); };
+            ProtocolTypeManager._list[AbstractFightTeamInformations.ID] = () => { return new AbstractFightTeamInformations(); };
+            ProtocolTypeManager._list[FightAllianceTeamInformations.ID] = () => { return new FightAllianceTeamInformations(); };
+            ProtocolTypeManager._list[FightCommonInformations.ID] = () => { return new FightCommonInformations(); };
+            ProtocolTypeManager._list[FightExternalInformations.ID] = () => { return new FightExternalInformations(); };
+            ProtocolTypeManager._list[FightLoot.ID] = () => { return new FightLoot(); };
+            ProtocolTypeManager._list[FightOptionsInformations.ID] = () => { return new FightOptionsInformations(); };
+            ProtocolTypeManager._list[FightResultAdditionalData.ID] = () => { return new FightResultAdditionalData(); };
+            ProtocolTypeManager._list[FightResultExperienceData.ID] = () => { return new FightResultExperienceData(); };
+            ProtocolTypeManager._list[FightResultFighterListEntry.ID] = () => { return new FightResultFighterListEntry(); };
+            ProtocolTypeManager._list[FightResultListEntry.ID] = () => { return new FightResultListEntry(); };
+            ProtocolTypeManager._list[FightResultMutantListEntry.ID] = () => { return new FightResultMutantListEntry(); };
+            ProtocolTypeManager._list[FightResultPlayerListEntry.ID] = () => { return new FightResultPlayerListEntry(); };
+            ProtocolTypeManager._list[FightResultPvpData.ID] = () => { return new FightResultPvpData(); };
+            ProtocolTypeManager._list[FightResultTaxCollectorListEntry.ID] = () => { return new FightResultTaxCollectorListEntry(); };
+            ProtocolTypeManager._list[FightTeamInformations.ID] = () => { return new FightTeamInformations(); };
+            ProtocolTypeManager._list[FightTeamLightInformations.ID] = () => { return new FightTeamLightInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberCharacterInformations.ID] = () => { return new FightTeamMemberCharacterInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberCompanionInformations.ID] = () => { return new FightTeamMemberCompanionInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberInformations.ID] = () => { return new FightTeamMemberInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberMonsterInformations.ID] = () => { return new FightTeamMemberMonsterInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberTaxCollectorInformations.ID] = () => { return new FightTeamMemberTaxCollectorInformations(); };
+            ProtocolTypeManager._list[FightTeamMemberWithAllianceCharacterInformations.ID] = () => { return new FightTeamMemberWithAllianceCharacterInformations(); };
+            ProtocolTypeManager._list[GameFightAIInformations.ID] = () => { return new GameFightAIInformations(); };
+            ProtocolTypeManager._list[GameFightCharacterInformations.ID] = () => { return new GameFightCharacterInformations(); };
+            ProtocolTypeManager._list[GameFightCompanionInformations.ID] = () => { return new GameFightCompanionInformations(); };
+            ProtocolTypeManager._list[GameFightFighterCompanionLightInformations.ID] = () => { return new GameFightFighterCompanionLightInformations(); };
+            ProtocolTypeManager._list[GameFightFighterInformations.ID] = () => { return new GameFightFighterInformations(); };
+            ProtocolTypeManager._list[GameFightFighterLightInformations.ID] = () => { return new GameFightFighterLightInformations(); };
+            ProtocolTypeManager._list[GameFightFighterMonsterLightInformations.ID] = () => { return new GameFightFighterMonsterLightInformations(); };
+            ProtocolTypeManager._list[GameFightFighterNamedInformations.ID] = () => { return new GameFightFighterNamedInformations(); };
+            ProtocolTypeManager._list[GameFightFighterNamedLightInformations.ID] = () => { return new GameFightFighterNamedLightInformations(); };
+            ProtocolTypeManager._list[GameFightFighterTaxCollectorLightInformations.ID] = () => { return new GameFightFighterTaxCollectorLightInformations(); };
+            ProtocolTypeManager._list[GameFightMinimalStats.ID] = () => { return new GameFightMinimalStats(); };
+            ProtocolTypeManager._list[GameFightMinimalStatsPreparation.ID] = () => { return new GameFightMinimalStatsPreparation(); };
+            ProtocolTypeManager._list[GameFightMonsterInformations.ID] = () => { return new GameFightMonsterInformations(); };
+            ProtocolTypeManager._list[GameFightMonsterWithAlignmentInformations.ID] = () => { return new GameFightMonsterWithAlignmentInformations(); };
+            ProtocolTypeManager._list[GameFightMutantInformations.ID] = () => { return new GameFightMutantInformations(); };
+            ProtocolTypeManager._list[GameFightResumeSlaveInfo.ID] = () => { return new GameFightResumeSlaveInfo(); };
+            ProtocolTypeManager._list[GameFightSpellCooldown.ID] = () => { return new GameFightSpellCooldown(); };
+            ProtocolTypeManager._list[GameFightTaxCollectorInformations.ID] = () => { return new GameFightTaxCollectorInformations(); };
+            ProtocolTypeManager._list[AllianceInformations.ID] = () => { return new AllianceInformations(); };
+            ProtocolTypeManager._list[AlternativeMonstersInGroupLightInformations.ID] = () => { return new AlternativeMonstersInGroupLightInformations(); };
+            ProtocolTypeManager._list[AtlasPointsInformations.ID] = () => { return new AtlasPointsInformations(); };
+            ProtocolTypeManager._list[BasicAllianceInformations.ID] = () => { return new BasicAllianceInformations(); };
+            ProtocolTypeManager._list[BasicGuildInformations.ID] = () => { return new BasicGuildInformations(); };
+            ProtocolTypeManager._list[BasicNamedAllianceInformations.ID] = () => { return new BasicNamedAllianceInformations(); };
+            ProtocolTypeManager._list[GameRolePlayActorInformations.ID] = () => { return new GameRolePlayActorInformations(); };
+            ProtocolTypeManager._list[GameRolePlayCharacterInformations.ID] = () => { return new GameRolePlayCharacterInformations(); };
+            ProtocolTypeManager._list[GameRolePlayGroupMonsterInformations.ID] = () => { return new GameRolePlayGroupMonsterInformations(); };
+            ProtocolTypeManager._list[GameRolePlayGroupMonsterWaveInformations.ID] = () => { return new GameRolePlayGroupMonsterWaveInformations(); };
+            ProtocolTypeManager._list[GameRolePlayHumanoidInformations.ID] = () => { return new GameRolePlayHumanoidInformations(); };
+            ProtocolTypeManager._list[GameRolePlayMerchantInformations.ID] = () => { return new GameRolePlayMerchantInformations(); };
+            ProtocolTypeManager._list[GameRolePlayMountInformations.ID] = () => { return new GameRolePlayMountInformations(); };
+            ProtocolTypeManager._list[GameRolePlayMutantInformations.ID] = () => { return new GameRolePlayMutantInformations(); };
+            ProtocolTypeManager._list[GameRolePlayNamedActorInformations.ID] = () => { return new GameRolePlayNamedActorInformations(); };
+            ProtocolTypeManager._list[GameRolePlayNpcInformations.ID] = () => { return new GameRolePlayNpcInformations(); };
+            ProtocolTypeManager._list[GameRolePlayNpcWithQuestInformations.ID] = () => { return new GameRolePlayNpcWithQuestInformations(); };
+            ProtocolTypeManager._list[GameRolePlayPortalInformations.ID] = () => { return new GameRolePlayPortalInformations(); };
+            ProtocolTypeManager._list[GameRolePlayPrismInformations.ID] = () => { return new GameRolePlayPrismInformations(); };
+            ProtocolTypeManager._list[GameRolePlayTreasureHintInformations.ID] = () => { return new GameRolePlayTreasureHintInformations(); };
+            ProtocolTypeManager._list[GroupMonsterStaticInformations.ID] = () => { return new GroupMonsterStaticInformations(); };
+            ProtocolTypeManager._list[GroupMonsterStaticInformationsWithAlternatives.ID] = () => { return new GroupMonsterStaticInformationsWithAlternatives(); };
+            ProtocolTypeManager._list[GuildInAllianceInformations.ID] = () => { return new GuildInAllianceInformations(); };
+            ProtocolTypeManager._list[GuildInformations.ID] = () => { return new GuildInformations(); };
+            ProtocolTypeManager._list[HumanInformations.ID] = () => { return new HumanInformations(); };
+            ProtocolTypeManager._list[HumanOption.ID] = () => { return new HumanOption(); };
+            ProtocolTypeManager._list[HumanOptionAlliance.ID] = () => { return new HumanOptionAlliance(); };
+            ProtocolTypeManager._list[HumanOptionEmote.ID] = () => { return new HumanOptionEmote(); };
+            ProtocolTypeManager._list[HumanOptionFollowers.ID] = () => { return new HumanOptionFollowers(); };
+            ProtocolTypeManager._list[HumanOptionGuild.ID] = () => { return new HumanOptionGuild(); };
+            ProtocolTypeManager._list[HumanOptionObjectUse.ID] = () => { return new HumanOptionObjectUse(); };
+            ProtocolTypeManager._list[HumanOptionOrnament.ID] = () => { return new HumanOptionOrnament(); };
+            ProtocolTypeManager._list[HumanOptionTitle.ID] = () => { return new HumanOptionTitle(); };
+            ProtocolTypeManager._list[MonsterInGroupInformations.ID] = () => { return new MonsterInGroupInformations(); };
+            ProtocolTypeManager._list[MonsterInGroupLightInformations.ID] = () => { return new MonsterInGroupLightInformations(); };
+            ProtocolTypeManager._list[ObjectItemInRolePlay.ID] = () => { return new ObjectItemInRolePlay(); };
+            ProtocolTypeManager._list[DecraftedItemStackInfo.ID] = () => { return new DecraftedItemStackInfo(); };
+            ProtocolTypeManager._list[JobCrafterDirectoryEntryJobInfo.ID] = () => { return new JobCrafterDirectoryEntryJobInfo(); };
+            ProtocolTypeManager._list[JobCrafterDirectoryEntryPlayerInfo.ID] = () => { return new JobCrafterDirectoryEntryPlayerInfo(); };
+            ProtocolTypeManager._list[JobCrafterDirectoryListEntry.ID] = () => { return new JobCrafterDirectoryListEntry(); };
+            ProtocolTypeManager._list[JobCrafterDirectorySettings.ID] = () => { return new JobCrafterDirectorySettings(); };
+            ProtocolTypeManager._list[JobDescription.ID] = () => { return new JobDescription(); };
+            ProtocolTypeManager._list[JobExperience.ID] = () => { return new JobExperience(); };
+            ProtocolTypeManager._list[DungeonPartyFinderPlayer.ID] = () => { return new DungeonPartyFinderPlayer(); };
+            ProtocolTypeManager._list[NamedPartyTeam.ID] = () => { return new NamedPartyTeam(); };
+            ProtocolTypeManager._list[NamedPartyTeamWithOutcome.ID] = () => { return new NamedPartyTeamWithOutcome(); };
+            ProtocolTypeManager._list[PartyGuestInformations.ID] = () => { return new PartyGuestInformations(); };
+            ProtocolTypeManager._list[PartyInvitationMemberInformations.ID] = () => { return new PartyInvitationMemberInformations(); };
+            ProtocolTypeManager._list[PartyMemberArenaInformations.ID] = () => { return new PartyMemberArenaInformations(); };
+            ProtocolTypeManager._list[PartyMemberGeoPosition.ID] = () => { return new PartyMemberGeoPosition(); };
+            ProtocolTypeManager._list[PartyMemberInformations.ID] = () => { return new PartyMemberInformations(); };
+            ProtocolTypeManager._list[PartyCompanionBaseInformations.ID] = () => { return new PartyCompanionBaseInformations(); };
+            ProtocolTypeManager._list[PartyCompanionMemberInformations.ID] = () => { return new PartyCompanionMemberInformations(); };
+            ProtocolTypeManager._list[GameRolePlayNpcQuestFlag.ID] = () => { return new GameRolePlayNpcQuestFlag(); };
+            ProtocolTypeManager._list[QuestActiveDetailedInformations.ID] = () => { return new QuestActiveDetailedInformations(); };
+            ProtocolTypeManager._list[QuestActiveInformations.ID] = () => { return new QuestActiveInformations(); };
+            ProtocolTypeManager._list[QuestObjectiveInformations.ID] = () => { return new QuestObjectiveInformations(); };
+            ProtocolTypeManager._list[QuestObjectiveInformationsWithCompletion.ID] = () => { return new QuestObjectiveInformationsWithCompletion(); };
+            ProtocolTypeManager._list[PortalInformation.ID] = () => { return new PortalInformation(); };
+            ProtocolTypeManager._list[TreasureHuntFlag.ID] = () => { return new TreasureHuntFlag(); };
+            ProtocolTypeManager._list[TreasureHuntStep.ID] = () => { return new TreasureHuntStep(); };
+            ProtocolTypeManager._list[TreasureHuntStepDig.ID] = () => { return new TreasureHuntStepDig(); };
+            ProtocolTypeManager._list[TreasureHuntStepFight.ID] = () => { return new TreasureHuntStepFight(); };
+            ProtocolTypeManager._list[TreasureHuntStepFollowDirection.ID] = () => { return new TreasureHuntStepFollowDirection(); };
+            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToHint.ID] = () => { return new TreasureHuntStepFollowDirectionToHint(); };
+            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToPOI.ID] = () => { return new TreasureHuntStepFollowDirectionToPOI(); };
+            ProtocolTypeManager._list[BidExchangerObjectInfo.ID] = () => { return new BidExchangerObjectInfo(); };
+            ProtocolTypeManager._list[GoldItem.ID] = () => { return new GoldItem(); };
+            ProtocolTypeManager._list[Item.ID] = () => { return new Item(); };
+            ProtocolTypeManager._list[ObjectItem.ID] = () => { return new ObjectItem(); };
+            ProtocolTypeManager._list[ObjectItemGenericQuantity.ID] = () => { return new ObjectItemGenericQuantity(); };
+            ProtocolTypeManager._list[ObjectItemInformationWithQuantity.ID] = () => { return new ObjectItemInformationWithQuantity(); };
+            ProtocolTypeManager._list[ObjectItemMinimalInformation.ID] = () => { return new ObjectItemMinimalInformation(); };
+            ProtocolTypeManager._list[ObjectItemNotInContainer.ID] = () => { return new ObjectItemNotInContainer(); };
+            ProtocolTypeManager._list[ObjectItemQuantity.ID] = () => { return new ObjectItemQuantity(); };
+            ProtocolTypeManager._list[ObjectItemToSell.ID] = () => { return new ObjectItemToSell(); };
+            ProtocolTypeManager._list[ObjectItemToSellInBid.ID] = () => { return new ObjectItemToSellInBid(); };
+            ProtocolTypeManager._list[ObjectItemToSellInHumanVendorShop.ID] = () => { return new ObjectItemToSellInHumanVendorShop(); };
+            ProtocolTypeManager._list[ObjectItemToSellInNpcShop.ID] = () => { return new ObjectItemToSellInNpcShop(); };
+            ProtocolTypeManager._list[SellerBuyerDescriptor.ID] = () => { return new SellerBuyerDescriptor(); };
+            ProtocolTypeManager._list[SpellItem.ID] = () => { return new SpellItem(); };
+            ProtocolTypeManager._list[ObjectEffect.ID] = () => { return new ObjectEffect(); };
+            ProtocolTypeManager._list[ObjectEffectCreature.ID] = () => { return new ObjectEffectCreature(); };
+            ProtocolTypeManager._list[ObjectEffectDate.ID] = () => { return new ObjectEffectDate(); };
+            ProtocolTypeManager._list[ObjectEffectDice.ID] = () => { return new ObjectEffectDice(); };
+            ProtocolTypeManager._list[ObjectEffectDuration.ID] = () => { return new ObjectEffectDuration(); };
+            ProtocolTypeManager._list[ObjectEffectInteger.ID] = () => { return new ObjectEffectInteger(); };
+            ProtocolTypeManager._list[ObjectEffectLadder.ID] = () => { return new ObjectEffectLadder(); };
+            ProtocolTypeManager._list[ObjectEffectMinMax.ID] = () => { return new ObjectEffectMinMax(); };
+            ProtocolTypeManager._list[ObjectEffectMount.ID] = () => { return new ObjectEffectMount(); };
+            ProtocolTypeManager._list[ObjectEffectString.ID] = () => { return new ObjectEffectString(); };
+            ProtocolTypeManager._list[ProtectedEntityWaitingForHelpInfo.ID] = () => { return new ProtectedEntityWaitingForHelpInfo(); };
+            ProtocolTypeManager._list[AbstractContactInformations.ID] = () => { return new AbstractContactInformations(); };
+            ProtocolTypeManager._list[FriendInformations.ID] = () => { return new FriendInformations(); };
+            ProtocolTypeManager._list[FriendOnlineInformations.ID] = () => { return new FriendOnlineInformations(); };
+            ProtocolTypeManager._list[FriendSpouseInformations.ID] = () => { return new FriendSpouseInformations(); };
+            ProtocolTypeManager._list[FriendSpouseOnlineInformations.ID] = () => { return new FriendSpouseOnlineInformations(); };
+            ProtocolTypeManager._list[IgnoredInformations.ID] = () => { return new IgnoredInformations(); };
+            ProtocolTypeManager._list[IgnoredOnlineInformations.ID] = () => { return new IgnoredOnlineInformations(); };
+            ProtocolTypeManager._list[GuildEmblem.ID] = () => { return new GuildEmblem(); };
+            ProtocolTypeManager._list[GuildMember.ID] = () => { return new GuildMember(); };
+            ProtocolTypeManager._list[AdditionalTaxCollectorInformations.ID] = () => { return new AdditionalTaxCollectorInformations(); };
+            ProtocolTypeManager._list[TaxCollectorBasicInformations.ID] = () => { return new TaxCollectorBasicInformations(); };
+            ProtocolTypeManager._list[TaxCollectorComplementaryInformations.ID] = () => { return new TaxCollectorComplementaryInformations(); };
+            ProtocolTypeManager._list[TaxCollectorFightersInformation.ID] = () => { return new TaxCollectorFightersInformation(); };
+            ProtocolTypeManager._list[TaxCollectorGuildInformations.ID] = () => { return new TaxCollectorGuildInformations(); };
+            ProtocolTypeManager._list[TaxCollectorInformations.ID] = () => { return new TaxCollectorInformations(); };
+            ProtocolTypeManager._list[TaxCollectorLootInformations.ID] = () => { return new TaxCollectorLootInformations(); };
+            ProtocolTypeManager._list[TaxCollectorWaitingForHelpInformations.ID] = () => { return new TaxCollectorWaitingForHelpInformations(); };
+            ProtocolTypeManager._list[AccountHouseInformations.ID] = () => { return new AccountHouseInformations(); };
+            ProtocolTypeManager._list[HouseInformations.ID] = () => { return new HouseInformations(); };
+            ProtocolTypeManager._list[HouseInformationsExtended.ID] = () => { return new HouseInformationsExtended(); };
+            ProtocolTypeManager._list[HouseInformationsForGuild.ID] = () => { return new HouseInformationsForGuild(); };
+            ProtocolTypeManager._list[HouseInformationsForSell.ID] = () => { return new HouseInformationsForSell(); };
+            ProtocolTypeManager._list[HouseInformationsInside.ID] = () => { return new HouseInformationsInside(); };
+            ProtocolTypeManager._list[Idol.ID] = () => { return new Idol(); };
+            ProtocolTypeManager._list[PartyIdol.ID] = () => { return new PartyIdol(); };
+            ProtocolTypeManager._list[InteractiveElement.ID] = () => { return new InteractiveElement(); };
+            ProtocolTypeManager._list[InteractiveElementNamedSkill.ID] = () => { return new InteractiveElementNamedSkill(); };
+            ProtocolTypeManager._list[InteractiveElementSkill.ID] = () => { return new InteractiveElementSkill(); };
+            ProtocolTypeManager._list[InteractiveElementWithAgeBonus.ID] = () => { return new InteractiveElementWithAgeBonus(); };
+            ProtocolTypeManager._list[MapObstacle.ID] = () => { return new MapObstacle(); };
+            ProtocolTypeManager._list[StatedElement.ID] = () => { return new StatedElement(); };
+            ProtocolTypeManager._list[SkillActionDescription.ID] = () => { return new SkillActionDescription(); };
+            ProtocolTypeManager._list[SkillActionDescriptionCollect.ID] = () => { return new SkillActionDescriptionCollect(); };
+            ProtocolTypeManager._list[SkillActionDescriptionCraft.ID] = () => { return new SkillActionDescriptionCraft(); };
+            ProtocolTypeManager._list[SkillActionDescriptionTimed.ID] = () => { return new SkillActionDescriptionTimed(); };
+            ProtocolTypeManager._list[IdolsPreset.ID] = () => { return new IdolsPreset(); };
+            ProtocolTypeManager._list[Preset.ID] = () => { return new Preset(); };
+            ProtocolTypeManager._list[PresetItem.ID] = () => { return new PresetItem(); };
+            ProtocolTypeManager._list[EntityLook.ID] = () => { return new EntityLook(); };
+            ProtocolTypeManager._list[IndexedEntityLook.ID] = () => { return new IndexedEntityLook(); };
+            ProtocolTypeManager._list[SubEntity.ID] = () => { return new SubEntity(); };
+            ProtocolTypeManager._list[ItemDurability.ID] = () => { return new ItemDurability(); };
+            ProtocolTypeManager._list[MountClientData.ID] = () => { return new MountClientData(); };
+            ProtocolTypeManager._list[UpdateMountBoost.ID] = () => { return new UpdateMountBoost(); };
+            ProtocolTypeManager._list[UpdateMountIntBoost.ID] = () => { return new UpdateMountIntBoost(); };
+            ProtocolTypeManager._list[MountInformationsForPaddock.ID] = () => { return new MountInformationsForPaddock(); };
+            ProtocolTypeManager._list[PaddockAbandonnedInformations.ID] = () => { return new PaddockAbandonnedInformations(); };
+            ProtocolTypeManager._list[PaddockBuyableInformations.ID] = () => { return new PaddockBuyableInformations(); };
+            ProtocolTypeManager._list[PaddockContentInformations.ID] = () => { return new PaddockContentInformations(); };
+            ProtocolTypeManager._list[PaddockInformations.ID] = () => { return new PaddockInformations(); };
+            ProtocolTypeManager._list[PaddockInformationsForSell.ID] = () => { return new PaddockInformationsForSell(); };
+            ProtocolTypeManager._list[PaddockItem.ID] = () => { return new PaddockItem(); };
+            ProtocolTypeManager._list[PaddockPrivateInformations.ID] = () => { return new PaddockPrivateInformations(); };
+            ProtocolTypeManager._list[AllianceInsiderPrismInformation.ID] = () => { return new AllianceInsiderPrismInformation(); };
+            ProtocolTypeManager._list[AlliancePrismInformation.ID] = () => { return new AlliancePrismInformation(); };
+            ProtocolTypeManager._list[PrismFightersInformation.ID] = () => { return new PrismFightersInformation(); };
+            ProtocolTypeManager._list[PrismGeolocalizedInformation.ID] = () => { return new PrismGeolocalizedInformation(); };
+            ProtocolTypeManager._list[PrismInformation.ID] = () => { return new PrismInformation(); };
+            ProtocolTypeManager._list[PrismSubareaEmptyInfo.ID] = () => { return new PrismSubareaEmptyInfo(); };
+            ProtocolTypeManager._list[Shortcut.ID] = () => { return new Shortcut(); };
+            ProtocolTypeManager._list[ShortcutEmote.ID] = () => { return new ShortcutEmote(); };
+            ProtocolTypeManager._list[ShortcutObject.ID] = () => { return new ShortcutObject(); };
+            ProtocolTypeManager._list[ShortcutObjectIdolsPreset.ID] = () => { return new ShortcutObjectIdolsPreset(); };
+            ProtocolTypeManager._list[ShortcutObjectItem.ID] = () => { return new ShortcutObjectItem(); };
+            ProtocolTypeManager._list[ShortcutObjectPreset.ID] = () => { return new ShortcutObjectPreset(); };
+            ProtocolTypeManager._list[ShortcutSmiley.ID] = () => { return new ShortcutSmiley(); };
+            ProtocolTypeManager._list[ShortcutSpell.ID] = () => { return new ShortcutSpell(); };
+            ProtocolTypeManager._list[AbstractSocialGroupInfos.ID] = () => { return new AbstractSocialGroupInfos(); };
+            ProtocolTypeManager._list[AllianceFactSheetInformations.ID] = () => { return new AllianceFactSheetInformations(); };
+            ProtocolTypeManager._list[AllianceVersatileInformations.ID] = () => { return new AllianceVersatileInformations(); };
+            ProtocolTypeManager._list[AlliancedGuildFactSheetInformations.ID] = () => { return new AlliancedGuildFactSheetInformations(); };
+            ProtocolTypeManager._list[GuildFactSheetInformations.ID] = () => { return new GuildFactSheetInformations(); };
+            ProtocolTypeManager._list[GuildInAllianceVersatileInformations.ID] = () => { return new GuildInAllianceVersatileInformations(); };
+            ProtocolTypeManager._list[GuildInsiderFactSheetInformations.ID] = () => { return new GuildInsiderFactSheetInformations(); };
+            ProtocolTypeManager._list[GuildVersatileInformations.ID] = () => { return new GuildVersatileInformations(); };
+            ProtocolTypeManager._list[StartupActionAddObject.ID] = () => { return new StartupActionAddObject(); };
+            ProtocolTypeManager._list[TrustCertificate.ID] = () => { return new TrustCertificate(); };
+            ProtocolTypeManager._list[ContentPart.ID] = () => { return new ContentPart(); };
+            ProtocolTypeManager._list[Version.ID] = () => { return new Version(); };
+            ProtocolTypeManager._list[VersionExtended.ID] = () => { return new VersionExtended(); };
+            ProtocolTypeManager._list[KrosmasterFigure.ID] = () => { return new KrosmasterFigure(); };
+        }
+
+        public static getInstance(networkType: any, param2: number): INetworkType {
+            let _loc3_ = ProtocolTypeManager._list[param2];
+            if (!_loc3_) {
+                throw new Error('Type with id ' + param2 + ' is unknown.');
+            }
+            return _loc3_();
+        }
+    }
+    export class MessageReceiver {
+        private static _list: { [idx: number]: () => INetworkMessage };
+
+        constructor() {
+            MessageReceiver._list = {};
+            MessageReceiver._list[AdminCommandMessage.ID] = () => { return new AdminCommandMessage(); };
+            MessageReceiver._list[AdminQuietCommandMessage.ID] = () => { return new AdminQuietCommandMessage(); };
+            MessageReceiver._list[ConsoleCommandsListMessage.ID] = () => { return new ConsoleCommandsListMessage(); };
+            MessageReceiver._list[ConsoleMessage.ID] = () => { return new ConsoleMessage(); };
+            MessageReceiver._list[NetworkDataContainerMessage.ID] = () => { return new NetworkDataContainerMessage(); };
+            MessageReceiver._list[BasicPingMessage.ID] = () => { return new BasicPingMessage(); };
+            MessageReceiver._list[BasicPongMessage.ID] = () => { return new BasicPongMessage(); };
+            MessageReceiver._list[BasicStatMessage.ID] = () => { return new BasicStatMessage(); };
+            MessageReceiver._list[CredentialsAcknowledgementMessage.ID] = () => { return new CredentialsAcknowledgementMessage(); };
+            MessageReceiver._list[HelloConnectMessage.ID] = () => { return new HelloConnectMessage(); };
+            MessageReceiver._list[IdentificationAccountForceMessage.ID] = () => { return new IdentificationAccountForceMessage(); };
+            MessageReceiver._list[IdentificationFailedBannedMessage.ID] = () => { return new IdentificationFailedBannedMessage(); };
+            MessageReceiver._list[IdentificationFailedForBadVersionMessage.ID] = () => { return new IdentificationFailedForBadVersionMessage(); };
+            MessageReceiver._list[IdentificationFailedMessage.ID] = () => { return new IdentificationFailedMessage(); };
+            MessageReceiver._list[IdentificationMessage.ID] = () => { return new IdentificationMessage(); };
+            MessageReceiver._list[IdentificationSuccessMessage.ID] = () => { return new IdentificationSuccessMessage(); };
+            MessageReceiver._list[IdentificationSuccessWithLoginTokenMessage.ID] = () => { return new IdentificationSuccessWithLoginTokenMessage(); };
+            MessageReceiver._list[SelectedServerDataExtendedMessage.ID] = () => { return new SelectedServerDataExtendedMessage(); };
+            MessageReceiver._list[SelectedServerDataMessage.ID] = () => { return new SelectedServerDataMessage(); };
+            MessageReceiver._list[SelectedServerRefusedMessage.ID] = () => { return new SelectedServerRefusedMessage(); };
+            MessageReceiver._list[ServerSelectionMessage.ID] = () => { return new ServerSelectionMessage(); };
+            MessageReceiver._list[ServerStatusUpdateMessage.ID] = () => { return new ServerStatusUpdateMessage(); };
+            MessageReceiver._list[ServersListMessage.ID] = () => { return new ServersListMessage(); };
+            MessageReceiver._list[AccountLinkRequiredMessage.ID] = () => { return new AccountLinkRequiredMessage(); };
+            MessageReceiver._list[NicknameAcceptedMessage.ID] = () => { return new NicknameAcceptedMessage(); };
+            MessageReceiver._list[NicknameChoiceRequestMessage.ID] = () => { return new NicknameChoiceRequestMessage(); };
+            MessageReceiver._list[NicknameRefusedMessage.ID] = () => { return new NicknameRefusedMessage(); };
+            MessageReceiver._list[NicknameRegistrationMessage.ID] = () => { return new NicknameRegistrationMessage(); };
+            MessageReceiver._list[AcquaintanceSearchErrorMessage.ID] = () => { return new AcquaintanceSearchErrorMessage(); };
+            MessageReceiver._list[AcquaintanceSearchMessage.ID] = () => { return new AcquaintanceSearchMessage(); };
+            MessageReceiver._list[AcquaintanceServerListMessage.ID] = () => { return new AcquaintanceServerListMessage(); };
+            MessageReceiver._list[DebugClearHighlightCellsMessage.ID] = () => { return new DebugClearHighlightCellsMessage(); };
+            MessageReceiver._list[DebugHighlightCellsMessage.ID] = () => { return new DebugHighlightCellsMessage(); };
+            MessageReceiver._list[DebugInClientMessage.ID] = () => { return new DebugInClientMessage(); };
+            MessageReceiver._list[AchievementDetailedListMessage.ID] = () => { return new AchievementDetailedListMessage(); };
+            MessageReceiver._list[AchievementDetailedListRequestMessage.ID] = () => { return new AchievementDetailedListRequestMessage(); };
+            MessageReceiver._list[AchievementDetailsMessage.ID] = () => { return new AchievementDetailsMessage(); };
+            MessageReceiver._list[AchievementDetailsRequestMessage.ID] = () => { return new AchievementDetailsRequestMessage(); };
+            MessageReceiver._list[AchievementFinishedInformationMessage.ID] = () => { return new AchievementFinishedInformationMessage(); };
+            MessageReceiver._list[AchievementFinishedMessage.ID] = () => { return new AchievementFinishedMessage(); };
+            MessageReceiver._list[AchievementListMessage.ID] = () => { return new AchievementListMessage(); };
+            MessageReceiver._list[AchievementRewardErrorMessage.ID] = () => { return new AchievementRewardErrorMessage(); };
+            MessageReceiver._list[AchievementRewardRequestMessage.ID] = () => { return new AchievementRewardRequestMessage(); };
+            MessageReceiver._list[AchievementRewardSuccessMessage.ID] = () => { return new AchievementRewardSuccessMessage(); };
+            MessageReceiver._list[FriendGuildSetWarnOnAchievementCompleteMessage.ID] = () => { return new FriendGuildSetWarnOnAchievementCompleteMessage(); };
+            MessageReceiver._list[FriendGuildWarnOnAchievementCompleteStateMessage.ID] = () => { return new FriendGuildWarnOnAchievementCompleteStateMessage(); };
+            MessageReceiver._list[AbstractGameActionMessage.ID] = () => { return new AbstractGameActionMessage(); };
+            MessageReceiver._list[AbstractGameActionWithAckMessage.ID] = () => { return new AbstractGameActionWithAckMessage(); };
+            MessageReceiver._list[GameActionAcknowledgementMessage.ID] = () => { return new GameActionAcknowledgementMessage(); };
+            MessageReceiver._list[GameActionNoopMessage.ID] = () => { return new GameActionNoopMessage(); };
+            MessageReceiver._list[AbstractGameActionFightTargetedAbilityMessage.ID] = () => { return new AbstractGameActionFightTargetedAbilityMessage(); };
+            MessageReceiver._list[GameActionFightActivateGlyphTrapMessage.ID] = () => { return new GameActionFightActivateGlyphTrapMessage(); };
+            MessageReceiver._list[GameActionFightCarryCharacterMessage.ID] = () => { return new GameActionFightCarryCharacterMessage(); };
+            MessageReceiver._list[GameActionFightCastOnTargetRequestMessage.ID] = () => { return new GameActionFightCastOnTargetRequestMessage(); };
+            MessageReceiver._list[GameActionFightCastRequestMessage.ID] = () => { return new GameActionFightCastRequestMessage(); };
+            MessageReceiver._list[GameActionFightChangeLookMessage.ID] = () => { return new GameActionFightChangeLookMessage(); };
+            MessageReceiver._list[GameActionFightCloseCombatMessage.ID] = () => { return new GameActionFightCloseCombatMessage(); };
+            MessageReceiver._list[GameActionFightDeathMessage.ID] = () => { return new GameActionFightDeathMessage(); };
+            MessageReceiver._list[GameActionFightDispellEffectMessage.ID] = () => { return new GameActionFightDispellEffectMessage(); };
+            MessageReceiver._list[GameActionFightDispellMessage.ID] = () => { return new GameActionFightDispellMessage(); };
+            MessageReceiver._list[GameActionFightDispellSpellMessage.ID] = () => { return new GameActionFightDispellSpellMessage(); };
+            MessageReceiver._list[GameActionFightDispellableEffectMessage.ID] = () => { return new GameActionFightDispellableEffectMessage(); };
+            MessageReceiver._list[GameActionFightDodgePointLossMessage.ID] = () => { return new GameActionFightDodgePointLossMessage(); };
+            MessageReceiver._list[GameActionFightDropCharacterMessage.ID] = () => { return new GameActionFightDropCharacterMessage(); };
+            MessageReceiver._list[GameActionFightExchangePositionsMessage.ID] = () => { return new GameActionFightExchangePositionsMessage(); };
+            MessageReceiver._list[GameActionFightInvisibilityMessage.ID] = () => { return new GameActionFightInvisibilityMessage(); };
+            MessageReceiver._list[GameActionFightInvisibleDetectedMessage.ID] = () => { return new GameActionFightInvisibleDetectedMessage(); };
+            MessageReceiver._list[GameActionFightKillMessage.ID] = () => { return new GameActionFightKillMessage(); };
+            MessageReceiver._list[GameActionFightLifeAndShieldPointsLostMessage.ID] = () => { return new GameActionFightLifeAndShieldPointsLostMessage(); };
+            MessageReceiver._list[GameActionFightLifePointsGainMessage.ID] = () => { return new GameActionFightLifePointsGainMessage(); };
+            MessageReceiver._list[GameActionFightLifePointsLostMessage.ID] = () => { return new GameActionFightLifePointsLostMessage(); };
+            MessageReceiver._list[GameActionFightMarkCellsMessage.ID] = () => { return new GameActionFightMarkCellsMessage(); };
+            MessageReceiver._list[GameActionFightModifyEffectsDurationMessage.ID] = () => { return new GameActionFightModifyEffectsDurationMessage(); };
+            MessageReceiver._list[GameActionFightNoSpellCastMessage.ID] = () => { return new GameActionFightNoSpellCastMessage(); };
+            MessageReceiver._list[GameActionFightPointsVariationMessage.ID] = () => { return new GameActionFightPointsVariationMessage(); };
+            MessageReceiver._list[GameActionFightReduceDamagesMessage.ID] = () => { return new GameActionFightReduceDamagesMessage(); };
+            MessageReceiver._list[GameActionFightReflectDamagesMessage.ID] = () => { return new GameActionFightReflectDamagesMessage(); };
+            MessageReceiver._list[GameActionFightReflectSpellMessage.ID] = () => { return new GameActionFightReflectSpellMessage(); };
+            MessageReceiver._list[GameActionFightSlideMessage.ID] = () => { return new GameActionFightSlideMessage(); };
+            MessageReceiver._list[GameActionFightSpellCastMessage.ID] = () => { return new GameActionFightSpellCastMessage(); };
+            MessageReceiver._list[GameActionFightSpellCooldownVariationMessage.ID] = () => { return new GameActionFightSpellCooldownVariationMessage(); };
+            MessageReceiver._list[GameActionFightSpellImmunityMessage.ID] = () => { return new GameActionFightSpellImmunityMessage(); };
+            MessageReceiver._list[GameActionFightStealKamaMessage.ID] = () => { return new GameActionFightStealKamaMessage(); };
+            MessageReceiver._list[GameActionFightSummonMessage.ID] = () => { return new GameActionFightSummonMessage(); };
+            MessageReceiver._list[GameActionFightTackledMessage.ID] = () => { return new GameActionFightTackledMessage(); };
+            MessageReceiver._list[GameActionFightTeleportOnSameMapMessage.ID] = () => { return new GameActionFightTeleportOnSameMapMessage(); };
+            MessageReceiver._list[GameActionFightThrowCharacterMessage.ID] = () => { return new GameActionFightThrowCharacterMessage(); };
+            MessageReceiver._list[GameActionFightTriggerEffectMessage.ID] = () => { return new GameActionFightTriggerEffectMessage(); };
+            MessageReceiver._list[GameActionFightTriggerGlyphTrapMessage.ID] = () => { return new GameActionFightTriggerGlyphTrapMessage(); };
+            MessageReceiver._list[GameActionFightUnmarkCellsMessage.ID] = () => { return new GameActionFightUnmarkCellsMessage(); };
+            MessageReceiver._list[GameActionFightVanishMessage.ID] = () => { return new GameActionFightVanishMessage(); };
+            MessageReceiver._list[SequenceEndMessage.ID] = () => { return new SequenceEndMessage(); };
+            MessageReceiver._list[SequenceStartMessage.ID] = () => { return new SequenceStartMessage(); };
+            MessageReceiver._list[AllianceChangeGuildRightsMessage.ID] = () => { return new AllianceChangeGuildRightsMessage(); };
+            MessageReceiver._list[AllianceCreationResultMessage.ID] = () => { return new AllianceCreationResultMessage(); };
+            MessageReceiver._list[AllianceCreationStartedMessage.ID] = () => { return new AllianceCreationStartedMessage(); };
+            MessageReceiver._list[AllianceCreationValidMessage.ID] = () => { return new AllianceCreationValidMessage(); };
+            MessageReceiver._list[AllianceFactsErrorMessage.ID] = () => { return new AllianceFactsErrorMessage(); };
+            MessageReceiver._list[AllianceFactsMessage.ID] = () => { return new AllianceFactsMessage(); };
+            MessageReceiver._list[AllianceFactsRequestMessage.ID] = () => { return new AllianceFactsRequestMessage(); };
+            MessageReceiver._list[AllianceGuildLeavingMessage.ID] = () => { return new AllianceGuildLeavingMessage(); };
+            MessageReceiver._list[AllianceInsiderInfoMessage.ID] = () => { return new AllianceInsiderInfoMessage(); };
+            MessageReceiver._list[AllianceInsiderInfoRequestMessage.ID] = () => { return new AllianceInsiderInfoRequestMessage(); };
+            MessageReceiver._list[AllianceInvitationAnswerMessage.ID] = () => { return new AllianceInvitationAnswerMessage(); };
+            MessageReceiver._list[AllianceInvitationMessage.ID] = () => { return new AllianceInvitationMessage(); };
+            MessageReceiver._list[AllianceInvitationStateRecrutedMessage.ID] = () => { return new AllianceInvitationStateRecrutedMessage(); };
+            MessageReceiver._list[AllianceInvitationStateRecruterMessage.ID] = () => { return new AllianceInvitationStateRecruterMessage(); };
+            MessageReceiver._list[AllianceInvitedMessage.ID] = () => { return new AllianceInvitedMessage(); };
+            MessageReceiver._list[AllianceJoinedMessage.ID] = () => { return new AllianceJoinedMessage(); };
+            MessageReceiver._list[AllianceKickRequestMessage.ID] = () => { return new AllianceKickRequestMessage(); };
+            MessageReceiver._list[AllianceLeftMessage.ID] = () => { return new AllianceLeftMessage(); };
+            MessageReceiver._list[AllianceListMessage.ID] = () => { return new AllianceListMessage(); };
+            MessageReceiver._list[AllianceMembershipMessage.ID] = () => { return new AllianceMembershipMessage(); };
+            MessageReceiver._list[AllianceModificationEmblemValidMessage.ID] = () => { return new AllianceModificationEmblemValidMessage(); };
+            MessageReceiver._list[AllianceModificationNameAndTagValidMessage.ID] = () => { return new AllianceModificationNameAndTagValidMessage(); };
+            MessageReceiver._list[AllianceModificationStartedMessage.ID] = () => { return new AllianceModificationStartedMessage(); };
+            MessageReceiver._list[AllianceModificationValidMessage.ID] = () => { return new AllianceModificationValidMessage(); };
+            MessageReceiver._list[AlliancePartialListMessage.ID] = () => { return new AlliancePartialListMessage(); };
+            MessageReceiver._list[AllianceVersatileInfoListMessage.ID] = () => { return new AllianceVersatileInfoListMessage(); };
+            MessageReceiver._list[KohUpdateMessage.ID] = () => { return new KohUpdateMessage(); };
+            MessageReceiver._list[AlmanachCalendarDateMessage.ID] = () => { return new AlmanachCalendarDateMessage(); };
+            MessageReceiver._list[AccountCapabilitiesMessage.ID] = () => { return new AccountCapabilitiesMessage(); };
+            MessageReceiver._list[AccountLoggingKickedMessage.ID] = () => { return new AccountLoggingKickedMessage(); };
+            MessageReceiver._list[AlreadyConnectedMessage.ID] = () => { return new AlreadyConnectedMessage(); };
+            MessageReceiver._list[AuthenticationTicketAcceptedMessage.ID] = () => { return new AuthenticationTicketAcceptedMessage(); };
+            MessageReceiver._list[AuthenticationTicketMessage.ID] = () => { return new AuthenticationTicketMessage(); };
+            MessageReceiver._list[AuthenticationTicketRefusedMessage.ID] = () => { return new AuthenticationTicketRefusedMessage(); };
+            MessageReceiver._list[HelloGameMessage.ID] = () => { return new HelloGameMessage(); };
+            MessageReceiver._list[ReloginTokenRequestMessage.ID] = () => { return new ReloginTokenRequestMessage(); };
+            MessageReceiver._list[ReloginTokenStatusMessage.ID] = () => { return new ReloginTokenStatusMessage(); };
+            MessageReceiver._list[ServerOptionalFeaturesMessage.ID] = () => { return new ServerOptionalFeaturesMessage(); };
+            MessageReceiver._list[ServerSessionConstantsMessage.ID] = () => { return new ServerSessionConstantsMessage(); };
+            MessageReceiver._list[ServerSettingsMessage.ID] = () => { return new ServerSettingsMessage(); };
+            MessageReceiver._list[AtlasPointInformationsMessage.ID] = () => { return new AtlasPointInformationsMessage(); };
+            MessageReceiver._list[CompassResetMessage.ID] = () => { return new CompassResetMessage(); };
+            MessageReceiver._list[CompassUpdateMessage.ID] = () => { return new CompassUpdateMessage(); };
+            MessageReceiver._list[CompassUpdatePartyMemberMessage.ID] = () => { return new CompassUpdatePartyMemberMessage(); };
+            MessageReceiver._list[CompassUpdatePvpSeekMessage.ID] = () => { return new CompassUpdatePvpSeekMessage(); };
+            MessageReceiver._list[BasicAckMessage.ID] = () => { return new BasicAckMessage(); };
+            MessageReceiver._list[BasicDateMessage.ID] = () => { return new BasicDateMessage(); };
+            MessageReceiver._list[BasicLatencyStatsMessage.ID] = () => { return new BasicLatencyStatsMessage(); };
+            MessageReceiver._list[BasicLatencyStatsRequestMessage.ID] = () => { return new BasicLatencyStatsRequestMessage(); };
+            MessageReceiver._list[BasicNoOperationMessage.ID] = () => { return new BasicNoOperationMessage(); };
+            MessageReceiver._list[BasicTimeMessage.ID] = () => { return new BasicTimeMessage(); };
+            MessageReceiver._list[BasicWhoAmIRequestMessage.ID] = () => { return new BasicWhoAmIRequestMessage(); };
+            MessageReceiver._list[BasicWhoIsMessage.ID] = () => { return new BasicWhoIsMessage(); };
+            MessageReceiver._list[BasicWhoIsNoMatchMessage.ID] = () => { return new BasicWhoIsNoMatchMessage(); };
+            MessageReceiver._list[BasicWhoIsRequestMessage.ID] = () => { return new BasicWhoIsRequestMessage(); };
+            MessageReceiver._list[CurrentServerStatusUpdateMessage.ID] = () => { return new CurrentServerStatusUpdateMessage(); };
+            MessageReceiver._list[NumericWhoIsMessage.ID] = () => { return new NumericWhoIsMessage(); };
+            MessageReceiver._list[NumericWhoIsRequestMessage.ID] = () => { return new NumericWhoIsRequestMessage(); };
+            MessageReceiver._list[SequenceNumberMessage.ID] = () => { return new SequenceNumberMessage(); };
+            MessageReceiver._list[SequenceNumberRequestMessage.ID] = () => { return new SequenceNumberRequestMessage(); };
+            MessageReceiver._list[TextInformationMessage.ID] = () => { return new TextInformationMessage(); };
+            MessageReceiver._list[BasicCharactersListMessage.ID] = () => { return new BasicCharactersListMessage(); };
+            MessageReceiver._list[CharacterFirstSelectionMessage.ID] = () => { return new CharacterFirstSelectionMessage(); };
+            MessageReceiver._list[CharacterReplayWithRemodelRequestMessage.ID] = () => { return new CharacterReplayWithRemodelRequestMessage(); };
+            MessageReceiver._list[CharacterSelectedErrorMessage.ID] = () => { return new CharacterSelectedErrorMessage(); };
+            MessageReceiver._list[CharacterSelectedForceMessage.ID] = () => { return new CharacterSelectedForceMessage(); };
+            MessageReceiver._list[CharacterSelectedForceReadyMessage.ID] = () => { return new CharacterSelectedForceReadyMessage(); };
+            MessageReceiver._list[CharacterSelectedSuccessMessage.ID] = () => { return new CharacterSelectedSuccessMessage(); };
+            MessageReceiver._list[CharacterSelectionMessage.ID] = () => { return new CharacterSelectionMessage(); };
+            MessageReceiver._list[CharacterSelectionWithRemodelMessage.ID] = () => { return new CharacterSelectionWithRemodelMessage(); };
+            MessageReceiver._list[CharactersListErrorMessage.ID] = () => { return new CharactersListErrorMessage(); };
+            MessageReceiver._list[CharactersListMessage.ID] = () => { return new CharactersListMessage(); };
+            MessageReceiver._list[CharactersListRequestMessage.ID] = () => { return new CharactersListRequestMessage(); };
+            MessageReceiver._list[CharactersListWithModificationsMessage.ID] = () => { return new CharactersListWithModificationsMessage(); };
+            MessageReceiver._list[CharactersListWithRemodelingMessage.ID] = () => { return new CharactersListWithRemodelingMessage(); };
+            MessageReceiver._list[CharacterCreationRequestMessage.ID] = () => { return new CharacterCreationRequestMessage(); };
+            MessageReceiver._list[CharacterCreationResultMessage.ID] = () => { return new CharacterCreationResultMessage(); };
+            MessageReceiver._list[CharacterNameSuggestionFailureMessage.ID] = () => { return new CharacterNameSuggestionFailureMessage(); };
+            MessageReceiver._list[CharacterNameSuggestionRequestMessage.ID] = () => { return new CharacterNameSuggestionRequestMessage(); };
+            MessageReceiver._list[CharacterNameSuggestionSuccessMessage.ID] = () => { return new CharacterNameSuggestionSuccessMessage(); };
+            MessageReceiver._list[CharacterDeletionErrorMessage.ID] = () => { return new CharacterDeletionErrorMessage(); };
+            MessageReceiver._list[CharacterDeletionRequestMessage.ID] = () => { return new CharacterDeletionRequestMessage(); };
+            MessageReceiver._list[CharacterReplayRequestMessage.ID] = () => { return new CharacterReplayRequestMessage(); };
+            MessageReceiver._list[CharacterExperienceGainMessage.ID] = () => { return new CharacterExperienceGainMessage(); };
+            MessageReceiver._list[CharacterLevelUpInformationMessage.ID] = () => { return new CharacterLevelUpInformationMessage(); };
+            MessageReceiver._list[CharacterLevelUpMessage.ID] = () => { return new CharacterLevelUpMessage(); };
+            MessageReceiver._list[CharacterStatsListMessage.ID] = () => { return new CharacterStatsListMessage(); };
+            MessageReceiver._list[FighterStatsListMessage.ID] = () => { return new FighterStatsListMessage(); };
+            MessageReceiver._list[LifePointsRegenBeginMessage.ID] = () => { return new LifePointsRegenBeginMessage(); };
+            MessageReceiver._list[LifePointsRegenEndMessage.ID] = () => { return new LifePointsRegenEndMessage(); };
+            MessageReceiver._list[UpdateLifePointsMessage.ID] = () => { return new UpdateLifePointsMessage(); };
+            MessageReceiver._list[PlayerStatusUpdateErrorMessage.ID] = () => { return new PlayerStatusUpdateErrorMessage(); };
+            MessageReceiver._list[PlayerStatusUpdateMessage.ID] = () => { return new PlayerStatusUpdateMessage(); };
+            MessageReceiver._list[PlayerStatusUpdateRequestMessage.ID] = () => { return new PlayerStatusUpdateRequestMessage(); };
+            MessageReceiver._list[ChatAbstractClientMessage.ID] = () => { return new ChatAbstractClientMessage(); };
+            MessageReceiver._list[ChatAbstractServerMessage.ID] = () => { return new ChatAbstractServerMessage(); };
+            MessageReceiver._list[ChatAdminServerMessage.ID] = () => { return new ChatAdminServerMessage(); };
+            MessageReceiver._list[ChatClientMultiMessage.ID] = () => { return new ChatClientMultiMessage(); };
+            MessageReceiver._list[ChatClientMultiWithObjectMessage.ID] = () => { return new ChatClientMultiWithObjectMessage(); };
+            MessageReceiver._list[ChatClientPrivateMessage.ID] = () => { return new ChatClientPrivateMessage(); };
+            MessageReceiver._list[ChatClientPrivateWithObjectMessage.ID] = () => { return new ChatClientPrivateWithObjectMessage(); };
+            MessageReceiver._list[ChatErrorMessage.ID] = () => { return new ChatErrorMessage(); };
+            MessageReceiver._list[ChatServerCopyMessage.ID] = () => { return new ChatServerCopyMessage(); };
+            MessageReceiver._list[ChatServerCopyWithObjectMessage.ID] = () => { return new ChatServerCopyWithObjectMessage(); };
+            MessageReceiver._list[ChatServerMessage.ID] = () => { return new ChatServerMessage(); };
+            MessageReceiver._list[ChatServerWithObjectMessage.ID] = () => { return new ChatServerWithObjectMessage(); };
+            MessageReceiver._list[ChannelEnablingChangeMessage.ID] = () => { return new ChannelEnablingChangeMessage(); };
+            MessageReceiver._list[ChannelEnablingMessage.ID] = () => { return new ChannelEnablingMessage(); };
+            MessageReceiver._list[EnabledChannelsMessage.ID] = () => { return new EnabledChannelsMessage(); };
+            MessageReceiver._list[ChatMessageReportMessage.ID] = () => { return new ChatMessageReportMessage(); };
+            MessageReceiver._list[ChatSmileyExtraPackListMessage.ID] = () => { return new ChatSmileyExtraPackListMessage(); };
+            MessageReceiver._list[ChatSmileyMessage.ID] = () => { return new ChatSmileyMessage(); };
+            MessageReceiver._list[ChatSmileyRequestMessage.ID] = () => { return new ChatSmileyRequestMessage(); };
+            MessageReceiver._list[LocalizedChatSmileyMessage.ID] = () => { return new LocalizedChatSmileyMessage(); };
+            MessageReceiver._list[MoodSmileyRequestMessage.ID] = () => { return new MoodSmileyRequestMessage(); };
+            MessageReceiver._list[MoodSmileyResultMessage.ID] = () => { return new MoodSmileyResultMessage(); };
+            MessageReceiver._list[MoodSmileyUpdateMessage.ID] = () => { return new MoodSmileyUpdateMessage(); };
+            MessageReceiver._list[GameCautiousMapMovementMessage.ID] = () => { return new GameCautiousMapMovementMessage(); };
+            MessageReceiver._list[GameCautiousMapMovementRequestMessage.ID] = () => { return new GameCautiousMapMovementRequestMessage(); };
+            MessageReceiver._list[GameContextCreateErrorMessage.ID] = () => { return new GameContextCreateErrorMessage(); };
+            MessageReceiver._list[GameContextCreateMessage.ID] = () => { return new GameContextCreateMessage(); };
+            MessageReceiver._list[GameContextCreateRequestMessage.ID] = () => { return new GameContextCreateRequestMessage(); };
+            MessageReceiver._list[GameContextDestroyMessage.ID] = () => { return new GameContextDestroyMessage(); };
+            MessageReceiver._list[GameContextKickMessage.ID] = () => { return new GameContextKickMessage(); };
+            MessageReceiver._list[GameContextMoveElementMessage.ID] = () => { return new GameContextMoveElementMessage(); };
+            MessageReceiver._list[GameContextMoveMultipleElementsMessage.ID] = () => { return new GameContextMoveMultipleElementsMessage(); };
+            MessageReceiver._list[GameContextQuitMessage.ID] = () => { return new GameContextQuitMessage(); };
+            MessageReceiver._list[GameContextReadyMessage.ID] = () => { return new GameContextReadyMessage(); };
+            MessageReceiver._list[GameContextRefreshEntityLookMessage.ID] = () => { return new GameContextRefreshEntityLookMessage(); };
+            MessageReceiver._list[GameContextRemoveElementMessage.ID] = () => { return new GameContextRemoveElementMessage(); };
+            MessageReceiver._list[GameContextRemoveElementWithEventMessage.ID] = () => { return new GameContextRemoveElementWithEventMessage(); };
+            MessageReceiver._list[GameContextRemoveMultipleElementsMessage.ID] = () => { return new GameContextRemoveMultipleElementsMessage(); };
+            MessageReceiver._list[GameContextRemoveMultipleElementsWithEventsMessage.ID] = () => { return new GameContextRemoveMultipleElementsWithEventsMessage(); };
+            MessageReceiver._list[GameEntitiesDispositionMessage.ID] = () => { return new GameEntitiesDispositionMessage(); };
+            MessageReceiver._list[GameEntityDispositionErrorMessage.ID] = () => { return new GameEntityDispositionErrorMessage(); };
+            MessageReceiver._list[GameEntityDispositionMessage.ID] = () => { return new GameEntityDispositionMessage(); };
+            MessageReceiver._list[GameMapChangeOrientationMessage.ID] = () => { return new GameMapChangeOrientationMessage(); };
+            MessageReceiver._list[GameMapChangeOrientationRequestMessage.ID] = () => { return new GameMapChangeOrientationRequestMessage(); };
+            MessageReceiver._list[GameMapChangeOrientationsMessage.ID] = () => { return new GameMapChangeOrientationsMessage(); };
+            MessageReceiver._list[GameMapMovementCancelMessage.ID] = () => { return new GameMapMovementCancelMessage(); };
+            MessageReceiver._list[GameMapMovementConfirmMessage.ID] = () => { return new GameMapMovementConfirmMessage(); };
+            MessageReceiver._list[GameMapMovementMessage.ID] = () => { return new GameMapMovementMessage(); };
+            MessageReceiver._list[GameMapMovementRequestMessage.ID] = () => { return new GameMapMovementRequestMessage(); };
+            MessageReceiver._list[GameMapNoMovementMessage.ID] = () => { return new GameMapNoMovementMessage(); };
+            MessageReceiver._list[ShowCellMessage.ID] = () => { return new ShowCellMessage(); };
+            MessageReceiver._list[ShowCellRequestMessage.ID] = () => { return new ShowCellRequestMessage(); };
+            MessageReceiver._list[ShowCellSpectatorMessage.ID] = () => { return new ShowCellSpectatorMessage(); };
+            MessageReceiver._list[DisplayNumericalValuePaddockMessage.ID] = () => { return new DisplayNumericalValuePaddockMessage(); };
+            MessageReceiver._list[DungeonKeyRingMessage.ID] = () => { return new DungeonKeyRingMessage(); };
+            MessageReceiver._list[DungeonKeyRingUpdateMessage.ID] = () => { return new DungeonKeyRingUpdateMessage(); };
+            MessageReceiver._list[GameFightEndMessage.ID] = () => { return new GameFightEndMessage(); };
+            MessageReceiver._list[GameFightHumanReadyStateMessage.ID] = () => { return new GameFightHumanReadyStateMessage(); };
+            MessageReceiver._list[GameFightJoinMessage.ID] = () => { return new GameFightJoinMessage(); };
+            MessageReceiver._list[GameFightJoinRequestMessage.ID] = () => { return new GameFightJoinRequestMessage(); };
+            MessageReceiver._list[GameFightLeaveMessage.ID] = () => { return new GameFightLeaveMessage(); };
+            MessageReceiver._list[GameFightNewRoundMessage.ID] = () => { return new GameFightNewRoundMessage(); };
+            MessageReceiver._list[GameFightNewWaveMessage.ID] = () => { return new GameFightNewWaveMessage(); };
+            MessageReceiver._list[GameFightOptionStateUpdateMessage.ID] = () => { return new GameFightOptionStateUpdateMessage(); };
+            MessageReceiver._list[GameFightOptionToggleMessage.ID] = () => { return new GameFightOptionToggleMessage(); };
+            MessageReceiver._list[GameFightPlacementPositionRequestMessage.ID] = () => { return new GameFightPlacementPositionRequestMessage(); };
+            MessageReceiver._list[GameFightPlacementPossiblePositionsMessage.ID] = () => { return new GameFightPlacementPossiblePositionsMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsAcceptMessage.ID] = () => { return new GameFightPlacementSwapPositionsAcceptMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsCancelMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsCancelledMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelledMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsErrorMessage.ID] = () => { return new GameFightPlacementSwapPositionsErrorMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsMessage.ID] = () => { return new GameFightPlacementSwapPositionsMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsOfferMessage.ID] = () => { return new GameFightPlacementSwapPositionsOfferMessage(); };
+            MessageReceiver._list[GameFightPlacementSwapPositionsRequestMessage.ID] = () => { return new GameFightPlacementSwapPositionsRequestMessage(); };
+            MessageReceiver._list[GameFightReadyMessage.ID] = () => { return new GameFightReadyMessage(); };
+            MessageReceiver._list[GameFightRemoveTeamMemberMessage.ID] = () => { return new GameFightRemoveTeamMemberMessage(); };
+            MessageReceiver._list[GameFightResumeMessage.ID] = () => { return new GameFightResumeMessage(); };
+            MessageReceiver._list[GameFightResumeWithSlavesMessage.ID] = () => { return new GameFightResumeWithSlavesMessage(); };
+            MessageReceiver._list[GameFightSpectateMessage.ID] = () => { return new GameFightSpectateMessage(); };
+            MessageReceiver._list[GameFightSpectatePlayerRequestMessage.ID] = () => { return new GameFightSpectatePlayerRequestMessage(); };
+            MessageReceiver._list[GameFightSpectatorJoinMessage.ID] = () => { return new GameFightSpectatorJoinMessage(); };
+            MessageReceiver._list[GameFightStartMessage.ID] = () => { return new GameFightStartMessage(); };
+            MessageReceiver._list[GameFightStartingMessage.ID] = () => { return new GameFightStartingMessage(); };
+            MessageReceiver._list[GameFightSynchronizeMessage.ID] = () => { return new GameFightSynchronizeMessage(); };
+            MessageReceiver._list[GameFightTurnEndMessage.ID] = () => { return new GameFightTurnEndMessage(); };
+            MessageReceiver._list[GameFightTurnFinishMessage.ID] = () => { return new GameFightTurnFinishMessage(); };
+            MessageReceiver._list[GameFightTurnListMessage.ID] = () => { return new GameFightTurnListMessage(); };
+            MessageReceiver._list[GameFightTurnReadyMessage.ID] = () => { return new GameFightTurnReadyMessage(); };
+            MessageReceiver._list[GameFightTurnReadyRequestMessage.ID] = () => { return new GameFightTurnReadyRequestMessage(); };
+            MessageReceiver._list[GameFightTurnResumeMessage.ID] = () => { return new GameFightTurnResumeMessage(); };
+            MessageReceiver._list[GameFightTurnStartMessage.ID] = () => { return new GameFightTurnStartMessage(); };
+            MessageReceiver._list[GameFightTurnStartPlayingMessage.ID] = () => { return new GameFightTurnStartPlayingMessage(); };
+            MessageReceiver._list[GameFightUpdateTeamMessage.ID] = () => { return new GameFightUpdateTeamMessage(); };
+            MessageReceiver._list[SlaveSwitchContextMessage.ID] = () => { return new SlaveSwitchContextMessage(); };
+            MessageReceiver._list[ChallengeInfoMessage.ID] = () => { return new ChallengeInfoMessage(); };
+            MessageReceiver._list[ChallengeResultMessage.ID] = () => { return new ChallengeResultMessage(); };
+            MessageReceiver._list[ChallengeTargetUpdateMessage.ID] = () => { return new ChallengeTargetUpdateMessage(); };
+            MessageReceiver._list[ChallengeTargetsListMessage.ID] = () => { return new ChallengeTargetsListMessage(); };
+            MessageReceiver._list[ChallengeTargetsListRequestMessage.ID] = () => { return new ChallengeTargetsListRequestMessage(); };
+            MessageReceiver._list[GameFightRefreshFighterMessage.ID] = () => { return new GameFightRefreshFighterMessage(); };
+            MessageReceiver._list[GameFightShowFighterMessage.ID] = () => { return new GameFightShowFighterMessage(); };
+            MessageReceiver._list[GameFightShowFighterRandomStaticPoseMessage.ID] = () => { return new GameFightShowFighterRandomStaticPoseMessage(); };
+            MessageReceiver._list[GameDataPaddockObjectAddMessage.ID] = () => { return new GameDataPaddockObjectAddMessage(); };
+            MessageReceiver._list[GameDataPaddockObjectListAddMessage.ID] = () => { return new GameDataPaddockObjectListAddMessage(); };
+            MessageReceiver._list[GameDataPaddockObjectRemoveMessage.ID] = () => { return new GameDataPaddockObjectRemoveMessage(); };
+            MessageReceiver._list[MountDataErrorMessage.ID] = () => { return new MountDataErrorMessage(); };
+            MessageReceiver._list[MountDataMessage.ID] = () => { return new MountDataMessage(); };
+            MessageReceiver._list[MountEmoteIconUsedOkMessage.ID] = () => { return new MountEmoteIconUsedOkMessage(); };
+            MessageReceiver._list[MountEquipedErrorMessage.ID] = () => { return new MountEquipedErrorMessage(); };
+            MessageReceiver._list[MountFeedRequestMessage.ID] = () => { return new MountFeedRequestMessage(); };
+            MessageReceiver._list[MountInformationInPaddockRequestMessage.ID] = () => { return new MountInformationInPaddockRequestMessage(); };
+            MessageReceiver._list[MountInformationRequestMessage.ID] = () => { return new MountInformationRequestMessage(); };
+            MessageReceiver._list[MountReleaseRequestMessage.ID] = () => { return new MountReleaseRequestMessage(); };
+            MessageReceiver._list[MountReleasedMessage.ID] = () => { return new MountReleasedMessage(); };
+            MessageReceiver._list[MountRenameRequestMessage.ID] = () => { return new MountRenameRequestMessage(); };
+            MessageReceiver._list[MountRenamedMessage.ID] = () => { return new MountRenamedMessage(); };
+            MessageReceiver._list[MountRidingMessage.ID] = () => { return new MountRidingMessage(); };
+            MessageReceiver._list[MountSetMessage.ID] = () => { return new MountSetMessage(); };
+            MessageReceiver._list[MountSetXpRatioRequestMessage.ID] = () => { return new MountSetXpRatioRequestMessage(); };
+            MessageReceiver._list[MountSterilizeRequestMessage.ID] = () => { return new MountSterilizeRequestMessage(); };
+            MessageReceiver._list[MountSterilizedMessage.ID] = () => { return new MountSterilizedMessage(); };
+            MessageReceiver._list[MountToggleRidingRequestMessage.ID] = () => { return new MountToggleRidingRequestMessage(); };
+            MessageReceiver._list[MountUnSetMessage.ID] = () => { return new MountUnSetMessage(); };
+            MessageReceiver._list[MountXpRatioMessage.ID] = () => { return new MountXpRatioMessage(); };
+            MessageReceiver._list[PaddockBuyRequestMessage.ID] = () => { return new PaddockBuyRequestMessage(); };
+            MessageReceiver._list[PaddockBuyResultMessage.ID] = () => { return new PaddockBuyResultMessage(); };
+            MessageReceiver._list[PaddockMoveItemRequestMessage.ID] = () => { return new PaddockMoveItemRequestMessage(); };
+            MessageReceiver._list[PaddockRemoveItemRequestMessage.ID] = () => { return new PaddockRemoveItemRequestMessage(); };
+            MessageReceiver._list[PaddockSellRequestMessage.ID] = () => { return new PaddockSellRequestMessage(); };
+            MessageReceiver._list[NotificationByServerMessage.ID] = () => { return new NotificationByServerMessage(); };
+            MessageReceiver._list[NotificationListMessage.ID] = () => { return new NotificationListMessage(); };
+            MessageReceiver._list[NotificationResetMessage.ID] = () => { return new NotificationResetMessage(); };
+            MessageReceiver._list[NotificationUpdateFlagMessage.ID] = () => { return new NotificationUpdateFlagMessage(); };
+            MessageReceiver._list[ChangeMapMessage.ID] = () => { return new ChangeMapMessage(); };
+            MessageReceiver._list[CurrentMapMessage.ID] = () => { return new CurrentMapMessage(); };
+            MessageReceiver._list[ErrorMapNotFoundMessage.ID] = () => { return new ErrorMapNotFoundMessage(); };
+            MessageReceiver._list[GameRolePlayShowActorMessage.ID] = () => { return new GameRolePlayShowActorMessage(); };
+            MessageReceiver._list[GameRolePlayShowActorWithEventMessage.ID] = () => { return new GameRolePlayShowActorWithEventMessage(); };
+            MessageReceiver._list[MapComplementaryInformationsDataInHouseMessage.ID] = () => { return new MapComplementaryInformationsDataInHouseMessage(); };
+            MessageReceiver._list[MapComplementaryInformationsDataMessage.ID] = () => { return new MapComplementaryInformationsDataMessage(); };
+            MessageReceiver._list[MapComplementaryInformationsWithCoordsMessage.ID] = () => { return new MapComplementaryInformationsWithCoordsMessage(); };
+            MessageReceiver._list[MapFightCountMessage.ID] = () => { return new MapFightCountMessage(); };
+            MessageReceiver._list[MapInformationsRequestMessage.ID] = () => { return new MapInformationsRequestMessage(); };
+            MessageReceiver._list[MapObstacleUpdateMessage.ID] = () => { return new MapObstacleUpdateMessage(); };
+            MessageReceiver._list[MapRunningFightDetailsExtendedMessage.ID] = () => { return new MapRunningFightDetailsExtendedMessage(); };
+            MessageReceiver._list[MapRunningFightDetailsMessage.ID] = () => { return new MapRunningFightDetailsMessage(); };
+            MessageReceiver._list[MapRunningFightDetailsRequestMessage.ID] = () => { return new MapRunningFightDetailsRequestMessage(); };
+            MessageReceiver._list[MapRunningFightListMessage.ID] = () => { return new MapRunningFightListMessage(); };
+            MessageReceiver._list[MapRunningFightListRequestMessage.ID] = () => { return new MapRunningFightListRequestMessage(); };
+            MessageReceiver._list[StopToListenRunningFightRequestMessage.ID] = () => { return new StopToListenRunningFightRequestMessage(); };
+            MessageReceiver._list[TeleportOnSameMapMessage.ID] = () => { return new TeleportOnSameMapMessage(); };
+            MessageReceiver._list[GameRolePlayFreeSoulRequestMessage.ID] = () => { return new GameRolePlayFreeSoulRequestMessage(); };
+            MessageReceiver._list[GameRolePlayGameOverMessage.ID] = () => { return new GameRolePlayGameOverMessage(); };
+            MessageReceiver._list[GameRolePlayPlayerLifeStatusMessage.ID] = () => { return new GameRolePlayPlayerLifeStatusMessage(); };
+            MessageReceiver._list[WarnOnPermaDeathMessage.ID] = () => { return new WarnOnPermaDeathMessage(); };
+            MessageReceiver._list[GameRolePlayDelayedActionFinishedMessage.ID] = () => { return new GameRolePlayDelayedActionFinishedMessage(); };
+            MessageReceiver._list[GameRolePlayDelayedActionMessage.ID] = () => { return new GameRolePlayDelayedActionMessage(); };
+            MessageReceiver._list[GameRolePlayDelayedObjectUseMessage.ID] = () => { return new GameRolePlayDelayedObjectUseMessage(); };
+            MessageReceiver._list[ComicReadingBeginMessage.ID] = () => { return new ComicReadingBeginMessage(); };
+            MessageReceiver._list[DocumentReadingBeginMessage.ID] = () => { return new DocumentReadingBeginMessage(); };
+            MessageReceiver._list[EmoteAddMessage.ID] = () => { return new EmoteAddMessage(); };
+            MessageReceiver._list[EmoteListMessage.ID] = () => { return new EmoteListMessage(); };
+            MessageReceiver._list[EmotePlayAbstractMessage.ID] = () => { return new EmotePlayAbstractMessage(); };
+            MessageReceiver._list[EmotePlayErrorMessage.ID] = () => { return new EmotePlayErrorMessage(); };
+            MessageReceiver._list[EmotePlayMassiveMessage.ID] = () => { return new EmotePlayMassiveMessage(); };
+            MessageReceiver._list[EmotePlayMessage.ID] = () => { return new EmotePlayMessage(); };
+            MessageReceiver._list[EmotePlayRequestMessage.ID] = () => { return new EmotePlayRequestMessage(); };
+            MessageReceiver._list[EmoteRemoveMessage.ID] = () => { return new EmoteRemoveMessage(); };
+            MessageReceiver._list[GameRolePlayAggressionMessage.ID] = () => { return new GameRolePlayAggressionMessage(); };
+            MessageReceiver._list[GameRolePlayAttackMonsterRequestMessage.ID] = () => { return new GameRolePlayAttackMonsterRequestMessage(); };
+            MessageReceiver._list[GameRolePlayFightRequestCanceledMessage.ID] = () => { return new GameRolePlayFightRequestCanceledMessage(); };
+            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnswerMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnswerMessage(); };
+            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnsweredMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnsweredMessage(); };
+            MessageReceiver._list[GameRolePlayPlayerFightFriendlyRequestedMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyRequestedMessage(); };
+            MessageReceiver._list[GameRolePlayPlayerFightRequestMessage.ID] = () => { return new GameRolePlayPlayerFightRequestMessage(); };
+            MessageReceiver._list[GameRolePlayRemoveChallengeMessage.ID] = () => { return new GameRolePlayRemoveChallengeMessage(); };
+            MessageReceiver._list[GameRolePlayShowChallengeMessage.ID] = () => { return new GameRolePlayShowChallengeMessage(); };
+            MessageReceiver._list[GameRolePlayArenaFightAnswerMessage.ID] = () => { return new GameRolePlayArenaFightAnswerMessage(); };
+            MessageReceiver._list[GameRolePlayArenaFightPropositionMessage.ID] = () => { return new GameRolePlayArenaFightPropositionMessage(); };
+            MessageReceiver._list[GameRolePlayArenaFighterStatusMessage.ID] = () => { return new GameRolePlayArenaFighterStatusMessage(); };
+            MessageReceiver._list[GameRolePlayArenaRegisterMessage.ID] = () => { return new GameRolePlayArenaRegisterMessage(); };
+            MessageReceiver._list[GameRolePlayArenaRegistrationStatusMessage.ID] = () => { return new GameRolePlayArenaRegistrationStatusMessage(); };
+            MessageReceiver._list[GameRolePlayArenaSwitchToFightServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToFightServerMessage(); };
+            MessageReceiver._list[GameRolePlayArenaSwitchToGameServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToGameServerMessage(); };
+            MessageReceiver._list[GameRolePlayArenaUnregisterMessage.ID] = () => { return new GameRolePlayArenaUnregisterMessage(); };
+            MessageReceiver._list[GameRolePlayArenaUpdatePlayerInfosMessage.ID] = () => { return new GameRolePlayArenaUpdatePlayerInfosMessage(); };
+            MessageReceiver._list[AccountHouseMessage.ID] = () => { return new AccountHouseMessage(); };
+            MessageReceiver._list[HouseBuyRequestMessage.ID] = () => { return new HouseBuyRequestMessage(); };
+            MessageReceiver._list[HouseBuyResultMessage.ID] = () => { return new HouseBuyResultMessage(); };
+            MessageReceiver._list[HouseKickIndoorMerchantRequestMessage.ID] = () => { return new HouseKickIndoorMerchantRequestMessage(); };
+            MessageReceiver._list[HouseKickRequestMessage.ID] = () => { return new HouseKickRequestMessage(); };
+            MessageReceiver._list[HouseLockFromInsideRequestMessage.ID] = () => { return new HouseLockFromInsideRequestMessage(); };
+            MessageReceiver._list[HousePropertiesMessage.ID] = () => { return new HousePropertiesMessage(); };
+            MessageReceiver._list[HouseSellFromInsideRequestMessage.ID] = () => { return new HouseSellFromInsideRequestMessage(); };
+            MessageReceiver._list[HouseSellRequestMessage.ID] = () => { return new HouseSellRequestMessage(); };
+            MessageReceiver._list[HouseSoldMessage.ID] = () => { return new HouseSoldMessage(); };
+            MessageReceiver._list[HouseToSellFilterMessage.ID] = () => { return new HouseToSellFilterMessage(); };
+            MessageReceiver._list[HouseToSellListMessage.ID] = () => { return new HouseToSellListMessage(); };
+            MessageReceiver._list[HouseToSellListRequestMessage.ID] = () => { return new HouseToSellListRequestMessage(); };
+            MessageReceiver._list[HouseGuildNoneMessage.ID] = () => { return new HouseGuildNoneMessage(); };
+            MessageReceiver._list[HouseGuildRightsMessage.ID] = () => { return new HouseGuildRightsMessage(); };
+            MessageReceiver._list[HouseGuildRightsViewMessage.ID] = () => { return new HouseGuildRightsViewMessage(); };
+            MessageReceiver._list[HouseGuildShareRequestMessage.ID] = () => { return new HouseGuildShareRequestMessage(); };
+            MessageReceiver._list[JobAllowMultiCraftRequestMessage.ID] = () => { return new JobAllowMultiCraftRequestMessage(); };
+            MessageReceiver._list[JobBookSubscriptionMessage.ID] = () => { return new JobBookSubscriptionMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryAddMessage.ID] = () => { return new JobCrafterDirectoryAddMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryDefineSettingsMessage.ID] = () => { return new JobCrafterDirectoryDefineSettingsMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryEntryMessage.ID] = () => { return new JobCrafterDirectoryEntryMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryEntryRequestMessage.ID] = () => { return new JobCrafterDirectoryEntryRequestMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryListMessage.ID] = () => { return new JobCrafterDirectoryListMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryListRequestMessage.ID] = () => { return new JobCrafterDirectoryListRequestMessage(); };
+            MessageReceiver._list[JobCrafterDirectoryRemoveMessage.ID] = () => { return new JobCrafterDirectoryRemoveMessage(); };
+            MessageReceiver._list[JobCrafterDirectorySettingsMessage.ID] = () => { return new JobCrafterDirectorySettingsMessage(); };
+            MessageReceiver._list[JobDescriptionMessage.ID] = () => { return new JobDescriptionMessage(); };
+            MessageReceiver._list[JobExperienceMultiUpdateMessage.ID] = () => { return new JobExperienceMultiUpdateMessage(); };
+            MessageReceiver._list[JobExperienceOtherPlayerUpdateMessage.ID] = () => { return new JobExperienceOtherPlayerUpdateMessage(); };
+            MessageReceiver._list[JobExperienceUpdateMessage.ID] = () => { return new JobExperienceUpdateMessage(); };
+            MessageReceiver._list[JobLevelUpMessage.ID] = () => { return new JobLevelUpMessage(); };
+            MessageReceiver._list[JobMultiCraftAvailableSkillsMessage.ID] = () => { return new JobMultiCraftAvailableSkillsMessage(); };
+            MessageReceiver._list[LockableChangeCodeMessage.ID] = () => { return new LockableChangeCodeMessage(); };
+            MessageReceiver._list[LockableCodeResultMessage.ID] = () => { return new LockableCodeResultMessage(); };
+            MessageReceiver._list[LockableShowCodeDialogMessage.ID] = () => { return new LockableShowCodeDialogMessage(); };
+            MessageReceiver._list[LockableStateUpdateAbstractMessage.ID] = () => { return new LockableStateUpdateAbstractMessage(); };
+            MessageReceiver._list[LockableStateUpdateHouseDoorMessage.ID] = () => { return new LockableStateUpdateHouseDoorMessage(); };
+            MessageReceiver._list[LockableStateUpdateStorageMessage.ID] = () => { return new LockableStateUpdateStorageMessage(); };
+            MessageReceiver._list[LockableUseCodeMessage.ID] = () => { return new LockableUseCodeMessage(); };
+            MessageReceiver._list[AlliancePrismDialogQuestionMessage.ID] = () => { return new AlliancePrismDialogQuestionMessage(); };
+            MessageReceiver._list[AllianceTaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new AllianceTaxCollectorDialogQuestionExtendedMessage(); };
+            MessageReceiver._list[EntityTalkMessage.ID] = () => { return new EntityTalkMessage(); };
+            MessageReceiver._list[MapNpcsQuestStatusUpdateMessage.ID] = () => { return new MapNpcsQuestStatusUpdateMessage(); };
+            MessageReceiver._list[NpcDialogCreationMessage.ID] = () => { return new NpcDialogCreationMessage(); };
+            MessageReceiver._list[NpcDialogQuestionMessage.ID] = () => { return new NpcDialogQuestionMessage(); };
+            MessageReceiver._list[NpcDialogReplyMessage.ID] = () => { return new NpcDialogReplyMessage(); };
+            MessageReceiver._list[NpcGenericActionFailureMessage.ID] = () => { return new NpcGenericActionFailureMessage(); };
+            MessageReceiver._list[NpcGenericActionRequestMessage.ID] = () => { return new NpcGenericActionRequestMessage(); };
+            MessageReceiver._list[TaxCollectorDialogQuestionBasicMessage.ID] = () => { return new TaxCollectorDialogQuestionBasicMessage(); };
+            MessageReceiver._list[TaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new TaxCollectorDialogQuestionExtendedMessage(); };
+            MessageReceiver._list[ObjectGroundAddedMessage.ID] = () => { return new ObjectGroundAddedMessage(); };
+            MessageReceiver._list[ObjectGroundListAddedMessage.ID] = () => { return new ObjectGroundListAddedMessage(); };
+            MessageReceiver._list[ObjectGroundRemovedMessage.ID] = () => { return new ObjectGroundRemovedMessage(); };
+            MessageReceiver._list[ObjectGroundRemovedMultipleMessage.ID] = () => { return new ObjectGroundRemovedMultipleMessage(); };
+            MessageReceiver._list[GameDataPlayFarmObjectAnimationMessage.ID] = () => { return new GameDataPlayFarmObjectAnimationMessage(); };
+            MessageReceiver._list[PaddockPropertiesMessage.ID] = () => { return new PaddockPropertiesMessage(); };
+            MessageReceiver._list[PaddockSellBuyDialogMessage.ID] = () => { return new PaddockSellBuyDialogMessage(); };
+            MessageReceiver._list[PaddockToSellFilterMessage.ID] = () => { return new PaddockToSellFilterMessage(); };
+            MessageReceiver._list[PaddockToSellListMessage.ID] = () => { return new PaddockToSellListMessage(); };
+            MessageReceiver._list[PaddockToSellListRequestMessage.ID] = () => { return new PaddockToSellListRequestMessage(); };
+            MessageReceiver._list[AbstractPartyEventMessage.ID] = () => { return new AbstractPartyEventMessage(); };
+            MessageReceiver._list[AbstractPartyMessage.ID] = () => { return new AbstractPartyMessage(); };
+            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsMessage(); };
+            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsRequestMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsRequestMessage(); };
+            MessageReceiver._list[DungeonPartyFinderListenErrorMessage.ID] = () => { return new DungeonPartyFinderListenErrorMessage(); };
+            MessageReceiver._list[DungeonPartyFinderListenRequestMessage.ID] = () => { return new DungeonPartyFinderListenRequestMessage(); };
+            MessageReceiver._list[DungeonPartyFinderRegisterErrorMessage.ID] = () => { return new DungeonPartyFinderRegisterErrorMessage(); };
+            MessageReceiver._list[DungeonPartyFinderRegisterRequestMessage.ID] = () => { return new DungeonPartyFinderRegisterRequestMessage(); };
+            MessageReceiver._list[DungeonPartyFinderRegisterSuccessMessage.ID] = () => { return new DungeonPartyFinderRegisterSuccessMessage(); };
+            MessageReceiver._list[DungeonPartyFinderRoomContentMessage.ID] = () => { return new DungeonPartyFinderRoomContentMessage(); };
+            MessageReceiver._list[DungeonPartyFinderRoomContentUpdateMessage.ID] = () => { return new DungeonPartyFinderRoomContentUpdateMessage(); };
+            MessageReceiver._list[PartyAbdicateThroneMessage.ID] = () => { return new PartyAbdicateThroneMessage(); };
+            MessageReceiver._list[PartyAcceptInvitationMessage.ID] = () => { return new PartyAcceptInvitationMessage(); };
+            MessageReceiver._list[PartyCancelInvitationMessage.ID] = () => { return new PartyCancelInvitationMessage(); };
+            MessageReceiver._list[PartyCancelInvitationNotificationMessage.ID] = () => { return new PartyCancelInvitationNotificationMessage(); };
+            MessageReceiver._list[PartyCannotJoinErrorMessage.ID] = () => { return new PartyCannotJoinErrorMessage(); };
+            MessageReceiver._list[PartyDeletedMessage.ID] = () => { return new PartyDeletedMessage(); };
+            MessageReceiver._list[PartyFollowMemberRequestMessage.ID] = () => { return new PartyFollowMemberRequestMessage(); };
+            MessageReceiver._list[PartyFollowStatusUpdateMessage.ID] = () => { return new PartyFollowStatusUpdateMessage(); };
+            MessageReceiver._list[PartyFollowThisMemberRequestMessage.ID] = () => { return new PartyFollowThisMemberRequestMessage(); };
+            MessageReceiver._list[PartyInvitationArenaRequestMessage.ID] = () => { return new PartyInvitationArenaRequestMessage(); };
+            MessageReceiver._list[PartyInvitationCancelledForGuestMessage.ID] = () => { return new PartyInvitationCancelledForGuestMessage(); };
+            MessageReceiver._list[PartyInvitationDetailsMessage.ID] = () => { return new PartyInvitationDetailsMessage(); };
+            MessageReceiver._list[PartyInvitationDetailsRequestMessage.ID] = () => { return new PartyInvitationDetailsRequestMessage(); };
+            MessageReceiver._list[PartyInvitationDungeonDetailsMessage.ID] = () => { return new PartyInvitationDungeonDetailsMessage(); };
+            MessageReceiver._list[PartyInvitationDungeonMessage.ID] = () => { return new PartyInvitationDungeonMessage(); };
+            MessageReceiver._list[PartyInvitationDungeonRequestMessage.ID] = () => { return new PartyInvitationDungeonRequestMessage(); };
+            MessageReceiver._list[PartyInvitationMessage.ID] = () => { return new PartyInvitationMessage(); };
+            MessageReceiver._list[PartyInvitationRequestMessage.ID] = () => { return new PartyInvitationRequestMessage(); };
+            MessageReceiver._list[PartyJoinMessage.ID] = () => { return new PartyJoinMessage(); };
+            MessageReceiver._list[PartyKickRequestMessage.ID] = () => { return new PartyKickRequestMessage(); };
+            MessageReceiver._list[PartyKickedByMessage.ID] = () => { return new PartyKickedByMessage(); };
+            MessageReceiver._list[PartyLeaderUpdateMessage.ID] = () => { return new PartyLeaderUpdateMessage(); };
+            MessageReceiver._list[PartyLeaveMessage.ID] = () => { return new PartyLeaveMessage(); };
+            MessageReceiver._list[PartyLeaveRequestMessage.ID] = () => { return new PartyLeaveRequestMessage(); };
+            MessageReceiver._list[PartyLocateMembersMessage.ID] = () => { return new PartyLocateMembersMessage(); };
+            MessageReceiver._list[PartyLoyaltyStatusMessage.ID] = () => { return new PartyLoyaltyStatusMessage(); };
+            MessageReceiver._list[PartyMemberEjectedMessage.ID] = () => { return new PartyMemberEjectedMessage(); };
+            MessageReceiver._list[PartyMemberInFightMessage.ID] = () => { return new PartyMemberInFightMessage(); };
+            MessageReceiver._list[PartyMemberRemoveMessage.ID] = () => { return new PartyMemberRemoveMessage(); };
+            MessageReceiver._list[PartyModifiableStatusMessage.ID] = () => { return new PartyModifiableStatusMessage(); };
+            MessageReceiver._list[PartyNameSetErrorMessage.ID] = () => { return new PartyNameSetErrorMessage(); };
+            MessageReceiver._list[PartyNameSetRequestMessage.ID] = () => { return new PartyNameSetRequestMessage(); };
+            MessageReceiver._list[PartyNameUpdateMessage.ID] = () => { return new PartyNameUpdateMessage(); };
+            MessageReceiver._list[PartyNewGuestMessage.ID] = () => { return new PartyNewGuestMessage(); };
+            MessageReceiver._list[PartyNewMemberMessage.ID] = () => { return new PartyNewMemberMessage(); };
+            MessageReceiver._list[PartyPledgeLoyaltyRequestMessage.ID] = () => { return new PartyPledgeLoyaltyRequestMessage(); };
+            MessageReceiver._list[PartyRefuseInvitationMessage.ID] = () => { return new PartyRefuseInvitationMessage(); };
+            MessageReceiver._list[PartyRefuseInvitationNotificationMessage.ID] = () => { return new PartyRefuseInvitationNotificationMessage(); };
+            MessageReceiver._list[PartyRestrictedMessage.ID] = () => { return new PartyRestrictedMessage(); };
+            MessageReceiver._list[PartyStopFollowRequestMessage.ID] = () => { return new PartyStopFollowRequestMessage(); };
+            MessageReceiver._list[PartyUpdateLightMessage.ID] = () => { return new PartyUpdateLightMessage(); };
+            MessageReceiver._list[PartyUpdateMessage.ID] = () => { return new PartyUpdateMessage(); };
+            MessageReceiver._list[PartyCompanionUpdateLightMessage.ID] = () => { return new PartyCompanionUpdateLightMessage(); };
+            MessageReceiver._list[PurchasableDialogMessage.ID] = () => { return new PurchasableDialogMessage(); };
+            MessageReceiver._list[GuidedModeQuitRequestMessage.ID] = () => { return new GuidedModeQuitRequestMessage(); };
+            MessageReceiver._list[GuidedModeReturnRequestMessage.ID] = () => { return new GuidedModeReturnRequestMessage(); };
+            MessageReceiver._list[QuestListMessage.ID] = () => { return new QuestListMessage(); };
+            MessageReceiver._list[QuestListRequestMessage.ID] = () => { return new QuestListRequestMessage(); };
+            MessageReceiver._list[QuestObjectiveValidatedMessage.ID] = () => { return new QuestObjectiveValidatedMessage(); };
+            MessageReceiver._list[QuestObjectiveValidationMessage.ID] = () => { return new QuestObjectiveValidationMessage(); };
+            MessageReceiver._list[QuestStartRequestMessage.ID] = () => { return new QuestStartRequestMessage(); };
+            MessageReceiver._list[QuestStartedMessage.ID] = () => { return new QuestStartedMessage(); };
+            MessageReceiver._list[QuestStepInfoMessage.ID] = () => { return new QuestStepInfoMessage(); };
+            MessageReceiver._list[QuestStepInfoRequestMessage.ID] = () => { return new QuestStepInfoRequestMessage(); };
+            MessageReceiver._list[QuestStepStartedMessage.ID] = () => { return new QuestStepStartedMessage(); };
+            MessageReceiver._list[QuestStepValidatedMessage.ID] = () => { return new QuestStepValidatedMessage(); };
+            MessageReceiver._list[QuestValidatedMessage.ID] = () => { return new QuestValidatedMessage(); };
+            MessageReceiver._list[SpellForgetUIMessage.ID] = () => { return new SpellForgetUIMessage(); };
+            MessageReceiver._list[SpellForgottenMessage.ID] = () => { return new SpellForgottenMessage(); };
+            MessageReceiver._list[SpellItemBoostMessage.ID] = () => { return new SpellItemBoostMessage(); };
+            MessageReceiver._list[SpellUpgradeFailureMessage.ID] = () => { return new SpellUpgradeFailureMessage(); };
+            MessageReceiver._list[SpellUpgradeRequestMessage.ID] = () => { return new SpellUpgradeRequestMessage(); };
+            MessageReceiver._list[SpellUpgradeSuccessMessage.ID] = () => { return new SpellUpgradeSuccessMessage(); };
+            MessageReceiver._list[ValidateSpellForgetMessage.ID] = () => { return new ValidateSpellForgetMessage(); };
+            MessageReceiver._list[StatsUpgradeRequestMessage.ID] = () => { return new StatsUpgradeRequestMessage(); };
+            MessageReceiver._list[StatsUpgradeResultMessage.ID] = () => { return new StatsUpgradeResultMessage(); };
+            MessageReceiver._list[PortalUseRequestMessage.ID] = () => { return new PortalUseRequestMessage(); };
+            MessageReceiver._list[TreasureHuntAvailableRetryCountUpdateMessage.ID] = () => { return new TreasureHuntAvailableRetryCountUpdateMessage(); };
+            MessageReceiver._list[TreasureHuntDigRequestAnswerFailedMessage.ID] = () => { return new TreasureHuntDigRequestAnswerFailedMessage(); };
+            MessageReceiver._list[TreasureHuntDigRequestAnswerMessage.ID] = () => { return new TreasureHuntDigRequestAnswerMessage(); };
+            MessageReceiver._list[TreasureHuntDigRequestMessage.ID] = () => { return new TreasureHuntDigRequestMessage(); };
+            MessageReceiver._list[TreasureHuntFinishedMessage.ID] = () => { return new TreasureHuntFinishedMessage(); };
+            MessageReceiver._list[TreasureHuntFlagRemoveRequestMessage.ID] = () => { return new TreasureHuntFlagRemoveRequestMessage(); };
+            MessageReceiver._list[TreasureHuntFlagRequestAnswerMessage.ID] = () => { return new TreasureHuntFlagRequestAnswerMessage(); };
+            MessageReceiver._list[TreasureHuntFlagRequestMessage.ID] = () => { return new TreasureHuntFlagRequestMessage(); };
+            MessageReceiver._list[TreasureHuntGiveUpRequestMessage.ID] = () => { return new TreasureHuntGiveUpRequestMessage(); };
+            MessageReceiver._list[TreasureHuntLegendaryRequestMessage.ID] = () => { return new TreasureHuntLegendaryRequestMessage(); };
+            MessageReceiver._list[TreasureHuntMessage.ID] = () => { return new TreasureHuntMessage(); };
+            MessageReceiver._list[TreasureHuntRequestAnswerMessage.ID] = () => { return new TreasureHuntRequestAnswerMessage(); };
+            MessageReceiver._list[TreasureHuntRequestMessage.ID] = () => { return new TreasureHuntRequestMessage(); };
+            MessageReceiver._list[TreasureHuntShowLegendaryUIMessage.ID] = () => { return new TreasureHuntShowLegendaryUIMessage(); };
+            MessageReceiver._list[GameRolePlaySpellAnimMessage.ID] = () => { return new GameRolePlaySpellAnimMessage(); };
+            MessageReceiver._list[LeaveDialogMessage.ID] = () => { return new LeaveDialogMessage(); };
+            MessageReceiver._list[LeaveDialogRequestMessage.ID] = () => { return new LeaveDialogRequestMessage(); };
+            MessageReceiver._list[PauseDialogMessage.ID] = () => { return new PauseDialogMessage(); };
+            MessageReceiver._list[FriendAddFailureMessage.ID] = () => { return new FriendAddFailureMessage(); };
+            MessageReceiver._list[FriendAddRequestMessage.ID] = () => { return new FriendAddRequestMessage(); };
+            MessageReceiver._list[FriendAddedMessage.ID] = () => { return new FriendAddedMessage(); };
+            MessageReceiver._list[FriendDeleteRequestMessage.ID] = () => { return new FriendDeleteRequestMessage(); };
+            MessageReceiver._list[FriendDeleteResultMessage.ID] = () => { return new FriendDeleteResultMessage(); };
+            MessageReceiver._list[FriendJoinRequestMessage.ID] = () => { return new FriendJoinRequestMessage(); };
+            MessageReceiver._list[FriendSetWarnOnConnectionMessage.ID] = () => { return new FriendSetWarnOnConnectionMessage(); };
+            MessageReceiver._list[FriendSetWarnOnLevelGainMessage.ID] = () => { return new FriendSetWarnOnLevelGainMessage(); };
+            MessageReceiver._list[FriendSpouseFollowWithCompassRequestMessage.ID] = () => { return new FriendSpouseFollowWithCompassRequestMessage(); };
+            MessageReceiver._list[FriendSpouseJoinRequestMessage.ID] = () => { return new FriendSpouseJoinRequestMessage(); };
+            MessageReceiver._list[FriendUpdateMessage.ID] = () => { return new FriendUpdateMessage(); };
+            MessageReceiver._list[FriendWarnOnConnectionStateMessage.ID] = () => { return new FriendWarnOnConnectionStateMessage(); };
+            MessageReceiver._list[FriendWarnOnLevelGainStateMessage.ID] = () => { return new FriendWarnOnLevelGainStateMessage(); };
+            MessageReceiver._list[FriendsGetListMessage.ID] = () => { return new FriendsGetListMessage(); };
+            MessageReceiver._list[FriendsListMessage.ID] = () => { return new FriendsListMessage(); };
+            MessageReceiver._list[GuildMemberSetWarnOnConnectionMessage.ID] = () => { return new GuildMemberSetWarnOnConnectionMessage(); };
+            MessageReceiver._list[GuildMemberWarnOnConnectionStateMessage.ID] = () => { return new GuildMemberWarnOnConnectionStateMessage(); };
+            MessageReceiver._list[IgnoredAddFailureMessage.ID] = () => { return new IgnoredAddFailureMessage(); };
+            MessageReceiver._list[IgnoredAddRequestMessage.ID] = () => { return new IgnoredAddRequestMessage(); };
+            MessageReceiver._list[IgnoredAddedMessage.ID] = () => { return new IgnoredAddedMessage(); };
+            MessageReceiver._list[IgnoredDeleteRequestMessage.ID] = () => { return new IgnoredDeleteRequestMessage(); };
+            MessageReceiver._list[IgnoredDeleteResultMessage.ID] = () => { return new IgnoredDeleteResultMessage(); };
+            MessageReceiver._list[IgnoredGetListMessage.ID] = () => { return new IgnoredGetListMessage(); };
+            MessageReceiver._list[IgnoredListMessage.ID] = () => { return new IgnoredListMessage(); };
+            MessageReceiver._list[SpouseGetInformationsMessage.ID] = () => { return new SpouseGetInformationsMessage(); };
+            MessageReceiver._list[SpouseInformationsMessage.ID] = () => { return new SpouseInformationsMessage(); };
+            MessageReceiver._list[SpouseStatusMessage.ID] = () => { return new SpouseStatusMessage(); };
+            MessageReceiver._list[WarnOnPermaDeathStateMessage.ID] = () => { return new WarnOnPermaDeathStateMessage(); };
+            MessageReceiver._list[GuestLimitationMessage.ID] = () => { return new GuestLimitationMessage(); };
+            MessageReceiver._list[GuestModeMessage.ID] = () => { return new GuestModeMessage(); };
+            MessageReceiver._list[ChallengeFightJoinRefusedMessage.ID] = () => { return new ChallengeFightJoinRefusedMessage(); };
+            MessageReceiver._list[GuildChangeMemberParametersMessage.ID] = () => { return new GuildChangeMemberParametersMessage(); };
+            MessageReceiver._list[GuildCharacsUpgradeRequestMessage.ID] = () => { return new GuildCharacsUpgradeRequestMessage(); };
+            MessageReceiver._list[GuildCreationResultMessage.ID] = () => { return new GuildCreationResultMessage(); };
+            MessageReceiver._list[GuildCreationStartedMessage.ID] = () => { return new GuildCreationStartedMessage(); };
+            MessageReceiver._list[GuildCreationValidMessage.ID] = () => { return new GuildCreationValidMessage(); };
+            MessageReceiver._list[GuildFactsErrorMessage.ID] = () => { return new GuildFactsErrorMessage(); };
+            MessageReceiver._list[GuildFactsMessage.ID] = () => { return new GuildFactsMessage(); };
+            MessageReceiver._list[GuildFactsRequestMessage.ID] = () => { return new GuildFactsRequestMessage(); };
+            MessageReceiver._list[GuildGetInformationsMessage.ID] = () => { return new GuildGetInformationsMessage(); };
+            MessageReceiver._list[GuildHouseRemoveMessage.ID] = () => { return new GuildHouseRemoveMessage(); };
+            MessageReceiver._list[GuildHouseTeleportRequestMessage.ID] = () => { return new GuildHouseTeleportRequestMessage(); };
+            MessageReceiver._list[GuildHouseUpdateInformationMessage.ID] = () => { return new GuildHouseUpdateInformationMessage(); };
+            MessageReceiver._list[GuildHousesInformationMessage.ID] = () => { return new GuildHousesInformationMessage(); };
+            MessageReceiver._list[GuildInAllianceFactsMessage.ID] = () => { return new GuildInAllianceFactsMessage(); };
+            MessageReceiver._list[GuildInformationsGeneralMessage.ID] = () => { return new GuildInformationsGeneralMessage(); };
+            MessageReceiver._list[GuildInformationsMemberUpdateMessage.ID] = () => { return new GuildInformationsMemberUpdateMessage(); };
+            MessageReceiver._list[GuildInformationsMembersMessage.ID] = () => { return new GuildInformationsMembersMessage(); };
+            MessageReceiver._list[GuildInformationsPaddocksMessage.ID] = () => { return new GuildInformationsPaddocksMessage(); };
+            MessageReceiver._list[GuildInfosUpgradeMessage.ID] = () => { return new GuildInfosUpgradeMessage(); };
+            MessageReceiver._list[GuildInvitationAnswerMessage.ID] = () => { return new GuildInvitationAnswerMessage(); };
+            MessageReceiver._list[GuildInvitationByNameMessage.ID] = () => { return new GuildInvitationByNameMessage(); };
+            MessageReceiver._list[GuildInvitationMessage.ID] = () => { return new GuildInvitationMessage(); };
+            MessageReceiver._list[GuildInvitationStateRecrutedMessage.ID] = () => { return new GuildInvitationStateRecrutedMessage(); };
+            MessageReceiver._list[GuildInvitationStateRecruterMessage.ID] = () => { return new GuildInvitationStateRecruterMessage(); };
+            MessageReceiver._list[GuildInvitedMessage.ID] = () => { return new GuildInvitedMessage(); };
+            MessageReceiver._list[GuildJoinedMessage.ID] = () => { return new GuildJoinedMessage(); };
+            MessageReceiver._list[GuildKickRequestMessage.ID] = () => { return new GuildKickRequestMessage(); };
+            MessageReceiver._list[GuildLeftMessage.ID] = () => { return new GuildLeftMessage(); };
+            MessageReceiver._list[GuildLevelUpMessage.ID] = () => { return new GuildLevelUpMessage(); };
+            MessageReceiver._list[GuildListMessage.ID] = () => { return new GuildListMessage(); };
+            MessageReceiver._list[GuildMemberLeavingMessage.ID] = () => { return new GuildMemberLeavingMessage(); };
+            MessageReceiver._list[GuildMemberOnlineStatusMessage.ID] = () => { return new GuildMemberOnlineStatusMessage(); };
+            MessageReceiver._list[GuildMembershipMessage.ID] = () => { return new GuildMembershipMessage(); };
+            MessageReceiver._list[GuildModificationEmblemValidMessage.ID] = () => { return new GuildModificationEmblemValidMessage(); };
+            MessageReceiver._list[GuildModificationNameValidMessage.ID] = () => { return new GuildModificationNameValidMessage(); };
+            MessageReceiver._list[GuildModificationStartedMessage.ID] = () => { return new GuildModificationStartedMessage(); };
+            MessageReceiver._list[GuildModificationValidMessage.ID] = () => { return new GuildModificationValidMessage(); };
+            MessageReceiver._list[GuildMotdMessage.ID] = () => { return new GuildMotdMessage(); };
+            MessageReceiver._list[GuildMotdSetErrorMessage.ID] = () => { return new GuildMotdSetErrorMessage(); };
+            MessageReceiver._list[GuildPaddockBoughtMessage.ID] = () => { return new GuildPaddockBoughtMessage(); };
+            MessageReceiver._list[GuildPaddockRemovedMessage.ID] = () => { return new GuildPaddockRemovedMessage(); };
+            MessageReceiver._list[GuildPaddockTeleportRequestMessage.ID] = () => { return new GuildPaddockTeleportRequestMessage(); };
+            MessageReceiver._list[GuildSpellUpgradeRequestMessage.ID] = () => { return new GuildSpellUpgradeRequestMessage(); };
+            MessageReceiver._list[GuildVersatileInfoListMessage.ID] = () => { return new GuildVersatileInfoListMessage(); };
+            MessageReceiver._list[AbstractTaxCollectorListMessage.ID] = () => { return new AbstractTaxCollectorListMessage(); };
+            MessageReceiver._list[GameRolePlayTaxCollectorFightRequestMessage.ID] = () => { return new GameRolePlayTaxCollectorFightRequestMessage(); };
+            MessageReceiver._list[GuildFightJoinRequestMessage.ID] = () => { return new GuildFightJoinRequestMessage(); };
+            MessageReceiver._list[GuildFightLeaveRequestMessage.ID] = () => { return new GuildFightLeaveRequestMessage(); };
+            MessageReceiver._list[GuildFightPlayersEnemiesListMessage.ID] = () => { return new GuildFightPlayersEnemiesListMessage(); };
+            MessageReceiver._list[GuildFightPlayersEnemyRemoveMessage.ID] = () => { return new GuildFightPlayersEnemyRemoveMessage(); };
+            MessageReceiver._list[GuildFightPlayersHelpersJoinMessage.ID] = () => { return new GuildFightPlayersHelpersJoinMessage(); };
+            MessageReceiver._list[GuildFightPlayersHelpersLeaveMessage.ID] = () => { return new GuildFightPlayersHelpersLeaveMessage(); };
+            MessageReceiver._list[GuildFightTakePlaceRequestMessage.ID] = () => { return new GuildFightTakePlaceRequestMessage(); };
+            MessageReceiver._list[TaxCollectorAttackedMessage.ID] = () => { return new TaxCollectorAttackedMessage(); };
+            MessageReceiver._list[TaxCollectorAttackedResultMessage.ID] = () => { return new TaxCollectorAttackedResultMessage(); };
+            MessageReceiver._list[TaxCollectorErrorMessage.ID] = () => { return new TaxCollectorErrorMessage(); };
+            MessageReceiver._list[TaxCollectorListMessage.ID] = () => { return new TaxCollectorListMessage(); };
+            MessageReceiver._list[TaxCollectorMovementAddMessage.ID] = () => { return new TaxCollectorMovementAddMessage(); };
+            MessageReceiver._list[TaxCollectorMovementMessage.ID] = () => { return new TaxCollectorMovementMessage(); };
+            MessageReceiver._list[TaxCollectorMovementRemoveMessage.ID] = () => { return new TaxCollectorMovementRemoveMessage(); };
+            MessageReceiver._list[TaxCollectorStateUpdateMessage.ID] = () => { return new TaxCollectorStateUpdateMessage(); };
+            MessageReceiver._list[TopTaxCollectorListMessage.ID] = () => { return new TopTaxCollectorListMessage(); };
+            MessageReceiver._list[IdolFightPreparationUpdateMessage.ID] = () => { return new IdolFightPreparationUpdateMessage(); };
+            MessageReceiver._list[IdolListMessage.ID] = () => { return new IdolListMessage(); };
+            MessageReceiver._list[IdolPartyLostMessage.ID] = () => { return new IdolPartyLostMessage(); };
+            MessageReceiver._list[IdolPartyRefreshMessage.ID] = () => { return new IdolPartyRefreshMessage(); };
+            MessageReceiver._list[IdolPartyRegisterRequestMessage.ID] = () => { return new IdolPartyRegisterRequestMessage(); };
+            MessageReceiver._list[IdolSelectErrorMessage.ID] = () => { return new IdolSelectErrorMessage(); };
+            MessageReceiver._list[IdolSelectRequestMessage.ID] = () => { return new IdolSelectRequestMessage(); };
+            MessageReceiver._list[IdolSelectedMessage.ID] = () => { return new IdolSelectedMessage(); };
+            MessageReceiver._list[CharacterCapabilitiesMessage.ID] = () => { return new CharacterCapabilitiesMessage(); };
+            MessageReceiver._list[CharacterLoadingCompleteMessage.ID] = () => { return new CharacterLoadingCompleteMessage(); };
+            MessageReceiver._list[OnConnectionEventMessage.ID] = () => { return new OnConnectionEventMessage(); };
+            MessageReceiver._list[ServerExperienceModificatorMessage.ID] = () => { return new ServerExperienceModificatorMessage(); };
+            MessageReceiver._list[SetCharacterRestrictionsMessage.ID] = () => { return new SetCharacterRestrictionsMessage(); };
+            MessageReceiver._list[InteractiveElementUpdatedMessage.ID] = () => { return new InteractiveElementUpdatedMessage(); };
+            MessageReceiver._list[InteractiveMapUpdateMessage.ID] = () => { return new InteractiveMapUpdateMessage(); };
+            MessageReceiver._list[InteractiveUseEndedMessage.ID] = () => { return new InteractiveUseEndedMessage(); };
+            MessageReceiver._list[InteractiveUseErrorMessage.ID] = () => { return new InteractiveUseErrorMessage(); };
+            MessageReceiver._list[InteractiveUseRequestMessage.ID] = () => { return new InteractiveUseRequestMessage(); };
+            MessageReceiver._list[InteractiveUsedMessage.ID] = () => { return new InteractiveUsedMessage(); };
+            MessageReceiver._list[StatedElementUpdatedMessage.ID] = () => { return new StatedElementUpdatedMessage(); };
+            MessageReceiver._list[StatedMapUpdateMessage.ID] = () => { return new StatedMapUpdateMessage(); };
+            MessageReceiver._list[TeleportBuddiesAnswerMessage.ID] = () => { return new TeleportBuddiesAnswerMessage(); };
+            MessageReceiver._list[TeleportBuddiesMessage.ID] = () => { return new TeleportBuddiesMessage(); };
+            MessageReceiver._list[TeleportBuddiesRequestedMessage.ID] = () => { return new TeleportBuddiesRequestedMessage(); };
+            MessageReceiver._list[TeleportToBuddyAnswerMessage.ID] = () => { return new TeleportToBuddyAnswerMessage(); };
+            MessageReceiver._list[TeleportToBuddyCloseMessage.ID] = () => { return new TeleportToBuddyCloseMessage(); };
+            MessageReceiver._list[TeleportToBuddyOfferMessage.ID] = () => { return new TeleportToBuddyOfferMessage(); };
+            MessageReceiver._list[TeleportDestinationsListMessage.ID] = () => { return new TeleportDestinationsListMessage(); };
+            MessageReceiver._list[TeleportRequestMessage.ID] = () => { return new TeleportRequestMessage(); };
+            MessageReceiver._list[ZaapListMessage.ID] = () => { return new ZaapListMessage(); };
+            MessageReceiver._list[ZaapRespawnSaveRequestMessage.ID] = () => { return new ZaapRespawnSaveRequestMessage(); };
+            MessageReceiver._list[ZaapRespawnUpdatedMessage.ID] = () => { return new ZaapRespawnUpdatedMessage(); };
+            MessageReceiver._list[KamasUpdateMessage.ID] = () => { return new KamasUpdateMessage(); };
+            MessageReceiver._list[ObjectAveragePricesErrorMessage.ID] = () => { return new ObjectAveragePricesErrorMessage(); };
+            MessageReceiver._list[ObjectAveragePricesGetMessage.ID] = () => { return new ObjectAveragePricesGetMessage(); };
+            MessageReceiver._list[ObjectAveragePricesMessage.ID] = () => { return new ObjectAveragePricesMessage(); };
+            MessageReceiver._list[DecraftResultMessage.ID] = () => { return new DecraftResultMessage(); };
+            MessageReceiver._list[ExchangeAcceptMessage.ID] = () => { return new ExchangeAcceptMessage(); };
+            MessageReceiver._list[ExchangeBidHouseBuyMessage.ID] = () => { return new ExchangeBidHouseBuyMessage(); };
+            MessageReceiver._list[ExchangeBidHouseBuyResultMessage.ID] = () => { return new ExchangeBidHouseBuyResultMessage(); };
+            MessageReceiver._list[ExchangeBidHouseGenericItemAddedMessage.ID] = () => { return new ExchangeBidHouseGenericItemAddedMessage(); };
+            MessageReceiver._list[ExchangeBidHouseGenericItemRemovedMessage.ID] = () => { return new ExchangeBidHouseGenericItemRemovedMessage(); };
+            MessageReceiver._list[ExchangeBidHouseInListAddedMessage.ID] = () => { return new ExchangeBidHouseInListAddedMessage(); };
+            MessageReceiver._list[ExchangeBidHouseInListRemovedMessage.ID] = () => { return new ExchangeBidHouseInListRemovedMessage(); };
+            MessageReceiver._list[ExchangeBidHouseInListUpdatedMessage.ID] = () => { return new ExchangeBidHouseInListUpdatedMessage(); };
+            MessageReceiver._list[ExchangeBidHouseItemAddOkMessage.ID] = () => { return new ExchangeBidHouseItemAddOkMessage(); };
+            MessageReceiver._list[ExchangeBidHouseItemRemoveOkMessage.ID] = () => { return new ExchangeBidHouseItemRemoveOkMessage(); };
+            MessageReceiver._list[ExchangeBidHouseListMessage.ID] = () => { return new ExchangeBidHouseListMessage(); };
+            MessageReceiver._list[ExchangeBidHousePriceMessage.ID] = () => { return new ExchangeBidHousePriceMessage(); };
+            MessageReceiver._list[ExchangeBidHouseSearchMessage.ID] = () => { return new ExchangeBidHouseSearchMessage(); };
+            MessageReceiver._list[ExchangeBidHouseTypeMessage.ID] = () => { return new ExchangeBidHouseTypeMessage(); };
+            MessageReceiver._list[ExchangeBidPriceForSellerMessage.ID] = () => { return new ExchangeBidPriceForSellerMessage(); };
+            MessageReceiver._list[ExchangeBidPriceMessage.ID] = () => { return new ExchangeBidPriceMessage(); };
+            MessageReceiver._list[ExchangeBidSearchOkMessage.ID] = () => { return new ExchangeBidSearchOkMessage(); };
+            MessageReceiver._list[ExchangeBuyMessage.ID] = () => { return new ExchangeBuyMessage(); };
+            MessageReceiver._list[ExchangeBuyOkMessage.ID] = () => { return new ExchangeBuyOkMessage(); };
+            MessageReceiver._list[ExchangeCraftCountModifiedMessage.ID] = () => { return new ExchangeCraftCountModifiedMessage(); };
+            MessageReceiver._list[ExchangeCraftCountRequestMessage.ID] = () => { return new ExchangeCraftCountRequestMessage(); };
+            MessageReceiver._list[ExchangeCraftInformationObjectMessage.ID] = () => { return new ExchangeCraftInformationObjectMessage(); };
+            MessageReceiver._list[ExchangeCraftPaymentModificationRequestMessage.ID] = () => { return new ExchangeCraftPaymentModificationRequestMessage(); };
+            MessageReceiver._list[ExchangeCraftPaymentModifiedMessage.ID] = () => { return new ExchangeCraftPaymentModifiedMessage(); };
+            MessageReceiver._list[ExchangeCraftResultMagicWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultMagicWithObjectDescMessage(); };
+            MessageReceiver._list[ExchangeCraftResultMessage.ID] = () => { return new ExchangeCraftResultMessage(); };
+            MessageReceiver._list[ExchangeCraftResultWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultWithObjectDescMessage(); };
+            MessageReceiver._list[ExchangeCraftResultWithObjectIdMessage.ID] = () => { return new ExchangeCraftResultWithObjectIdMessage(); };
+            MessageReceiver._list[ExchangeCrafterJobLevelupMessage.ID] = () => { return new ExchangeCrafterJobLevelupMessage(); };
+            MessageReceiver._list[ExchangeErrorMessage.ID] = () => { return new ExchangeErrorMessage(); };
+            MessageReceiver._list[ExchangeGuildTaxCollectorGetMessage.ID] = () => { return new ExchangeGuildTaxCollectorGetMessage(); };
+            MessageReceiver._list[ExchangeHandleMountsStableMessage.ID] = () => { return new ExchangeHandleMountsStableMessage(); };
+            MessageReceiver._list[ExchangeIsReadyMessage.ID] = () => { return new ExchangeIsReadyMessage(); };
+            MessageReceiver._list[ExchangeItemAutoCraftStopedMessage.ID] = () => { return new ExchangeItemAutoCraftStopedMessage(); };
+            MessageReceiver._list[ExchangeLeaveMessage.ID] = () => { return new ExchangeLeaveMessage(); };
+            MessageReceiver._list[ExchangeMountFreeFromPaddockMessage.ID] = () => { return new ExchangeMountFreeFromPaddockMessage(); };
+            MessageReceiver._list[ExchangeMountStableErrorMessage.ID] = () => { return new ExchangeMountStableErrorMessage(); };
+            MessageReceiver._list[ExchangeMountSterilizeFromPaddockMessage.ID] = () => { return new ExchangeMountSterilizeFromPaddockMessage(); };
+            MessageReceiver._list[ExchangeMountsPaddockAddMessage.ID] = () => { return new ExchangeMountsPaddockAddMessage(); };
+            MessageReceiver._list[ExchangeMountsPaddockRemoveMessage.ID] = () => { return new ExchangeMountsPaddockRemoveMessage(); };
+            MessageReceiver._list[ExchangeMountsStableAddMessage.ID] = () => { return new ExchangeMountsStableAddMessage(); };
+            MessageReceiver._list[ExchangeMountsStableBornAddMessage.ID] = () => { return new ExchangeMountsStableBornAddMessage(); };
+            MessageReceiver._list[ExchangeMountsStableRemoveMessage.ID] = () => { return new ExchangeMountsStableRemoveMessage(); };
+            MessageReceiver._list[ExchangeMountsTakenFromPaddockMessage.ID] = () => { return new ExchangeMountsTakenFromPaddockMessage(); };
+            MessageReceiver._list[ExchangeObjectAddedMessage.ID] = () => { return new ExchangeObjectAddedMessage(); };
+            MessageReceiver._list[ExchangeObjectMessage.ID] = () => { return new ExchangeObjectMessage(); };
+            MessageReceiver._list[ExchangeObjectModifyPricedMessage.ID] = () => { return new ExchangeObjectModifyPricedMessage(); };
+            MessageReceiver._list[ExchangeObjectMoveKamaMessage.ID] = () => { return new ExchangeObjectMoveKamaMessage(); };
+            MessageReceiver._list[ExchangeObjectMoveMessage.ID] = () => { return new ExchangeObjectMoveMessage(); };
+            MessageReceiver._list[ExchangeObjectMovePricedMessage.ID] = () => { return new ExchangeObjectMovePricedMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertAllFromInvMessage.ID] = () => { return new ExchangeObjectTransfertAllFromInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertAllToInvMessage.ID] = () => { return new ExchangeObjectTransfertAllToInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertExistingFromInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingFromInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertExistingToInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingToInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertListFromInvMessage.ID] = () => { return new ExchangeObjectTransfertListFromInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertListToInvMessage.ID] = () => { return new ExchangeObjectTransfertListToInvMessage(); };
+            MessageReceiver._list[ExchangeObjectTransfertListWithQuantityToInvMessage.ID] = () => { return new ExchangeObjectTransfertListWithQuantityToInvMessage(); };
+            MessageReceiver._list[ExchangeObjectUseInWorkshopMessage.ID] = () => { return new ExchangeObjectUseInWorkshopMessage(); };
+            MessageReceiver._list[ExchangeObjectsAddedMessage.ID] = () => { return new ExchangeObjectsAddedMessage(); };
+            MessageReceiver._list[ExchangeOkMultiCraftMessage.ID] = () => { return new ExchangeOkMultiCraftMessage(); };
+            MessageReceiver._list[ExchangeOnHumanVendorRequestMessage.ID] = () => { return new ExchangeOnHumanVendorRequestMessage(); };
+            MessageReceiver._list[ExchangePlayerMultiCraftRequestMessage.ID] = () => { return new ExchangePlayerMultiCraftRequestMessage(); };
+            MessageReceiver._list[ExchangePlayerRequestMessage.ID] = () => { return new ExchangePlayerRequestMessage(); };
+            MessageReceiver._list[ExchangeReadyMessage.ID] = () => { return new ExchangeReadyMessage(); };
+            MessageReceiver._list[ExchangeReplayStopMessage.ID] = () => { return new ExchangeReplayStopMessage(); };
+            MessageReceiver._list[ExchangeReplyTaxVendorMessage.ID] = () => { return new ExchangeReplyTaxVendorMessage(); };
+            MessageReceiver._list[ExchangeRequestMessage.ID] = () => { return new ExchangeRequestMessage(); };
+            MessageReceiver._list[ExchangeRequestOnMountStockMessage.ID] = () => { return new ExchangeRequestOnMountStockMessage(); };
+            MessageReceiver._list[ExchangeRequestOnShopStockMessage.ID] = () => { return new ExchangeRequestOnShopStockMessage(); };
+            MessageReceiver._list[ExchangeRequestOnTaxCollectorMessage.ID] = () => { return new ExchangeRequestOnTaxCollectorMessage(); };
+            MessageReceiver._list[ExchangeRequestedMessage.ID] = () => { return new ExchangeRequestedMessage(); };
+            MessageReceiver._list[ExchangeRequestedTradeMessage.ID] = () => { return new ExchangeRequestedTradeMessage(); };
+            MessageReceiver._list[ExchangeSellMessage.ID] = () => { return new ExchangeSellMessage(); };
+            MessageReceiver._list[ExchangeSellOkMessage.ID] = () => { return new ExchangeSellOkMessage(); };
+            MessageReceiver._list[ExchangeSetCraftRecipeMessage.ID] = () => { return new ExchangeSetCraftRecipeMessage(); };
+            MessageReceiver._list[ExchangeShopStockMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMovementRemovedMessage(); };
+            MessageReceiver._list[ExchangeShopStockMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMovementUpdatedMessage(); };
+            MessageReceiver._list[ExchangeShopStockMultiMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMultiMovementRemovedMessage(); };
+            MessageReceiver._list[ExchangeShopStockMultiMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMultiMovementUpdatedMessage(); };
+            MessageReceiver._list[ExchangeShopStockStartedMessage.ID] = () => { return new ExchangeShopStockStartedMessage(); };
+            MessageReceiver._list[ExchangeShowVendorTaxMessage.ID] = () => { return new ExchangeShowVendorTaxMessage(); };
+            MessageReceiver._list[ExchangeStartAsVendorMessage.ID] = () => { return new ExchangeStartAsVendorMessage(); };
+            MessageReceiver._list[ExchangeStartOkCraftMessage.ID] = () => { return new ExchangeStartOkCraftMessage(); };
+            MessageReceiver._list[ExchangeStartOkCraftWithInformationMessage.ID] = () => { return new ExchangeStartOkCraftWithInformationMessage(); };
+            MessageReceiver._list[ExchangeStartOkHumanVendorMessage.ID] = () => { return new ExchangeStartOkHumanVendorMessage(); };
+            MessageReceiver._list[ExchangeStartOkJobIndexMessage.ID] = () => { return new ExchangeStartOkJobIndexMessage(); };
+            MessageReceiver._list[ExchangeStartOkMountMessage.ID] = () => { return new ExchangeStartOkMountMessage(); };
+            MessageReceiver._list[ExchangeStartOkMountWithOutPaddockMessage.ID] = () => { return new ExchangeStartOkMountWithOutPaddockMessage(); };
+            MessageReceiver._list[ExchangeStartOkMulticraftCrafterMessage.ID] = () => { return new ExchangeStartOkMulticraftCrafterMessage(); };
+            MessageReceiver._list[ExchangeStartOkMulticraftCustomerMessage.ID] = () => { return new ExchangeStartOkMulticraftCustomerMessage(); };
+            MessageReceiver._list[ExchangeStartOkNpcShopMessage.ID] = () => { return new ExchangeStartOkNpcShopMessage(); };
+            MessageReceiver._list[ExchangeStartOkNpcTradeMessage.ID] = () => { return new ExchangeStartOkNpcTradeMessage(); };
+            MessageReceiver._list[ExchangeStartOkRecycleTradeMessage.ID] = () => { return new ExchangeStartOkRecycleTradeMessage(); };
+            MessageReceiver._list[ExchangeStartOkRunesTradeMessage.ID] = () => { return new ExchangeStartOkRunesTradeMessage(); };
+            MessageReceiver._list[ExchangeStartedBidBuyerMessage.ID] = () => { return new ExchangeStartedBidBuyerMessage(); };
+            MessageReceiver._list[ExchangeStartedBidSellerMessage.ID] = () => { return new ExchangeStartedBidSellerMessage(); };
+            MessageReceiver._list[ExchangeStartedMessage.ID] = () => { return new ExchangeStartedMessage(); };
+            MessageReceiver._list[ExchangeStartedMountStockMessage.ID] = () => { return new ExchangeStartedMountStockMessage(); };
+            MessageReceiver._list[ExchangeStartedWithPodsMessage.ID] = () => { return new ExchangeStartedWithPodsMessage(); };
+            MessageReceiver._list[ExchangeStartedWithStorageMessage.ID] = () => { return new ExchangeStartedWithStorageMessage(); };
+            MessageReceiver._list[ExchangeStoppedMessage.ID] = () => { return new ExchangeStoppedMessage(); };
+            MessageReceiver._list[ExchangeTypesExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesExchangerDescriptionForUserMessage(); };
+            MessageReceiver._list[ExchangeTypesItemsExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesItemsExchangerDescriptionForUserMessage(); };
+            MessageReceiver._list[ExchangeWaitingResultMessage.ID] = () => { return new ExchangeWaitingResultMessage(); };
+            MessageReceiver._list[ExchangeWeightMessage.ID] = () => { return new ExchangeWeightMessage(); };
+            MessageReceiver._list[ItemNoMoreAvailableMessage.ID] = () => { return new ItemNoMoreAvailableMessage(); };
+            MessageReceiver._list[JobBookSubscribeRequestMessage.ID] = () => { return new JobBookSubscribeRequestMessage(); };
+            MessageReceiver._list[RecycleResultMessage.ID] = () => { return new RecycleResultMessage(); };
+            MessageReceiver._list[UpdateMountBoostMessage.ID] = () => { return new UpdateMountBoostMessage(); };
+            MessageReceiver._list[ExchangeKamaModifiedMessage.ID] = () => { return new ExchangeKamaModifiedMessage(); };
+            MessageReceiver._list[ExchangeMultiCraftCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(); };
+            MessageReceiver._list[ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(); };
+            MessageReceiver._list[ExchangeObjectModifiedInBagMessage.ID] = () => { return new ExchangeObjectModifiedInBagMessage(); };
+            MessageReceiver._list[ExchangeObjectModifiedMessage.ID] = () => { return new ExchangeObjectModifiedMessage(); };
+            MessageReceiver._list[ExchangeObjectPutInBagMessage.ID] = () => { return new ExchangeObjectPutInBagMessage(); };
+            MessageReceiver._list[ExchangeObjectRemovedFromBagMessage.ID] = () => { return new ExchangeObjectRemovedFromBagMessage(); };
+            MessageReceiver._list[ExchangeObjectRemovedMessage.ID] = () => { return new ExchangeObjectRemovedMessage(); };
+            MessageReceiver._list[ExchangeObjectsModifiedMessage.ID] = () => { return new ExchangeObjectsModifiedMessage(); };
+            MessageReceiver._list[ExchangeObjectsRemovedMessage.ID] = () => { return new ExchangeObjectsRemovedMessage(); };
+            MessageReceiver._list[GoldAddedMessage.ID] = () => { return new GoldAddedMessage(); };
+            MessageReceiver._list[InventoryContentAndPresetMessage.ID] = () => { return new InventoryContentAndPresetMessage(); };
+            MessageReceiver._list[InventoryContentMessage.ID] = () => { return new InventoryContentMessage(); };
+            MessageReceiver._list[InventoryWeightMessage.ID] = () => { return new InventoryWeightMessage(); };
+            MessageReceiver._list[LivingObjectChangeSkinRequestMessage.ID] = () => { return new LivingObjectChangeSkinRequestMessage(); };
+            MessageReceiver._list[LivingObjectDissociateMessage.ID] = () => { return new LivingObjectDissociateMessage(); };
+            MessageReceiver._list[LivingObjectMessageMessage.ID] = () => { return new LivingObjectMessageMessage(); };
+            MessageReceiver._list[LivingObjectMessageRequestMessage.ID] = () => { return new LivingObjectMessageRequestMessage(); };
+            MessageReceiver._list[MimicryObjectAssociatedMessage.ID] = () => { return new MimicryObjectAssociatedMessage(); };
+            MessageReceiver._list[MimicryObjectEraseRequestMessage.ID] = () => { return new MimicryObjectEraseRequestMessage(); };
+            MessageReceiver._list[MimicryObjectErrorMessage.ID] = () => { return new MimicryObjectErrorMessage(); };
+            MessageReceiver._list[MimicryObjectFeedAndAssociateRequestMessage.ID] = () => { return new MimicryObjectFeedAndAssociateRequestMessage(); };
+            MessageReceiver._list[MimicryObjectPreviewMessage.ID] = () => { return new MimicryObjectPreviewMessage(); };
+            MessageReceiver._list[ObjectAddedMessage.ID] = () => { return new ObjectAddedMessage(); };
+            MessageReceiver._list[ObjectDeleteMessage.ID] = () => { return new ObjectDeleteMessage(); };
+            MessageReceiver._list[ObjectDeletedMessage.ID] = () => { return new ObjectDeletedMessage(); };
+            MessageReceiver._list[ObjectDropMessage.ID] = () => { return new ObjectDropMessage(); };
+            MessageReceiver._list[ObjectErrorMessage.ID] = () => { return new ObjectErrorMessage(); };
+            MessageReceiver._list[ObjectFeedMessage.ID] = () => { return new ObjectFeedMessage(); };
+            MessageReceiver._list[ObjectFoundWhileRecoltingMessage.ID] = () => { return new ObjectFoundWhileRecoltingMessage(); };
+            MessageReceiver._list[ObjectJobAddedMessage.ID] = () => { return new ObjectJobAddedMessage(); };
+            MessageReceiver._list[ObjectModifiedMessage.ID] = () => { return new ObjectModifiedMessage(); };
+            MessageReceiver._list[ObjectMovementMessage.ID] = () => { return new ObjectMovementMessage(); };
+            MessageReceiver._list[ObjectQuantityMessage.ID] = () => { return new ObjectQuantityMessage(); };
+            MessageReceiver._list[ObjectSetPositionMessage.ID] = () => { return new ObjectSetPositionMessage(); };
+            MessageReceiver._list[ObjectUseMessage.ID] = () => { return new ObjectUseMessage(); };
+            MessageReceiver._list[ObjectUseMultipleMessage.ID] = () => { return new ObjectUseMultipleMessage(); };
+            MessageReceiver._list[ObjectUseOnCellMessage.ID] = () => { return new ObjectUseOnCellMessage(); };
+            MessageReceiver._list[ObjectUseOnCharacterMessage.ID] = () => { return new ObjectUseOnCharacterMessage(); };
+            MessageReceiver._list[ObjectsAddedMessage.ID] = () => { return new ObjectsAddedMessage(); };
+            MessageReceiver._list[ObjectsDeletedMessage.ID] = () => { return new ObjectsDeletedMessage(); };
+            MessageReceiver._list[ObjectsQuantityMessage.ID] = () => { return new ObjectsQuantityMessage(); };
+            MessageReceiver._list[ObtainedItemMessage.ID] = () => { return new ObtainedItemMessage(); };
+            MessageReceiver._list[ObtainedItemWithBonusMessage.ID] = () => { return new ObtainedItemWithBonusMessage(); };
+            MessageReceiver._list[SetUpdateMessage.ID] = () => { return new SetUpdateMessage(); };
+            MessageReceiver._list[SymbioticObjectAssociateRequestMessage.ID] = () => { return new SymbioticObjectAssociateRequestMessage(); };
+            MessageReceiver._list[SymbioticObjectAssociatedMessage.ID] = () => { return new SymbioticObjectAssociatedMessage(); };
+            MessageReceiver._list[SymbioticObjectErrorMessage.ID] = () => { return new SymbioticObjectErrorMessage(); };
+            MessageReceiver._list[WrapperObjectAssociatedMessage.ID] = () => { return new WrapperObjectAssociatedMessage(); };
+            MessageReceiver._list[WrapperObjectDissociateRequestMessage.ID] = () => { return new WrapperObjectDissociateRequestMessage(); };
+            MessageReceiver._list[WrapperObjectErrorMessage.ID] = () => { return new WrapperObjectErrorMessage(); };
+            MessageReceiver._list[IdolsPresetDeleteMessage.ID] = () => { return new IdolsPresetDeleteMessage(); };
+            MessageReceiver._list[IdolsPresetDeleteResultMessage.ID] = () => { return new IdolsPresetDeleteResultMessage(); };
+            MessageReceiver._list[IdolsPresetSaveMessage.ID] = () => { return new IdolsPresetSaveMessage(); };
+            MessageReceiver._list[IdolsPresetSaveResultMessage.ID] = () => { return new IdolsPresetSaveResultMessage(); };
+            MessageReceiver._list[IdolsPresetUpdateMessage.ID] = () => { return new IdolsPresetUpdateMessage(); };
+            MessageReceiver._list[InventoryPresetDeleteMessage.ID] = () => { return new InventoryPresetDeleteMessage(); };
+            MessageReceiver._list[InventoryPresetDeleteResultMessage.ID] = () => { return new InventoryPresetDeleteResultMessage(); };
+            MessageReceiver._list[InventoryPresetItemUpdateErrorMessage.ID] = () => { return new InventoryPresetItemUpdateErrorMessage(); };
+            MessageReceiver._list[InventoryPresetItemUpdateMessage.ID] = () => { return new InventoryPresetItemUpdateMessage(); };
+            MessageReceiver._list[InventoryPresetItemUpdateRequestMessage.ID] = () => { return new InventoryPresetItemUpdateRequestMessage(); };
+            MessageReceiver._list[InventoryPresetSaveCustomMessage.ID] = () => { return new InventoryPresetSaveCustomMessage(); };
+            MessageReceiver._list[InventoryPresetSaveMessage.ID] = () => { return new InventoryPresetSaveMessage(); };
+            MessageReceiver._list[InventoryPresetSaveResultMessage.ID] = () => { return new InventoryPresetSaveResultMessage(); };
+            MessageReceiver._list[InventoryPresetUpdateMessage.ID] = () => { return new InventoryPresetUpdateMessage(); };
+            MessageReceiver._list[InventoryPresetUseMessage.ID] = () => { return new InventoryPresetUseMessage(); };
+            MessageReceiver._list[InventoryPresetUseResultMessage.ID] = () => { return new InventoryPresetUseResultMessage(); };
+            MessageReceiver._list[SpellListMessage.ID] = () => { return new SpellListMessage(); };
+            MessageReceiver._list[StorageInventoryContentMessage.ID] = () => { return new StorageInventoryContentMessage(); };
+            MessageReceiver._list[StorageKamasUpdateMessage.ID] = () => { return new StorageKamasUpdateMessage(); };
+            MessageReceiver._list[StorageObjectRemoveMessage.ID] = () => { return new StorageObjectRemoveMessage(); };
+            MessageReceiver._list[StorageObjectUpdateMessage.ID] = () => { return new StorageObjectUpdateMessage(); };
+            MessageReceiver._list[StorageObjectsRemoveMessage.ID] = () => { return new StorageObjectsRemoveMessage(); };
+            MessageReceiver._list[StorageObjectsUpdateMessage.ID] = () => { return new StorageObjectsUpdateMessage(); };
+            MessageReceiver._list[AccessoryPreviewErrorMessage.ID] = () => { return new AccessoryPreviewErrorMessage(); };
+            MessageReceiver._list[AccessoryPreviewMessage.ID] = () => { return new AccessoryPreviewMessage(); };
+            MessageReceiver._list[AccessoryPreviewRequestMessage.ID] = () => { return new AccessoryPreviewRequestMessage(); };
+            MessageReceiver._list[PopupWarningMessage.ID] = () => { return new PopupWarningMessage(); };
+            MessageReceiver._list[AreaFightModificatorUpdateMessage.ID] = () => { return new AreaFightModificatorUpdateMessage(); };
+            MessageReceiver._list[PrismAttackRequestMessage.ID] = () => { return new PrismAttackRequestMessage(); };
+            MessageReceiver._list[PrismFightAddedMessage.ID] = () => { return new PrismFightAddedMessage(); };
+            MessageReceiver._list[PrismFightAttackerAddMessage.ID] = () => { return new PrismFightAttackerAddMessage(); };
+            MessageReceiver._list[PrismFightAttackerRemoveMessage.ID] = () => { return new PrismFightAttackerRemoveMessage(); };
+            MessageReceiver._list[PrismFightDefenderAddMessage.ID] = () => { return new PrismFightDefenderAddMessage(); };
+            MessageReceiver._list[PrismFightDefenderLeaveMessage.ID] = () => { return new PrismFightDefenderLeaveMessage(); };
+            MessageReceiver._list[PrismFightJoinLeaveRequestMessage.ID] = () => { return new PrismFightJoinLeaveRequestMessage(); };
+            MessageReceiver._list[PrismFightRemovedMessage.ID] = () => { return new PrismFightRemovedMessage(); };
+            MessageReceiver._list[PrismFightStateUpdateMessage.ID] = () => { return new PrismFightStateUpdateMessage(); };
+            MessageReceiver._list[PrismFightSwapRequestMessage.ID] = () => { return new PrismFightSwapRequestMessage(); };
+            MessageReceiver._list[PrismInfoCloseMessage.ID] = () => { return new PrismInfoCloseMessage(); };
+            MessageReceiver._list[PrismInfoInValidMessage.ID] = () => { return new PrismInfoInValidMessage(); };
+            MessageReceiver._list[PrismInfoJoinLeaveRequestMessage.ID] = () => { return new PrismInfoJoinLeaveRequestMessage(); };
+            MessageReceiver._list[PrismModuleExchangeRequestMessage.ID] = () => { return new PrismModuleExchangeRequestMessage(); };
+            MessageReceiver._list[PrismSetSabotagedRefusedMessage.ID] = () => { return new PrismSetSabotagedRefusedMessage(); };
+            MessageReceiver._list[PrismSetSabotagedRequestMessage.ID] = () => { return new PrismSetSabotagedRequestMessage(); };
+            MessageReceiver._list[PrismSettingsErrorMessage.ID] = () => { return new PrismSettingsErrorMessage(); };
+            MessageReceiver._list[PrismSettingsRequestMessage.ID] = () => { return new PrismSettingsRequestMessage(); };
+            MessageReceiver._list[PrismUseRequestMessage.ID] = () => { return new PrismUseRequestMessage(); };
+            MessageReceiver._list[PrismsInfoValidMessage.ID] = () => { return new PrismsInfoValidMessage(); };
+            MessageReceiver._list[PrismsListMessage.ID] = () => { return new PrismsListMessage(); };
+            MessageReceiver._list[PrismsListRegisterMessage.ID] = () => { return new PrismsListRegisterMessage(); };
+            MessageReceiver._list[PrismsListUpdateMessage.ID] = () => { return new PrismsListUpdateMessage(); };
+            MessageReceiver._list[AlignmentRankUpdateMessage.ID] = () => { return new AlignmentRankUpdateMessage(); };
+            MessageReceiver._list[SetEnableAVARequestMessage.ID] = () => { return new SetEnableAVARequestMessage(); };
+            MessageReceiver._list[SetEnablePVPRequestMessage.ID] = () => { return new SetEnablePVPRequestMessage(); };
+            MessageReceiver._list[UpdateMapPlayersAgressableStatusMessage.ID] = () => { return new UpdateMapPlayersAgressableStatusMessage(); };
+            MessageReceiver._list[UpdateSelfAgressableStatusMessage.ID] = () => { return new UpdateSelfAgressableStatusMessage(); };
+            MessageReceiver._list[CharacterReportMessage.ID] = () => { return new CharacterReportMessage(); };
+            MessageReceiver._list[CinematicMessage.ID] = () => { return new CinematicMessage(); };
+            MessageReceiver._list[URLOpenMessage.ID] = () => { return new URLOpenMessage(); };
+            MessageReceiver._list[ShortcutBarAddErrorMessage.ID] = () => { return new ShortcutBarAddErrorMessage(); };
+            MessageReceiver._list[ShortcutBarAddRequestMessage.ID] = () => { return new ShortcutBarAddRequestMessage(); };
+            MessageReceiver._list[ShortcutBarContentMessage.ID] = () => { return new ShortcutBarContentMessage(); };
+            MessageReceiver._list[ShortcutBarRefreshMessage.ID] = () => { return new ShortcutBarRefreshMessage(); };
+            MessageReceiver._list[ShortcutBarRemoveErrorMessage.ID] = () => { return new ShortcutBarRemoveErrorMessage(); };
+            MessageReceiver._list[ShortcutBarRemoveRequestMessage.ID] = () => { return new ShortcutBarRemoveRequestMessage(); };
+            MessageReceiver._list[ShortcutBarRemovedMessage.ID] = () => { return new ShortcutBarRemovedMessage(); };
+            MessageReceiver._list[ShortcutBarSwapErrorMessage.ID] = () => { return new ShortcutBarSwapErrorMessage(); };
+            MessageReceiver._list[ShortcutBarSwapRequestMessage.ID] = () => { return new ShortcutBarSwapRequestMessage(); };
+            MessageReceiver._list[ContactLookErrorMessage.ID] = () => { return new ContactLookErrorMessage(); };
+            MessageReceiver._list[ContactLookMessage.ID] = () => { return new ContactLookMessage(); };
+            MessageReceiver._list[ContactLookRequestByIdMessage.ID] = () => { return new ContactLookRequestByIdMessage(); };
+            MessageReceiver._list[ContactLookRequestMessage.ID] = () => { return new ContactLookRequestMessage(); };
+            MessageReceiver._list[StartupActionAddMessage.ID] = () => { return new StartupActionAddMessage(); };
+            MessageReceiver._list[StartupActionFinishedMessage.ID] = () => { return new StartupActionFinishedMessage(); };
+            MessageReceiver._list[StartupActionsAllAttributionMessage.ID] = () => { return new StartupActionsAllAttributionMessage(); };
+            MessageReceiver._list[StartupActionsExecuteMessage.ID] = () => { return new StartupActionsExecuteMessage(); };
+            MessageReceiver._list[StartupActionsListMessage.ID] = () => { return new StartupActionsListMessage(); };
+            MessageReceiver._list[StartupActionsObjetAttributionMessage.ID] = () => { return new StartupActionsObjetAttributionMessage(); };
+            MessageReceiver._list[SubscriptionLimitationMessage.ID] = () => { return new SubscriptionLimitationMessage(); };
+            MessageReceiver._list[SubscriptionZoneMessage.ID] = () => { return new SubscriptionZoneMessage(); };
+            MessageReceiver._list[OrnamentGainedMessage.ID] = () => { return new OrnamentGainedMessage(); };
+            MessageReceiver._list[OrnamentSelectErrorMessage.ID] = () => { return new OrnamentSelectErrorMessage(); };
+            MessageReceiver._list[OrnamentSelectRequestMessage.ID] = () => { return new OrnamentSelectRequestMessage(); };
+            MessageReceiver._list[OrnamentSelectedMessage.ID] = () => { return new OrnamentSelectedMessage(); };
+            MessageReceiver._list[TitleGainedMessage.ID] = () => { return new TitleGainedMessage(); };
+            MessageReceiver._list[TitleLostMessage.ID] = () => { return new TitleLostMessage(); };
+            MessageReceiver._list[TitleSelectErrorMessage.ID] = () => { return new TitleSelectErrorMessage(); };
+            MessageReceiver._list[TitleSelectRequestMessage.ID] = () => { return new TitleSelectRequestMessage(); };
+            MessageReceiver._list[TitleSelectedMessage.ID] = () => { return new TitleSelectedMessage(); };
+            MessageReceiver._list[TitlesAndOrnamentsListMessage.ID] = () => { return new TitlesAndOrnamentsListMessage(); };
+            MessageReceiver._list[TitlesAndOrnamentsListRequestMessage.ID] = () => { return new TitlesAndOrnamentsListRequestMessage(); };
+            MessageReceiver._list[ClientUIOpenedByObjectMessage.ID] = () => { return new ClientUIOpenedByObjectMessage(); };
+            MessageReceiver._list[ClientUIOpenedMessage.ID] = () => { return new ClientUIOpenedMessage(); };
+            MessageReceiver._list[ProtocolRequired.ID] = () => { return new ProtocolRequired(); };
+            MessageReceiver._list[LoginQueueStatusMessage.ID] = () => { return new LoginQueueStatusMessage(); };
+            MessageReceiver._list[QueueStatusMessage.ID] = () => { return new QueueStatusMessage(); };
+            MessageReceiver._list[TrustStatusMessage.ID] = () => { return new TrustStatusMessage(); };
+            MessageReceiver._list[CheckFileMessage.ID] = () => { return new CheckFileMessage(); };
+            MessageReceiver._list[CheckFileRequestMessage.ID] = () => { return new CheckFileRequestMessage(); };
+            MessageReceiver._list[CheckIntegrityMessage.ID] = () => { return new CheckIntegrityMessage(); };
+            MessageReceiver._list[ClientKeyMessage.ID] = () => { return new ClientKeyMessage(); };
+            MessageReceiver._list[RawDataMessage.ID] = () => { return new RawDataMessage(); };
+            MessageReceiver._list[SystemMessageDisplayMessage.ID] = () => { return new SystemMessageDisplayMessage(); };
+            MessageReceiver._list[DownloadCurrentSpeedMessage.ID] = () => { return new DownloadCurrentSpeedMessage(); };
+            MessageReceiver._list[DownloadErrorMessage.ID] = () => { return new DownloadErrorMessage(); };
+            MessageReceiver._list[DownloadGetCurrentSpeedRequestMessage.ID] = () => { return new DownloadGetCurrentSpeedRequestMessage(); };
+            MessageReceiver._list[DownloadPartMessage.ID] = () => { return new DownloadPartMessage(); };
+            MessageReceiver._list[DownloadSetSpeedRequestMessage.ID] = () => { return new DownloadSetSpeedRequestMessage(); };
+            MessageReceiver._list[GetPartInfoMessage.ID] = () => { return new GetPartInfoMessage(); };
+            MessageReceiver._list[GetPartsListMessage.ID] = () => { return new GetPartsListMessage(); };
+            MessageReceiver._list[PartInfoMessage.ID] = () => { return new PartInfoMessage(); };
+            MessageReceiver._list[PartsListMessage.ID] = () => { return new PartsListMessage(); };
+            MessageReceiver._list[MailStatusMessage.ID] = () => { return new MailStatusMessage(); };
+            MessageReceiver._list[NewMailMessage.ID] = () => { return new NewMailMessage(); };
+            MessageReceiver._list[KrosmasterAuthTokenErrorMessage.ID] = () => { return new KrosmasterAuthTokenErrorMessage(); };
+            MessageReceiver._list[KrosmasterAuthTokenMessage.ID] = () => { return new KrosmasterAuthTokenMessage(); };
+            MessageReceiver._list[KrosmasterAuthTokenRequestMessage.ID] = () => { return new KrosmasterAuthTokenRequestMessage(); };
+            MessageReceiver._list[KrosmasterInventoryErrorMessage.ID] = () => { return new KrosmasterInventoryErrorMessage(); };
+            MessageReceiver._list[KrosmasterInventoryMessage.ID] = () => { return new KrosmasterInventoryMessage(); };
+            MessageReceiver._list[KrosmasterInventoryRequestMessage.ID] = () => { return new KrosmasterInventoryRequestMessage(); };
+            MessageReceiver._list[KrosmasterPlayingStatusMessage.ID] = () => { return new KrosmasterPlayingStatusMessage(); };
+            MessageReceiver._list[KrosmasterTransferMessage.ID] = () => { return new KrosmasterTransferMessage(); };
+            MessageReceiver._list[KrosmasterTransferRequestMessage.ID] = () => { return new KrosmasterTransferRequestMessage(); };
+            MessageReceiver._list[ClientYouAreDrunkMessage.ID] = () => { return new ClientYouAreDrunkMessage(); };
+        }
+
+        public static parse(param1: ICustomDataInput, param2: number, param3: number): INetworkMessage {
+            let _loc4_ = MessageReceiver._list[param2];
+            if (!_loc4_) {
+                console.log('Unknown packet received (ID ' + param2 + ', length ' + param3 + ')');
+                return null;
+            }
+            var _loc5_: INetworkMessage = _loc4_();
+            _loc5_.unpack(param1, param3);
+            return _loc5_;
+        }
+    }
+
+
     export class Metadata {
         static PROTOCOL_BUILD = 1666;
         static PROTOCOL_REQUIRED_BUILD = 1666;
@@ -1443,206 +3286,6 @@ module Protocol {
 
         }
     }
-    export class IdentificationAccountForceMessage extends IdentificationMessage {
-        public static ID: number = 6119;
-
-        forcedAccountLogin: string;
-
-        constructor() {
-            this.forcedAccountLogin = '';
-            super();
-        }
-
-        public getMessageId(): number {
-            return IdentificationAccountForceMessage.ID;
-        }
-
-        public reset(): void {
-            this.forcedAccountLogin = '';
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_IdentificationAccountForceMessage(param1);
-        }
-
-        public serializeAs_IdentificationAccountForceMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_IdentificationMessage(param1);
-            param1.writeUTF(this.forcedAccountLogin);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_IdentificationAccountForceMessage(param1);
-        }
-
-        public deserializeAs_IdentificationAccountForceMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.forcedAccountLogin = param1.readUTF();
-
-        }
-    }
-    export class IdentificationFailedBannedMessage extends IdentificationFailedMessage {
-        public static ID: number = 6174;
-
-        banEndDate: number;
-
-        constructor() {
-            this.banEndDate = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return IdentificationFailedBannedMessage.ID;
-        }
-
-        public reset(): void {
-            this.banEndDate = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_IdentificationFailedBannedMessage(param1);
-        }
-
-        public serializeAs_IdentificationFailedBannedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_IdentificationFailedMessage(param1);
-            if (this.banEndDate < 0 || this.banEndDate > 9.007199254740992E15) {
-                throw new Error('Forbidden value (' + this.banEndDate + ') on element banEndDate.');
-            }
-            param1.writeDouble(this.banEndDate);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_IdentificationFailedBannedMessage(param1);
-        }
-
-        public deserializeAs_IdentificationFailedBannedMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.banEndDate = param1.readDouble();
-            if (this.banEndDate < 0 || this.banEndDate > 9.007199254740992E15) {
-                throw new Error('Forbidden value (' + this.banEndDate + ') on element of IdentificationFailedBannedMessage.banEndDate.');
-            }
-
-        }
-    }
-    export class IdentificationFailedForBadVersionMessage extends IdentificationFailedMessage {
-        public static ID: number = 21;
-
-        requiredVersion: Version;
-
-        constructor() {
-            this.requiredVersion = new Version();
-            super();
-        }
-
-        public getMessageId(): number {
-            return IdentificationFailedForBadVersionMessage.ID;
-        }
-
-        public reset(): void {
-            this.requiredVersion = new Version();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_IdentificationFailedForBadVersionMessage(param1);
-        }
-
-        public serializeAs_IdentificationFailedForBadVersionMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_IdentificationFailedMessage(param1);
-            this.requiredVersion.serializeAs_Version(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_IdentificationFailedForBadVersionMessage(param1);
-        }
-
-        public deserializeAs_IdentificationFailedForBadVersionMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.requiredVersion = new Version();
-            this.requiredVersion.deserialize(param1);
-
-        }
-    }
-    export class IdentificationFailedMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 20;
-
-        reason: number;
-
-        constructor() {
-            this.reason = 99;
-            super();
-        }
-
-        public getMessageId(): number {
-            return IdentificationFailedMessage.ID;
-        }
-
-        public reset(): void {
-            this.reason = 99;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_IdentificationFailedMessage(param1);
-        }
-
-        public serializeAs_IdentificationFailedMessage(param1: ICustomDataOutput): void {
-            param1.writeByte(this.reason);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_IdentificationFailedMessage(param1);
-        }
-
-        public deserializeAs_IdentificationFailedMessage(param1: ICustomDataInput): void {
-            this.reason = param1.readByte();
-            if (this.reason < 0) {
-                throw new Error('Forbidden value (' + this.reason + ') on element of IdentificationFailedMessage.reason.');
-            }
-
-        }
-    }
     export class IdentificationMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 4;
 
@@ -1766,6 +3409,206 @@ module Protocol {
                 this.failedAttempts.push(_loc8_);
                 _loc6_++;
             }
+
+        }
+    }
+    export class IdentificationAccountForceMessage extends IdentificationMessage {
+        public static ID: number = 6119;
+
+        forcedAccountLogin: string;
+
+        constructor() {
+            this.forcedAccountLogin = '';
+            super();
+        }
+
+        public getMessageId(): number {
+            return IdentificationAccountForceMessage.ID;
+        }
+
+        public reset(): void {
+            this.forcedAccountLogin = '';
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_IdentificationAccountForceMessage(param1);
+        }
+
+        public serializeAs_IdentificationAccountForceMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_IdentificationMessage(param1);
+            param1.writeUTF(this.forcedAccountLogin);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_IdentificationAccountForceMessage(param1);
+        }
+
+        public deserializeAs_IdentificationAccountForceMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.forcedAccountLogin = param1.readUTF();
+
+        }
+    }
+    export class IdentificationFailedMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 20;
+
+        reason: number;
+
+        constructor() {
+            this.reason = 99;
+            super();
+        }
+
+        public getMessageId(): number {
+            return IdentificationFailedMessage.ID;
+        }
+
+        public reset(): void {
+            this.reason = 99;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_IdentificationFailedMessage(param1);
+        }
+
+        public serializeAs_IdentificationFailedMessage(param1: ICustomDataOutput): void {
+            param1.writeByte(this.reason);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_IdentificationFailedMessage(param1);
+        }
+
+        public deserializeAs_IdentificationFailedMessage(param1: ICustomDataInput): void {
+            this.reason = param1.readByte();
+            if (this.reason < 0) {
+                throw new Error('Forbidden value (' + this.reason + ') on element of IdentificationFailedMessage.reason.');
+            }
+
+        }
+    }
+    export class IdentificationFailedBannedMessage extends IdentificationFailedMessage {
+        public static ID: number = 6174;
+
+        banEndDate: number;
+
+        constructor() {
+            this.banEndDate = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return IdentificationFailedBannedMessage.ID;
+        }
+
+        public reset(): void {
+            this.banEndDate = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_IdentificationFailedBannedMessage(param1);
+        }
+
+        public serializeAs_IdentificationFailedBannedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_IdentificationFailedMessage(param1);
+            if (this.banEndDate < 0 || this.banEndDate > 9.007199254740992E15) {
+                throw new Error('Forbidden value (' + this.banEndDate + ') on element banEndDate.');
+            }
+            param1.writeDouble(this.banEndDate);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_IdentificationFailedBannedMessage(param1);
+        }
+
+        public deserializeAs_IdentificationFailedBannedMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.banEndDate = param1.readDouble();
+            if (this.banEndDate < 0 || this.banEndDate > 9.007199254740992E15) {
+                throw new Error('Forbidden value (' + this.banEndDate + ') on element of IdentificationFailedBannedMessage.banEndDate.');
+            }
+
+        }
+    }
+    export class IdentificationFailedForBadVersionMessage extends IdentificationFailedMessage {
+        public static ID: number = 21;
+
+        requiredVersion: Version;
+
+        constructor() {
+            this.requiredVersion = new Version();
+            super();
+        }
+
+        public getMessageId(): number {
+            return IdentificationFailedForBadVersionMessage.ID;
+        }
+
+        public reset(): void {
+            this.requiredVersion = new Version();
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_IdentificationFailedForBadVersionMessage(param1);
+        }
+
+        public serializeAs_IdentificationFailedForBadVersionMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_IdentificationFailedMessage(param1);
+            this.requiredVersion.serializeAs_Version(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_IdentificationFailedForBadVersionMessage(param1);
+        }
+
+        public deserializeAs_IdentificationFailedForBadVersionMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.requiredVersion = new Version();
+            this.requiredVersion.deserialize(param1);
 
         }
     }
@@ -1941,72 +3784,6 @@ module Protocol {
 
         }
     }
-    export class SelectedServerDataExtendedMessage extends SelectedServerDataMessage {
-        public static ID: number = 6469;
-
-        serverIds: number[];
-
-        constructor() {
-            this.serverIds = [];
-            super();
-        }
-
-        public getMessageId(): number {
-            return SelectedServerDataExtendedMessage.ID;
-        }
-
-        public reset(): void {
-            this.serverIds = [];
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_SelectedServerDataExtendedMessage(param1);
-        }
-
-        public serializeAs_SelectedServerDataExtendedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_SelectedServerDataMessage(param1);
-            param1.writeShort(this.serverIds.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.serverIds.length) {
-                if (this.serverIds[_loc2_] < 0) {
-                    throw new Error('Forbidden value (' + this.serverIds[_loc2_] + ') on element 1 (starting at 1) of serverIds.');
-                }
-                param1.writeVarShort(this.serverIds[_loc2_]);
-                _loc2_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_SelectedServerDataExtendedMessage(param1);
-        }
-
-        public deserializeAs_SelectedServerDataExtendedMessage(param1: ICustomDataInput): void {
-            var _loc4_: number = 0;
-            super.deserialize(param1);
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = param1.readVarUhShort();
-                if (_loc4_ < 0) {
-                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of serverIds.');
-                }
-                this.serverIds.push(_loc4_);
-                _loc3_++;
-            }
-
-        }
-    }
     export class SelectedServerDataMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 42;
 
@@ -2092,6 +3869,72 @@ module Protocol {
             while (_loc3_ < _loc2_) {
             _loc4_ = param1.readByte();
                 this.ticket.push(_loc4_);
+                _loc3_++;
+            }
+
+        }
+    }
+    export class SelectedServerDataExtendedMessage extends SelectedServerDataMessage {
+        public static ID: number = 6469;
+
+        serverIds: number[];
+
+        constructor() {
+            this.serverIds = [];
+            super();
+        }
+
+        public getMessageId(): number {
+            return SelectedServerDataExtendedMessage.ID;
+        }
+
+        public reset(): void {
+            this.serverIds = [];
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_SelectedServerDataExtendedMessage(param1);
+        }
+
+        public serializeAs_SelectedServerDataExtendedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_SelectedServerDataMessage(param1);
+            param1.writeShort(this.serverIds.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.serverIds.length) {
+                if (this.serverIds[_loc2_] < 0) {
+                    throw new Error('Forbidden value (' + this.serverIds[_loc2_] + ') on element 1 (starting at 1) of serverIds.');
+                }
+                param1.writeVarShort(this.serverIds[_loc2_]);
+                _loc2_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_SelectedServerDataExtendedMessage(param1);
+        }
+
+        public deserializeAs_SelectedServerDataExtendedMessage(param1: ICustomDataInput): void {
+            var _loc4_: number = 0;
+            super.deserialize(param1);
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = param1.readVarUhShort();
+                if (_loc4_ < 0) {
+                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of serverIds.');
+                }
+                this.serverIds.push(_loc4_);
                 _loc3_++;
             }
 
@@ -3120,65 +4963,6 @@ module Protocol {
 
         }
     }
-    export class AchievementFinishedInformationMessage extends AchievementFinishedMessage {
-        public static ID: number = 6381;
-
-        name: string;
-        playerId: number;
-
-        constructor() {
-            this.name = '';
-            this.playerId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return AchievementFinishedInformationMessage.ID;
-        }
-
-        public reset(): void {
-            this.name = '';
-            this.playerId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_AchievementFinishedInformationMessage(param1);
-        }
-
-        public serializeAs_AchievementFinishedInformationMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AchievementFinishedMessage(param1);
-            param1.writeUTF(this.name);
-            if (this.playerId < 0) {
-                throw new Error('Forbidden value (' + this.playerId + ') on element playerId.');
-            }
-            param1.writeVarInt(this.playerId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_AchievementFinishedInformationMessage(param1);
-        }
-
-        public deserializeAs_AchievementFinishedInformationMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.name = param1.readUTF();
-            this.playerId = param1.readVarUhInt();
-            if (this.playerId < 0) {
-                throw new Error('Forbidden value (' + this.playerId + ') on element of AchievementFinishedInformationMessage.playerId.');
-            }
-
-        }
-    }
     export class AchievementFinishedMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 6208;
 
@@ -3238,6 +5022,65 @@ module Protocol {
             this.finishedlevel = param1.readUnsignedByte();
             if (this.finishedlevel < 0 || this.finishedlevel > 200) {
                 throw new Error('Forbidden value (' + this.finishedlevel + ') on element of AchievementFinishedMessage.finishedlevel.');
+            }
+
+        }
+    }
+    export class AchievementFinishedInformationMessage extends AchievementFinishedMessage {
+        public static ID: number = 6381;
+
+        name: string;
+        playerId: number;
+
+        constructor() {
+            this.name = '';
+            this.playerId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return AchievementFinishedInformationMessage.ID;
+        }
+
+        public reset(): void {
+            this.name = '';
+            this.playerId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_AchievementFinishedInformationMessage(param1);
+        }
+
+        public serializeAs_AchievementFinishedInformationMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AchievementFinishedMessage(param1);
+            param1.writeUTF(this.name);
+            if (this.playerId < 0) {
+                throw new Error('Forbidden value (' + this.playerId + ') on element playerId.');
+            }
+            param1.writeVarInt(this.playerId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_AchievementFinishedInformationMessage(param1);
+        }
+
+        public deserializeAs_AchievementFinishedInformationMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.name = param1.readUTF();
+            this.playerId = param1.readVarUhInt();
+            if (this.playerId < 0) {
+                throw new Error('Forbidden value (' + this.playerId + ') on element of AchievementFinishedInformationMessage.playerId.');
             }
 
         }
@@ -4214,6 +6057,54 @@ module Protocol {
 
         }
     }
+    export class GameActionFightDispellMessage extends AbstractGameActionMessage {
+        public static ID: number = 5533;
+
+        targetId: number;
+
+        constructor() {
+            this.targetId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameActionFightDispellMessage.ID;
+        }
+
+        public reset(): void {
+            this.targetId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameActionFightDispellMessage(param1);
+        }
+
+        public serializeAs_GameActionFightDispellMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractGameActionMessage(param1);
+            param1.writeInt(this.targetId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameActionFightDispellMessage(param1);
+        }
+
+        public deserializeAs_GameActionFightDispellMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.targetId = param1.readInt();
+
+        }
+    }
     export class GameActionFightDispellEffectMessage extends GameActionFightDispellMessage {
         public static ID: number = 6113;
 
@@ -4265,54 +6156,6 @@ module Protocol {
             if (this.boostUID < 0) {
                 throw new Error('Forbidden value (' + this.boostUID + ') on element of GameActionFightDispellEffectMessage.boostUID.');
             }
-
-        }
-    }
-    export class GameActionFightDispellMessage extends AbstractGameActionMessage {
-        public static ID: number = 5533;
-
-        targetId: number;
-
-        constructor() {
-            this.targetId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameActionFightDispellMessage.ID;
-        }
-
-        public reset(): void {
-            this.targetId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameActionFightDispellMessage(param1);
-        }
-
-        public serializeAs_GameActionFightDispellMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractGameActionMessage(param1);
-            param1.writeInt(this.targetId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameActionFightDispellMessage(param1);
-        }
-
-        public deserializeAs_GameActionFightDispellMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.targetId = param1.readInt();
 
         }
     }
@@ -4772,6 +6615,76 @@ module Protocol {
 
         }
     }
+    export class GameActionFightLifePointsLostMessage extends AbstractGameActionMessage {
+        public static ID: number = 6312;
+
+        targetId: number;
+        loss: number;
+        permanentDamages: number;
+
+        constructor() {
+            this.targetId = 0;
+            this.loss = 0;
+            this.permanentDamages = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameActionFightLifePointsLostMessage.ID;
+        }
+
+        public reset(): void {
+            this.targetId = 0;
+            this.loss = 0;
+            this.permanentDamages = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameActionFightLifePointsLostMessage(param1);
+        }
+
+        public serializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractGameActionMessage(param1);
+            param1.writeInt(this.targetId);
+            if (this.loss < 0) {
+                throw new Error('Forbidden value (' + this.loss + ') on element loss.');
+            }
+            param1.writeVarShort(this.loss);
+            if (this.permanentDamages < 0) {
+                throw new Error('Forbidden value (' + this.permanentDamages + ') on element permanentDamages.');
+            }
+            param1.writeVarShort(this.permanentDamages);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameActionFightLifePointsLostMessage(param1);
+        }
+
+        public deserializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.targetId = param1.readInt();
+            this.loss = param1.readVarUhShort();
+            if (this.loss < 0) {
+                throw new Error('Forbidden value (' + this.loss + ') on element of GameActionFightLifePointsLostMessage.loss.');
+            }
+            this.permanentDamages = param1.readVarUhShort();
+            if (this.permanentDamages < 0) {
+                throw new Error('Forbidden value (' + this.permanentDamages + ') on element of GameActionFightLifePointsLostMessage.permanentDamages.');
+            }
+
+        }
+    }
     export class GameActionFightLifeAndShieldPointsLostMessage extends GameActionFightLifePointsLostMessage {
         public static ID: number = 6310;
 
@@ -4881,76 +6794,6 @@ module Protocol {
             this.delta = param1.readVarUhInt();
             if (this.delta < 0) {
                 throw new Error('Forbidden value (' + this.delta + ') on element of GameActionFightLifePointsGainMessage.delta.');
-            }
-
-        }
-    }
-    export class GameActionFightLifePointsLostMessage extends AbstractGameActionMessage {
-        public static ID: number = 6312;
-
-        targetId: number;
-        loss: number;
-        permanentDamages: number;
-
-        constructor() {
-            this.targetId = 0;
-            this.loss = 0;
-            this.permanentDamages = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameActionFightLifePointsLostMessage.ID;
-        }
-
-        public reset(): void {
-            this.targetId = 0;
-            this.loss = 0;
-            this.permanentDamages = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameActionFightLifePointsLostMessage(param1);
-        }
-
-        public serializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractGameActionMessage(param1);
-            param1.writeInt(this.targetId);
-            if (this.loss < 0) {
-                throw new Error('Forbidden value (' + this.loss + ') on element loss.');
-            }
-            param1.writeVarShort(this.loss);
-            if (this.permanentDamages < 0) {
-                throw new Error('Forbidden value (' + this.permanentDamages + ') on element permanentDamages.');
-            }
-            param1.writeVarShort(this.permanentDamages);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameActionFightLifePointsLostMessage(param1);
-        }
-
-        public deserializeAs_GameActionFightLifePointsLostMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.targetId = param1.readInt();
-            this.loss = param1.readVarUhShort();
-            if (this.loss < 0) {
-                throw new Error('Forbidden value (' + this.loss + ') on element of GameActionFightLifePointsLostMessage.loss.');
-            }
-            this.permanentDamages = param1.readVarUhShort();
-            if (this.permanentDamages < 0) {
-                throw new Error('Forbidden value (' + this.permanentDamages + ') on element of GameActionFightLifePointsLostMessage.permanentDamages.');
             }
 
         }
@@ -9835,6 +11678,58 @@ module Protocol {
 
         }
     }
+    export class CharacterSelectionMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 152;
+
+        id: number;
+
+        constructor() {
+            this.id = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return CharacterSelectionMessage.ID;
+        }
+
+        public reset(): void {
+            this.id = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterSelectionMessage(param1);
+        }
+
+        public serializeAs_CharacterSelectionMessage(param1: ICustomDataOutput): void {
+            if (this.id < 1 || this.id > 2147483647) {
+                throw new Error('Forbidden value (' + this.id + ') on element id.');
+            }
+            param1.writeInt(this.id);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterSelectionMessage(param1);
+        }
+
+        public deserializeAs_CharacterSelectionMessage(param1: ICustomDataInput): void {
+            this.id = param1.readInt();
+            if (this.id < 1 || this.id > 2147483647) {
+                throw new Error('Forbidden value (' + this.id + ') on element of CharacterSelectionMessage.id.');
+            }
+
+        }
+    }
     export class CharacterFirstSelectionMessage extends CharacterSelectionMessage {
         public static ID: number = 6084;
 
@@ -9880,6 +11775,58 @@ module Protocol {
         public deserializeAs_CharacterFirstSelectionMessage(param1: ICustomDataInput): void {
             super.deserialize(param1);
             this.doTutorial = param1.readBoolean();
+
+        }
+    }
+    export class CharacterReplayRequestMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 167;
+
+        characterId: number;
+
+        constructor() {
+            this.characterId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return CharacterReplayRequestMessage.ID;
+        }
+
+        public reset(): void {
+            this.characterId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterReplayRequestMessage(param1);
+        }
+
+        public serializeAs_CharacterReplayRequestMessage(param1: ICustomDataOutput): void {
+            if (this.characterId < 0) {
+                throw new Error('Forbidden value (' + this.characterId + ') on element characterId.');
+            }
+            param1.writeInt(this.characterId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterReplayRequestMessage(param1);
+        }
+
+        public deserializeAs_CharacterReplayRequestMessage(param1: ICustomDataInput): void {
+            this.characterId = param1.readInt();
+            if (this.characterId < 0) {
+                throw new Error('Forbidden value (' + this.characterId + ') on element of CharacterReplayRequestMessage.characterId.');
+            }
 
         }
     }
@@ -10121,58 +12068,6 @@ module Protocol {
             this.infos = new CharacterBaseInformations();
             this.infos.deserialize(param1);
             this.isCollectingStats = param1.readBoolean();
-
-        }
-    }
-    export class CharacterSelectionMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 152;
-
-        id: number;
-
-        constructor() {
-            this.id = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return CharacterSelectionMessage.ID;
-        }
-
-        public reset(): void {
-            this.id = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterSelectionMessage(param1);
-        }
-
-        public serializeAs_CharacterSelectionMessage(param1: ICustomDataOutput): void {
-            if (this.id < 1 || this.id > 2147483647) {
-                throw new Error('Forbidden value (' + this.id + ') on element id.');
-            }
-            param1.writeInt(this.id);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterSelectionMessage(param1);
-        }
-
-        public deserializeAs_CharacterSelectionMessage(param1: ICustomDataInput): void {
-            this.id = param1.readInt();
-            if (this.id < 1 || this.id > 2147483647) {
-                throw new Error('Forbidden value (' + this.id + ') on element of CharacterSelectionMessage.id.');
-            }
 
         }
     }
@@ -10912,58 +12807,6 @@ module Protocol {
 
         }
     }
-    export class CharacterReplayRequestMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 167;
-
-        characterId: number;
-
-        constructor() {
-            this.characterId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return CharacterReplayRequestMessage.ID;
-        }
-
-        public reset(): void {
-            this.characterId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterReplayRequestMessage(param1);
-        }
-
-        public serializeAs_CharacterReplayRequestMessage(param1: ICustomDataOutput): void {
-            if (this.characterId < 0) {
-                throw new Error('Forbidden value (' + this.characterId + ') on element characterId.');
-            }
-            param1.writeInt(this.characterId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterReplayRequestMessage(param1);
-        }
-
-        public deserializeAs_CharacterReplayRequestMessage(param1: ICustomDataInput): void {
-            this.characterId = param1.readInt();
-            if (this.characterId < 0) {
-                throw new Error('Forbidden value (' + this.characterId + ') on element of CharacterReplayRequestMessage.characterId.');
-            }
-
-        }
-    }
     export class CharacterExperienceGainMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 6321;
 
@@ -11049,6 +12892,58 @@ module Protocol {
 
         }
     }
+    export class CharacterLevelUpMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5670;
+
+        newLevel: number;
+
+        constructor() {
+            this.newLevel = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return CharacterLevelUpMessage.ID;
+        }
+
+        public reset(): void {
+            this.newLevel = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterLevelUpMessage(param1);
+        }
+
+        public serializeAs_CharacterLevelUpMessage(param1: ICustomDataOutput): void {
+            if (this.newLevel < 2 || this.newLevel > 200) {
+                throw new Error('Forbidden value (' + this.newLevel + ') on element newLevel.');
+            }
+            param1.writeByte(this.newLevel);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterLevelUpMessage(param1);
+        }
+
+        public deserializeAs_CharacterLevelUpMessage(param1: ICustomDataInput): void {
+            this.newLevel = param1.readUnsignedByte();
+            if (this.newLevel < 2 || this.newLevel > 200) {
+                throw new Error('Forbidden value (' + this.newLevel + ') on element of CharacterLevelUpMessage.newLevel.');
+            }
+
+        }
+    }
     export class CharacterLevelUpInformationMessage extends CharacterLevelUpMessage {
         public static ID: number = 6076;
 
@@ -11104,58 +12999,6 @@ module Protocol {
             this.id = param1.readVarUhInt();
             if (this.id < 0) {
                 throw new Error('Forbidden value (' + this.id + ') on element of CharacterLevelUpInformationMessage.id.');
-            }
-
-        }
-    }
-    export class CharacterLevelUpMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5670;
-
-        newLevel: number;
-
-        constructor() {
-            this.newLevel = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return CharacterLevelUpMessage.ID;
-        }
-
-        public reset(): void {
-            this.newLevel = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterLevelUpMessage(param1);
-        }
-
-        public serializeAs_CharacterLevelUpMessage(param1: ICustomDataOutput): void {
-            if (this.newLevel < 2 || this.newLevel > 200) {
-                throw new Error('Forbidden value (' + this.newLevel + ') on element newLevel.');
-            }
-            param1.writeByte(this.newLevel);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterLevelUpMessage(param1);
-        }
-
-        public deserializeAs_CharacterLevelUpMessage(param1: ICustomDataInput): void {
-            this.newLevel = param1.readUnsignedByte();
-            if (this.newLevel < 2 || this.newLevel > 200) {
-                throw new Error('Forbidden value (' + this.newLevel + ') on element of CharacterLevelUpMessage.newLevel.');
             }
 
         }
@@ -11306,60 +13149,6 @@ module Protocol {
 
         }
     }
-    export class LifePointsRegenEndMessage extends UpdateLifePointsMessage {
-        public static ID: number = 5686;
-
-        lifePointsGained: number;
-
-        constructor() {
-            this.lifePointsGained = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return LifePointsRegenEndMessage.ID;
-        }
-
-        public reset(): void {
-            this.lifePointsGained = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_LifePointsRegenEndMessage(param1);
-        }
-
-        public serializeAs_LifePointsRegenEndMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_UpdateLifePointsMessage(param1);
-            if (this.lifePointsGained < 0) {
-                throw new Error('Forbidden value (' + this.lifePointsGained + ') on element lifePointsGained.');
-            }
-            param1.writeVarInt(this.lifePointsGained);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_LifePointsRegenEndMessage(param1);
-        }
-
-        public deserializeAs_LifePointsRegenEndMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.lifePointsGained = param1.readVarUhInt();
-            if (this.lifePointsGained < 0) {
-                throw new Error('Forbidden value (' + this.lifePointsGained + ') on element of LifePointsRegenEndMessage.lifePointsGained.');
-            }
-
-        }
-    }
     export class UpdateLifePointsMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 5658;
 
@@ -11419,6 +13208,60 @@ module Protocol {
             this.maxLifePoints = param1.readVarUhInt();
             if (this.maxLifePoints < 0) {
                 throw new Error('Forbidden value (' + this.maxLifePoints + ') on element of UpdateLifePointsMessage.maxLifePoints.');
+            }
+
+        }
+    }
+    export class LifePointsRegenEndMessage extends UpdateLifePointsMessage {
+        public static ID: number = 5686;
+
+        lifePointsGained: number;
+
+        constructor() {
+            this.lifePointsGained = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return LifePointsRegenEndMessage.ID;
+        }
+
+        public reset(): void {
+            this.lifePointsGained = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_LifePointsRegenEndMessage(param1);
+        }
+
+        public serializeAs_LifePointsRegenEndMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_UpdateLifePointsMessage(param1);
+            if (this.lifePointsGained < 0) {
+                throw new Error('Forbidden value (' + this.lifePointsGained + ') on element lifePointsGained.');
+            }
+            param1.writeVarInt(this.lifePointsGained);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_LifePointsRegenEndMessage(param1);
+        }
+
+        public deserializeAs_LifePointsRegenEndMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.lifePointsGained = param1.readVarUhInt();
+            if (this.lifePointsGained < 0) {
+                throw new Error('Forbidden value (' + this.lifePointsGained + ') on element of LifePointsRegenEndMessage.lifePointsGained.');
             }
 
         }
@@ -11700,6 +13543,70 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.timestamp + ') on element of ChatAbstractServerMessage.timestamp.');
             }
             this.fingerprint = param1.readUTF();
+
+        }
+    }
+    export class ChatServerMessage extends ChatAbstractServerMessage {
+        public static ID: number = 881;
+
+        senderId: number;
+        senderName: string;
+        senderAccountId: number;
+
+        constructor() {
+            this.senderId = 0;
+            this.senderName = '';
+            this.senderAccountId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ChatServerMessage.ID;
+        }
+
+        public reset(): void {
+            this.senderId = 0;
+            this.senderName = '';
+            this.senderAccountId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ChatServerMessage(param1);
+        }
+
+        public serializeAs_ChatServerMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ChatAbstractServerMessage(param1);
+            param1.writeInt(this.senderId);
+            param1.writeUTF(this.senderName);
+            if (this.senderAccountId < 0) {
+                throw new Error('Forbidden value (' + this.senderAccountId + ') on element senderAccountId.');
+            }
+            param1.writeInt(this.senderAccountId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ChatServerMessage(param1);
+        }
+
+        public deserializeAs_ChatServerMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.senderId = param1.readInt();
+            this.senderName = param1.readUTF();
+            this.senderAccountId = param1.readInt();
+            if (this.senderAccountId < 0) {
+                throw new Error('Forbidden value (' + this.senderAccountId + ') on element of ChatServerMessage.senderAccountId.');
+            }
 
         }
     }
@@ -12135,70 +14042,6 @@ module Protocol {
                 _loc4_.deserialize(param1);
                 this.objects.push(_loc4_);
                 _loc3_++;
-            }
-
-        }
-    }
-    export class ChatServerMessage extends ChatAbstractServerMessage {
-        public static ID: number = 881;
-
-        senderId: number;
-        senderName: string;
-        senderAccountId: number;
-
-        constructor() {
-            this.senderId = 0;
-            this.senderName = '';
-            this.senderAccountId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ChatServerMessage.ID;
-        }
-
-        public reset(): void {
-            this.senderId = 0;
-            this.senderName = '';
-            this.senderAccountId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ChatServerMessage(param1);
-        }
-
-        public serializeAs_ChatServerMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ChatAbstractServerMessage(param1);
-            param1.writeInt(this.senderId);
-            param1.writeUTF(this.senderName);
-            if (this.senderAccountId < 0) {
-                throw new Error('Forbidden value (' + this.senderAccountId + ') on element senderAccountId.');
-            }
-            param1.writeInt(this.senderAccountId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ChatServerMessage(param1);
-        }
-
-        public deserializeAs_ChatServerMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.senderId = param1.readInt();
-            this.senderName = param1.readUTF();
-            this.senderAccountId = param1.readInt();
-            if (this.senderAccountId < 0) {
-                throw new Error('Forbidden value (' + this.senderAccountId + ') on element of ChatServerMessage.senderAccountId.');
             }
 
         }
@@ -12963,6 +14806,75 @@ module Protocol {
 
         }
     }
+    export class GameMapMovementMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 951;
+
+        keyMovements: number[];
+        actorId: number;
+
+        constructor() {
+            this.keyMovements = [];
+            this.actorId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameMapMovementMessage.ID;
+        }
+
+        public reset(): void {
+            this.keyMovements = [];
+            this.actorId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameMapMovementMessage(param1);
+        }
+
+        public serializeAs_GameMapMovementMessage(param1: ICustomDataOutput): void {
+            param1.writeShort(this.keyMovements.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.keyMovements.length) {
+                if (this.keyMovements[_loc2_] < 0) {
+                    throw new Error('Forbidden value (' + this.keyMovements[_loc2_] + ') on element 1 (starting at 1) of keyMovements.');
+                }
+                param1.writeShort(this.keyMovements[_loc2_]);
+                _loc2_++;
+            }
+            param1.writeInt(this.actorId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameMapMovementMessage(param1);
+        }
+
+        public deserializeAs_GameMapMovementMessage(param1: ICustomDataInput): void {
+            var _loc4_: number = 0;
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = param1.readShort();
+                if (_loc4_ < 0) {
+                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of keyMovements.');
+                }
+                this.keyMovements.push(_loc4_);
+                _loc3_++;
+            }
+            this.actorId = param1.readInt();
+
+        }
+    }
     export class GameCautiousMapMovementMessage extends GameMapMovementMessage {
         public static ID: number = 6497;
 
@@ -13006,6 +14918,81 @@ module Protocol {
 
         public deserializeAs_GameCautiousMapMovementMessage(param1: ICustomDataInput): void {
             super.deserialize(param1);
+
+        }
+    }
+    export class GameMapMovementRequestMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 950;
+
+        keyMovements: number[];
+        mapId: number;
+
+        constructor() {
+            this.keyMovements = [];
+            this.mapId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameMapMovementRequestMessage.ID;
+        }
+
+        public reset(): void {
+            this.keyMovements = [];
+            this.mapId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameMapMovementRequestMessage(param1);
+        }
+
+        public serializeAs_GameMapMovementRequestMessage(param1: ICustomDataOutput): void {
+            param1.writeShort(this.keyMovements.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.keyMovements.length) {
+                if (this.keyMovements[_loc2_] < 0) {
+                    throw new Error('Forbidden value (' + this.keyMovements[_loc2_] + ') on element 1 (starting at 1) of keyMovements.');
+                }
+                param1.writeShort(this.keyMovements[_loc2_]);
+                _loc2_++;
+            }
+            if (this.mapId < 0) {
+                throw new Error('Forbidden value (' + this.mapId + ') on element mapId.');
+            }
+            param1.writeInt(this.mapId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameMapMovementRequestMessage(param1);
+        }
+
+        public deserializeAs_GameMapMovementRequestMessage(param1: ICustomDataInput): void {
+            var _loc4_: number = 0;
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = param1.readShort();
+                if (_loc4_ < 0) {
+                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of keyMovements.');
+                }
+                this.keyMovements.push(_loc4_);
+                _loc3_++;
+            }
+            this.mapId = param1.readInt();
+            if (this.mapId < 0) {
+                throw new Error('Forbidden value (' + this.mapId + ') on element of GameMapMovementRequestMessage.mapId.');
+            }
 
         }
     }
@@ -14158,150 +16145,6 @@ module Protocol {
         }
 
         public deserializeAs_GameMapMovementConfirmMessage(param1: ICustomDataInput): void {
-
-        }
-    }
-    export class GameMapMovementMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 951;
-
-        keyMovements: number[];
-        actorId: number;
-
-        constructor() {
-            this.keyMovements = [];
-            this.actorId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameMapMovementMessage.ID;
-        }
-
-        public reset(): void {
-            this.keyMovements = [];
-            this.actorId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameMapMovementMessage(param1);
-        }
-
-        public serializeAs_GameMapMovementMessage(param1: ICustomDataOutput): void {
-            param1.writeShort(this.keyMovements.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.keyMovements.length) {
-                if (this.keyMovements[_loc2_] < 0) {
-                    throw new Error('Forbidden value (' + this.keyMovements[_loc2_] + ') on element 1 (starting at 1) of keyMovements.');
-                }
-                param1.writeShort(this.keyMovements[_loc2_]);
-                _loc2_++;
-            }
-            param1.writeInt(this.actorId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameMapMovementMessage(param1);
-        }
-
-        public deserializeAs_GameMapMovementMessage(param1: ICustomDataInput): void {
-            var _loc4_: number = 0;
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = param1.readShort();
-                if (_loc4_ < 0) {
-                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of keyMovements.');
-                }
-                this.keyMovements.push(_loc4_);
-                _loc3_++;
-            }
-            this.actorId = param1.readInt();
-
-        }
-    }
-    export class GameMapMovementRequestMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 950;
-
-        keyMovements: number[];
-        mapId: number;
-
-        constructor() {
-            this.keyMovements = [];
-            this.mapId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameMapMovementRequestMessage.ID;
-        }
-
-        public reset(): void {
-            this.keyMovements = [];
-            this.mapId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameMapMovementRequestMessage(param1);
-        }
-
-        public serializeAs_GameMapMovementRequestMessage(param1: ICustomDataOutput): void {
-            param1.writeShort(this.keyMovements.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.keyMovements.length) {
-                if (this.keyMovements[_loc2_] < 0) {
-                    throw new Error('Forbidden value (' + this.keyMovements[_loc2_] + ') on element 1 (starting at 1) of keyMovements.');
-                }
-                param1.writeShort(this.keyMovements[_loc2_]);
-                _loc2_++;
-            }
-            if (this.mapId < 0) {
-                throw new Error('Forbidden value (' + this.mapId + ') on element mapId.');
-            }
-            param1.writeInt(this.mapId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameMapMovementRequestMessage(param1);
-        }
-
-        public deserializeAs_GameMapMovementRequestMessage(param1: ICustomDataInput): void {
-            var _loc4_: number = 0;
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = param1.readShort();
-                if (_loc4_ < 0) {
-                    throw new Error('Forbidden value (' + _loc4_ + ') on elements of keyMovements.');
-                }
-                this.keyMovements.push(_loc4_);
-                _loc3_++;
-            }
-            this.mapId = param1.readInt();
-            if (this.mapId < 0) {
-                throw new Error('Forbidden value (' + this.mapId + ') on element of GameMapMovementRequestMessage.mapId.');
-            }
 
         }
     }
@@ -15949,6 +17792,123 @@ module Protocol {
 
         }
     }
+    export class GameFightSpectateMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 6069;
+
+        effects: FightDispellableEffectExtendedInformations[];
+        marks: GameActionMark[];
+        gameTurn: number;
+        fightStart: number;
+        idols: Idol[];
+
+        constructor() {
+            this.effects = [];
+            this.marks = [];
+            this.gameTurn = 0;
+            this.fightStart = 0;
+            this.idols = [];
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameFightSpectateMessage.ID;
+        }
+
+        public reset(): void {
+            this.effects = [];
+            this.marks = [];
+            this.gameTurn = 0;
+            this.fightStart = 0;
+            this.idols = [];
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameFightSpectateMessage(param1);
+        }
+
+        public serializeAs_GameFightSpectateMessage(param1: ICustomDataOutput): void {
+            param1.writeShort(this.effects.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.effects.length) {
+                (this.effects[_loc2_]).serializeAs_FightDispellableEffectExtendedInformations(param1);
+                _loc2_++;
+            }
+            param1.writeShort(this.marks.length);
+            var _loc3_: number = 0;
+            while (_loc3_ < this.marks.length) {
+                (this.marks[_loc3_]).serializeAs_GameActionMark(param1);
+                _loc3_++;
+            }
+            if (this.gameTurn < 0) {
+                throw new Error('Forbidden value (' + this.gameTurn + ') on element gameTurn.');
+            }
+            param1.writeVarShort(this.gameTurn);
+            if (this.fightStart < 0) {
+                throw new Error('Forbidden value (' + this.fightStart + ') on element fightStart.');
+            }
+            param1.writeInt(this.fightStart);
+            param1.writeShort(this.idols.length);
+            var _loc4_: number = 0;
+            while (_loc4_ < this.idols.length) {
+                (this.idols[_loc4_]).serializeAs_Idol(param1);
+                _loc4_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameFightSpectateMessage(param1);
+        }
+
+        public deserializeAs_GameFightSpectateMessage(param1: ICustomDataInput): void {
+            var _loc8_: FightDispellableEffectExtendedInformations = null;
+            var _loc9_: GameActionMark = null;
+            var _loc10_: Idol = null;
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc8_ = new FightDispellableEffectExtendedInformations();
+                _loc8_.deserialize(param1);
+                this.effects.push(_loc8_);
+                _loc3_++;
+            }
+            var _loc4_: number = param1.readUnsignedShort();
+            var _loc5_: number = 0;
+            while (_loc5_ < _loc4_) {
+            _loc9_ = new GameActionMark();
+                _loc9_.deserialize(param1);
+                this.marks.push(_loc9_);
+                _loc5_++;
+            }
+            this.gameTurn = param1.readVarUhShort();
+            if (this.gameTurn < 0) {
+                throw new Error('Forbidden value (' + this.gameTurn + ') on element of GameFightSpectateMessage.gameTurn.');
+            }
+            this.fightStart = param1.readInt();
+            if (this.fightStart < 0) {
+                throw new Error('Forbidden value (' + this.fightStart + ') on element of GameFightSpectateMessage.fightStart.');
+            }
+            var _loc6_: number = param1.readUnsignedShort();
+            var _loc7_: number = 0;
+            while (_loc7_ < _loc6_) {
+            _loc10_ = new Idol();
+                _loc10_.deserialize(param1);
+                this.idols.push(_loc10_);
+                _loc7_++;
+            }
+
+        }
+    }
     export class GameFightResumeMessage extends GameFightSpectateMessage {
         public static ID: number = 6067;
 
@@ -16089,123 +18049,6 @@ module Protocol {
                 _loc4_.deserialize(param1);
                 this.slavesInfo.push(_loc4_);
                 _loc3_++;
-            }
-
-        }
-    }
-    export class GameFightSpectateMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 6069;
-
-        effects: FightDispellableEffectExtendedInformations[];
-        marks: GameActionMark[];
-        gameTurn: number;
-        fightStart: number;
-        idols: Idol[];
-
-        constructor() {
-            this.effects = [];
-            this.marks = [];
-            this.gameTurn = 0;
-            this.fightStart = 0;
-            this.idols = [];
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameFightSpectateMessage.ID;
-        }
-
-        public reset(): void {
-            this.effects = [];
-            this.marks = [];
-            this.gameTurn = 0;
-            this.fightStart = 0;
-            this.idols = [];
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameFightSpectateMessage(param1);
-        }
-
-        public serializeAs_GameFightSpectateMessage(param1: ICustomDataOutput): void {
-            param1.writeShort(this.effects.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.effects.length) {
-                (this.effects[_loc2_]).serializeAs_FightDispellableEffectExtendedInformations(param1);
-                _loc2_++;
-            }
-            param1.writeShort(this.marks.length);
-            var _loc3_: number = 0;
-            while (_loc3_ < this.marks.length) {
-                (this.marks[_loc3_]).serializeAs_GameActionMark(param1);
-                _loc3_++;
-            }
-            if (this.gameTurn < 0) {
-                throw new Error('Forbidden value (' + this.gameTurn + ') on element gameTurn.');
-            }
-            param1.writeVarShort(this.gameTurn);
-            if (this.fightStart < 0) {
-                throw new Error('Forbidden value (' + this.fightStart + ') on element fightStart.');
-            }
-            param1.writeInt(this.fightStart);
-            param1.writeShort(this.idols.length);
-            var _loc4_: number = 0;
-            while (_loc4_ < this.idols.length) {
-                (this.idols[_loc4_]).serializeAs_Idol(param1);
-                _loc4_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameFightSpectateMessage(param1);
-        }
-
-        public deserializeAs_GameFightSpectateMessage(param1: ICustomDataInput): void {
-            var _loc8_: FightDispellableEffectExtendedInformations = null;
-            var _loc9_: GameActionMark = null;
-            var _loc10_: Idol = null;
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc8_ = new FightDispellableEffectExtendedInformations();
-                _loc8_.deserialize(param1);
-                this.effects.push(_loc8_);
-                _loc3_++;
-            }
-            var _loc4_: number = param1.readUnsignedShort();
-            var _loc5_: number = 0;
-            while (_loc5_ < _loc4_) {
-            _loc9_ = new GameActionMark();
-                _loc9_.deserialize(param1);
-                this.marks.push(_loc9_);
-                _loc5_++;
-            }
-            this.gameTurn = param1.readVarUhShort();
-            if (this.gameTurn < 0) {
-                throw new Error('Forbidden value (' + this.gameTurn + ') on element of GameFightSpectateMessage.gameTurn.');
-            }
-            this.fightStart = param1.readInt();
-            if (this.fightStart < 0) {
-                throw new Error('Forbidden value (' + this.fightStart + ') on element of GameFightSpectateMessage.fightStart.');
-            }
-            var _loc6_: number = param1.readUnsignedShort();
-            var _loc7_: number = 0;
-            while (_loc7_ < _loc6_) {
-            _loc10_ = new Idol();
-                _loc10_.deserialize(param1);
-                this.idols.push(_loc10_);
-                _loc7_++;
             }
 
         }
@@ -16754,60 +18597,6 @@ module Protocol {
 
         }
     }
-    export class GameFightTurnResumeMessage extends GameFightTurnStartMessage {
-        public static ID: number = 6307;
-
-        remainingTime: number;
-
-        constructor() {
-            this.remainingTime = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return GameFightTurnResumeMessage.ID;
-        }
-
-        public reset(): void {
-            this.remainingTime = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameFightTurnResumeMessage(param1);
-        }
-
-        public serializeAs_GameFightTurnResumeMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_GameFightTurnStartMessage(param1);
-            if (this.remainingTime < 0) {
-                throw new Error('Forbidden value (' + this.remainingTime + ') on element remainingTime.');
-            }
-            param1.writeVarInt(this.remainingTime);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameFightTurnResumeMessage(param1);
-        }
-
-        public deserializeAs_GameFightTurnResumeMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.remainingTime = param1.readVarUhInt();
-            if (this.remainingTime < 0) {
-                throw new Error('Forbidden value (' + this.remainingTime + ') on element of GameFightTurnResumeMessage.remainingTime.');
-            }
-
-        }
-    }
     export class GameFightTurnStartMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 714;
 
@@ -16861,6 +18650,60 @@ module Protocol {
             this.waitTime = param1.readVarUhInt();
             if (this.waitTime < 0) {
                 throw new Error('Forbidden value (' + this.waitTime + ') on element of GameFightTurnStartMessage.waitTime.');
+            }
+
+        }
+    }
+    export class GameFightTurnResumeMessage extends GameFightTurnStartMessage {
+        public static ID: number = 6307;
+
+        remainingTime: number;
+
+        constructor() {
+            this.remainingTime = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return GameFightTurnResumeMessage.ID;
+        }
+
+        public reset(): void {
+            this.remainingTime = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameFightTurnResumeMessage(param1);
+        }
+
+        public serializeAs_GameFightTurnResumeMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_GameFightTurnStartMessage(param1);
+            if (this.remainingTime < 0) {
+                throw new Error('Forbidden value (' + this.remainingTime + ') on element remainingTime.');
+            }
+            param1.writeVarInt(this.remainingTime);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameFightTurnResumeMessage(param1);
+        }
+
+        public deserializeAs_GameFightTurnResumeMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.remainingTime = param1.readVarUhInt();
+            if (this.remainingTime < 0) {
+                throw new Error('Forbidden value (' + this.remainingTime + ') on element of GameFightTurnResumeMessage.remainingTime.');
             }
 
         }
@@ -19421,55 +21264,6 @@ module Protocol {
 
         }
     }
-    export class MapComplementaryInformationsDataInHouseMessage extends MapComplementaryInformationsDataMessage {
-        public static ID: number = 6130;
-
-        currentHouse: HouseInformationsInside;
-
-        constructor() {
-            this.currentHouse = new HouseInformationsInside();
-            super();
-        }
-
-        public getMessageId(): number {
-            return MapComplementaryInformationsDataInHouseMessage.ID;
-        }
-
-        public reset(): void {
-            this.currentHouse = new HouseInformationsInside();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_MapComplementaryInformationsDataInHouseMessage(param1);
-        }
-
-        public serializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_MapComplementaryInformationsDataMessage(param1);
-            this.currentHouse.serializeAs_HouseInformationsInside(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_MapComplementaryInformationsDataInHouseMessage(param1);
-        }
-
-        public deserializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.currentHouse = new HouseInformationsInside();
-            this.currentHouse.deserialize(param1);
-
-        }
-    }
     export class MapComplementaryInformationsDataMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 226;
 
@@ -19647,6 +21441,55 @@ module Protocol {
                 this.fights.push(_loc22_);
                 _loc13_++;
             }
+
+        }
+    }
+    export class MapComplementaryInformationsDataInHouseMessage extends MapComplementaryInformationsDataMessage {
+        public static ID: number = 6130;
+
+        currentHouse: HouseInformationsInside;
+
+        constructor() {
+            this.currentHouse = new HouseInformationsInside();
+            super();
+        }
+
+        public getMessageId(): number {
+            return MapComplementaryInformationsDataInHouseMessage.ID;
+        }
+
+        public reset(): void {
+            this.currentHouse = new HouseInformationsInside();
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_MapComplementaryInformationsDataInHouseMessage(param1);
+        }
+
+        public serializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_MapComplementaryInformationsDataMessage(param1);
+            this.currentHouse.serializeAs_HouseInformationsInside(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_MapComplementaryInformationsDataInHouseMessage(param1);
+        }
+
+        public deserializeAs_MapComplementaryInformationsDataInHouseMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.currentHouse = new HouseInformationsInside();
+            this.currentHouse.deserialize(param1);
 
         }
     }
@@ -19878,67 +21721,6 @@ module Protocol {
 
         }
     }
-    export class MapRunningFightDetailsExtendedMessage extends MapRunningFightDetailsMessage {
-        public static ID: number = 6500;
-
-        namedPartyTeams: NamedPartyTeam[];
-
-        constructor() {
-            this.namedPartyTeams = [];
-            super();
-        }
-
-        public getMessageId(): number {
-            return MapRunningFightDetailsExtendedMessage.ID;
-        }
-
-        public reset(): void {
-            this.namedPartyTeams = [];
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_MapRunningFightDetailsExtendedMessage(param1);
-        }
-
-        public serializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_MapRunningFightDetailsMessage(param1);
-            param1.writeShort(this.namedPartyTeams.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.namedPartyTeams.length) {
-                (this.namedPartyTeams[_loc2_]).serializeAs_NamedPartyTeam(param1);
-                _loc2_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_MapRunningFightDetailsExtendedMessage(param1);
-        }
-
-        public deserializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataInput): void {
-            var _loc4_: NamedPartyTeam = null;
-            super.deserialize(param1);
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = new NamedPartyTeam();
-                _loc4_.deserialize(param1);
-                this.namedPartyTeams.push(_loc4_);
-                _loc3_++;
-            }
-
-        }
-    }
     export class MapRunningFightDetailsMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 5751;
 
@@ -20029,6 +21811,67 @@ module Protocol {
                 _loc9_.deserialize(param1);
                 this.defenders.push(_loc9_);
                 _loc5_++;
+            }
+
+        }
+    }
+    export class MapRunningFightDetailsExtendedMessage extends MapRunningFightDetailsMessage {
+        public static ID: number = 6500;
+
+        namedPartyTeams: NamedPartyTeam[];
+
+        constructor() {
+            this.namedPartyTeams = [];
+            super();
+        }
+
+        public getMessageId(): number {
+            return MapRunningFightDetailsExtendedMessage.ID;
+        }
+
+        public reset(): void {
+            this.namedPartyTeams = [];
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_MapRunningFightDetailsExtendedMessage(param1);
+        }
+
+        public serializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_MapRunningFightDetailsMessage(param1);
+            param1.writeShort(this.namedPartyTeams.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.namedPartyTeams.length) {
+                (this.namedPartyTeams[_loc2_]).serializeAs_NamedPartyTeam(param1);
+                _loc2_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_MapRunningFightDetailsExtendedMessage(param1);
+        }
+
+        public deserializeAs_MapRunningFightDetailsExtendedMessage(param1: ICustomDataInput): void {
+            var _loc4_: NamedPartyTeam = null;
+            super.deserialize(param1);
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = new NamedPartyTeam();
+                _loc4_.deserialize(param1);
+                this.namedPartyTeams.push(_loc4_);
+                _loc3_++;
             }
 
         }
@@ -22596,6 +24439,52 @@ module Protocol {
 
         }
     }
+    export class LockableChangeCodeMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5666;
+
+        code: string;
+
+        constructor() {
+            this.code = '';
+            super();
+        }
+
+        public getMessageId(): number {
+            return LockableChangeCodeMessage.ID;
+        }
+
+        public reset(): void {
+            this.code = '';
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_LockableChangeCodeMessage(param1);
+        }
+
+        public serializeAs_LockableChangeCodeMessage(param1: ICustomDataOutput): void {
+            param1.writeUTF(this.code);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_LockableChangeCodeMessage(param1);
+        }
+
+        public deserializeAs_LockableChangeCodeMessage(param1: ICustomDataInput): void {
+            this.code = param1.readUTF();
+
+        }
+    }
     export class HouseLockFromInsideRequestMessage extends LockableChangeCodeMessage {
         public static ID: number = 5885;
 
@@ -22691,52 +24580,6 @@ module Protocol {
 
         }
     }
-    export class HouseSellFromInsideRequestMessage extends HouseSellRequestMessage {
-        public static ID: number = 5884;
-
-
-
-        constructor() {
-
-            super();
-        }
-
-        public getMessageId(): number {
-            return HouseSellFromInsideRequestMessage.ID;
-        }
-
-        public reset(): void {
-
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_HouseSellFromInsideRequestMessage(param1);
-        }
-
-        public serializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_HouseSellRequestMessage(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_HouseSellFromInsideRequestMessage(param1);
-        }
-
-        public deserializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-
-        }
-    }
     export class HouseSellRequestMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 5697;
 
@@ -22786,6 +24629,52 @@ module Protocol {
             if (this.amount < 0) {
                 throw new Error('Forbidden value (' + this.amount + ') on element of HouseSellRequestMessage.amount.');
             }
+
+        }
+    }
+    export class HouseSellFromInsideRequestMessage extends HouseSellRequestMessage {
+        public static ID: number = 5884;
+
+
+
+        constructor() {
+
+            super();
+        }
+
+        public getMessageId(): number {
+            return HouseSellFromInsideRequestMessage.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_HouseSellFromInsideRequestMessage(param1);
+        }
+
+        public serializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_HouseSellRequestMessage(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_HouseSellFromInsideRequestMessage(param1);
+        }
+
+        public deserializeAs_HouseSellFromInsideRequestMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
 
         }
     }
@@ -23973,6 +25862,53 @@ module Protocol {
 
         }
     }
+    export class JobExperienceUpdateMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5654;
+
+        experiencesUpdate: JobExperience;
+
+        constructor() {
+            this.experiencesUpdate = new JobExperience();
+            super();
+        }
+
+        public getMessageId(): number {
+            return JobExperienceUpdateMessage.ID;
+        }
+
+        public reset(): void {
+            this.experiencesUpdate = new JobExperience();
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_JobExperienceUpdateMessage(param1);
+        }
+
+        public serializeAs_JobExperienceUpdateMessage(param1: ICustomDataOutput): void {
+            this.experiencesUpdate.serializeAs_JobExperience(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_JobExperienceUpdateMessage(param1);
+        }
+
+        public deserializeAs_JobExperienceUpdateMessage(param1: ICustomDataInput): void {
+            this.experiencesUpdate = new JobExperience();
+            this.experiencesUpdate.deserialize(param1);
+
+        }
+    }
     export class JobExperienceOtherPlayerUpdateMessage extends JobExperienceUpdateMessage {
         public static ID: number = 6599;
 
@@ -24024,53 +25960,6 @@ module Protocol {
             if (this.playerId < 0) {
                 throw new Error('Forbidden value (' + this.playerId + ') on element of JobExperienceOtherPlayerUpdateMessage.playerId.');
             }
-
-        }
-    }
-    export class JobExperienceUpdateMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5654;
-
-        experiencesUpdate: JobExperience;
-
-        constructor() {
-            this.experiencesUpdate = new JobExperience();
-            super();
-        }
-
-        public getMessageId(): number {
-            return JobExperienceUpdateMessage.ID;
-        }
-
-        public reset(): void {
-            this.experiencesUpdate = new JobExperience();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_JobExperienceUpdateMessage(param1);
-        }
-
-        public serializeAs_JobExperienceUpdateMessage(param1: ICustomDataOutput): void {
-            this.experiencesUpdate.serializeAs_JobExperience(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_JobExperienceUpdateMessage(param1);
-        }
-
-        public deserializeAs_JobExperienceUpdateMessage(param1: ICustomDataInput): void {
-            this.experiencesUpdate = new JobExperience();
-            this.experiencesUpdate.deserialize(param1);
 
         }
     }
@@ -24206,52 +26095,6 @@ module Protocol {
                 this.skills.push(_loc4_);
                 _loc3_++;
             }
-
-        }
-    }
-    export class LockableChangeCodeMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5666;
-
-        code: string;
-
-        constructor() {
-            this.code = '';
-            super();
-        }
-
-        public getMessageId(): number {
-            return LockableChangeCodeMessage.ID;
-        }
-
-        public reset(): void {
-            this.code = '';
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_LockableChangeCodeMessage(param1);
-        }
-
-        public serializeAs_LockableChangeCodeMessage(param1: ICustomDataOutput): void {
-            param1.writeUTF(this.code);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_LockableChangeCodeMessage(param1);
-        }
-
-        public deserializeAs_LockableChangeCodeMessage(param1: ICustomDataInput): void {
-            this.code = param1.readUTF();
 
         }
     }
@@ -24607,6 +26450,189 @@ module Protocol {
         }
 
         public deserializeAs_AlliancePrismDialogQuestionMessage(param1: ICustomDataInput): void {
+
+        }
+    }
+    export class TaxCollectorDialogQuestionBasicMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5619;
+
+        guildInfo: BasicGuildInformations;
+
+        constructor() {
+            this.guildInfo = new BasicGuildInformations();
+            super();
+        }
+
+        public getMessageId(): number {
+            return TaxCollectorDialogQuestionBasicMessage.ID;
+        }
+
+        public reset(): void {
+            this.guildInfo = new BasicGuildInformations();
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
+        }
+
+        public serializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataOutput): void {
+            this.guildInfo.serializeAs_BasicGuildInformations(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
+        }
+
+        public deserializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataInput): void {
+            this.guildInfo = new BasicGuildInformations();
+            this.guildInfo.deserialize(param1);
+
+        }
+    }
+    export class TaxCollectorDialogQuestionExtendedMessage extends TaxCollectorDialogQuestionBasicMessage {
+        public static ID: number = 5615;
+
+        maxPods: number;
+        prospecting: number;
+        wisdom: number;
+        taxCollectorsCount: number;
+        taxCollectorAttack: number;
+        kamas: number;
+        experience: number;
+        pods: number;
+        itemsValue: number;
+
+        constructor() {
+            this.maxPods = 0;
+            this.prospecting = 0;
+            this.wisdom = 0;
+            this.taxCollectorsCount = 0;
+            this.taxCollectorAttack = 0;
+            this.kamas = 0;
+            this.experience = 0;
+            this.pods = 0;
+            this.itemsValue = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return TaxCollectorDialogQuestionExtendedMessage.ID;
+        }
+
+        public reset(): void {
+            this.maxPods = 0;
+            this.prospecting = 0;
+            this.wisdom = 0;
+            this.taxCollectorsCount = 0;
+            this.taxCollectorAttack = 0;
+            this.kamas = 0;
+            this.experience = 0;
+            this.pods = 0;
+            this.itemsValue = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_TaxCollectorDialogQuestionExtendedMessage(param1);
+        }
+
+        public serializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
+            if (this.maxPods < 0) {
+                throw new Error('Forbidden value (' + this.maxPods + ') on element maxPods.');
+            }
+            param1.writeVarShort(this.maxPods);
+            if (this.prospecting < 0) {
+                throw new Error('Forbidden value (' + this.prospecting + ') on element prospecting.');
+            }
+            param1.writeVarShort(this.prospecting);
+            if (this.wisdom < 0) {
+                throw new Error('Forbidden value (' + this.wisdom + ') on element wisdom.');
+            }
+            param1.writeVarShort(this.wisdom);
+            if (this.taxCollectorsCount < 0) {
+                throw new Error('Forbidden value (' + this.taxCollectorsCount + ') on element taxCollectorsCount.');
+            }
+            param1.writeByte(this.taxCollectorsCount);
+            param1.writeInt(this.taxCollectorAttack);
+            if (this.kamas < 0) {
+                throw new Error('Forbidden value (' + this.kamas + ') on element kamas.');
+            }
+            param1.writeVarInt(this.kamas);
+            if (this.experience < 0 || this.experience > 9.007199254740992E15) {
+                throw new Error('Forbidden value (' + this.experience + ') on element experience.');
+            }
+            param1.writeVarLong(this.experience);
+            if (this.pods < 0) {
+                throw new Error('Forbidden value (' + this.pods + ') on element pods.');
+            }
+            param1.writeVarInt(this.pods);
+            if (this.itemsValue < 0) {
+                throw new Error('Forbidden value (' + this.itemsValue + ') on element itemsValue.');
+            }
+            param1.writeVarInt(this.itemsValue);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_TaxCollectorDialogQuestionExtendedMessage(param1);
+        }
+
+        public deserializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.maxPods = param1.readVarUhShort();
+            if (this.maxPods < 0) {
+                throw new Error('Forbidden value (' + this.maxPods + ') on element of TaxCollectorDialogQuestionExtendedMessage.maxPods.');
+            }
+            this.prospecting = param1.readVarUhShort();
+            if (this.prospecting < 0) {
+                throw new Error('Forbidden value (' + this.prospecting + ') on element of TaxCollectorDialogQuestionExtendedMessage.prospecting.');
+            }
+            this.wisdom = param1.readVarUhShort();
+            if (this.wisdom < 0) {
+                throw new Error('Forbidden value (' + this.wisdom + ') on element of TaxCollectorDialogQuestionExtendedMessage.wisdom.');
+            }
+            this.taxCollectorsCount = param1.readByte();
+            if (this.taxCollectorsCount < 0) {
+                throw new Error('Forbidden value (' + this.taxCollectorsCount + ') on element of TaxCollectorDialogQuestionExtendedMessage.taxCollectorsCount.');
+            }
+            this.taxCollectorAttack = param1.readInt();
+            this.kamas = param1.readVarUhInt();
+            if (this.kamas < 0) {
+                throw new Error('Forbidden value (' + this.kamas + ') on element of TaxCollectorDialogQuestionExtendedMessage.kamas.');
+            }
+            this.experience = param1.readVarUhLong();
+            if (this.experience < 0 || this.experience > 9.007199254740992E15) {
+                throw new Error('Forbidden value (' + this.experience + ') on element of TaxCollectorDialogQuestionExtendedMessage.experience.');
+            }
+            this.pods = param1.readVarUhInt();
+            if (this.pods < 0) {
+                throw new Error('Forbidden value (' + this.pods + ') on element of TaxCollectorDialogQuestionExtendedMessage.pods.');
+            }
+            this.itemsValue = param1.readVarUhInt();
+            if (this.itemsValue < 0) {
+                throw new Error('Forbidden value (' + this.itemsValue + ') on element of TaxCollectorDialogQuestionExtendedMessage.itemsValue.');
+            }
 
         }
     }
@@ -25129,189 +27155,6 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.npcActionId + ') on element of NpcGenericActionRequestMessage.npcActionId.');
             }
             this.npcMapId = param1.readInt();
-
-        }
-    }
-    export class TaxCollectorDialogQuestionBasicMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5619;
-
-        guildInfo: BasicGuildInformations;
-
-        constructor() {
-            this.guildInfo = new BasicGuildInformations();
-            super();
-        }
-
-        public getMessageId(): number {
-            return TaxCollectorDialogQuestionBasicMessage.ID;
-        }
-
-        public reset(): void {
-            this.guildInfo = new BasicGuildInformations();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
-        }
-
-        public serializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataOutput): void {
-            this.guildInfo.serializeAs_BasicGuildInformations(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
-        }
-
-        public deserializeAs_TaxCollectorDialogQuestionBasicMessage(param1: ICustomDataInput): void {
-            this.guildInfo = new BasicGuildInformations();
-            this.guildInfo.deserialize(param1);
-
-        }
-    }
-    export class TaxCollectorDialogQuestionExtendedMessage extends TaxCollectorDialogQuestionBasicMessage {
-        public static ID: number = 5615;
-
-        maxPods: number;
-        prospecting: number;
-        wisdom: number;
-        taxCollectorsCount: number;
-        taxCollectorAttack: number;
-        kamas: number;
-        experience: number;
-        pods: number;
-        itemsValue: number;
-
-        constructor() {
-            this.maxPods = 0;
-            this.prospecting = 0;
-            this.wisdom = 0;
-            this.taxCollectorsCount = 0;
-            this.taxCollectorAttack = 0;
-            this.kamas = 0;
-            this.experience = 0;
-            this.pods = 0;
-            this.itemsValue = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return TaxCollectorDialogQuestionExtendedMessage.ID;
-        }
-
-        public reset(): void {
-            this.maxPods = 0;
-            this.prospecting = 0;
-            this.wisdom = 0;
-            this.taxCollectorsCount = 0;
-            this.taxCollectorAttack = 0;
-            this.kamas = 0;
-            this.experience = 0;
-            this.pods = 0;
-            this.itemsValue = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_TaxCollectorDialogQuestionExtendedMessage(param1);
-        }
-
-        public serializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_TaxCollectorDialogQuestionBasicMessage(param1);
-            if (this.maxPods < 0) {
-                throw new Error('Forbidden value (' + this.maxPods + ') on element maxPods.');
-            }
-            param1.writeVarShort(this.maxPods);
-            if (this.prospecting < 0) {
-                throw new Error('Forbidden value (' + this.prospecting + ') on element prospecting.');
-            }
-            param1.writeVarShort(this.prospecting);
-            if (this.wisdom < 0) {
-                throw new Error('Forbidden value (' + this.wisdom + ') on element wisdom.');
-            }
-            param1.writeVarShort(this.wisdom);
-            if (this.taxCollectorsCount < 0) {
-                throw new Error('Forbidden value (' + this.taxCollectorsCount + ') on element taxCollectorsCount.');
-            }
-            param1.writeByte(this.taxCollectorsCount);
-            param1.writeInt(this.taxCollectorAttack);
-            if (this.kamas < 0) {
-                throw new Error('Forbidden value (' + this.kamas + ') on element kamas.');
-            }
-            param1.writeVarInt(this.kamas);
-            if (this.experience < 0 || this.experience > 9.007199254740992E15) {
-                throw new Error('Forbidden value (' + this.experience + ') on element experience.');
-            }
-            param1.writeVarLong(this.experience);
-            if (this.pods < 0) {
-                throw new Error('Forbidden value (' + this.pods + ') on element pods.');
-            }
-            param1.writeVarInt(this.pods);
-            if (this.itemsValue < 0) {
-                throw new Error('Forbidden value (' + this.itemsValue + ') on element itemsValue.');
-            }
-            param1.writeVarInt(this.itemsValue);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_TaxCollectorDialogQuestionExtendedMessage(param1);
-        }
-
-        public deserializeAs_TaxCollectorDialogQuestionExtendedMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.maxPods = param1.readVarUhShort();
-            if (this.maxPods < 0) {
-                throw new Error('Forbidden value (' + this.maxPods + ') on element of TaxCollectorDialogQuestionExtendedMessage.maxPods.');
-            }
-            this.prospecting = param1.readVarUhShort();
-            if (this.prospecting < 0) {
-                throw new Error('Forbidden value (' + this.prospecting + ') on element of TaxCollectorDialogQuestionExtendedMessage.prospecting.');
-            }
-            this.wisdom = param1.readVarUhShort();
-            if (this.wisdom < 0) {
-                throw new Error('Forbidden value (' + this.wisdom + ') on element of TaxCollectorDialogQuestionExtendedMessage.wisdom.');
-            }
-            this.taxCollectorsCount = param1.readByte();
-            if (this.taxCollectorsCount < 0) {
-                throw new Error('Forbidden value (' + this.taxCollectorsCount + ') on element of TaxCollectorDialogQuestionExtendedMessage.taxCollectorsCount.');
-            }
-            this.taxCollectorAttack = param1.readInt();
-            this.kamas = param1.readVarUhInt();
-            if (this.kamas < 0) {
-                throw new Error('Forbidden value (' + this.kamas + ') on element of TaxCollectorDialogQuestionExtendedMessage.kamas.');
-            }
-            this.experience = param1.readVarUhLong();
-            if (this.experience < 0 || this.experience > 9.007199254740992E15) {
-                throw new Error('Forbidden value (' + this.experience + ') on element of TaxCollectorDialogQuestionExtendedMessage.experience.');
-            }
-            this.pods = param1.readVarUhInt();
-            if (this.pods < 0) {
-                throw new Error('Forbidden value (' + this.pods + ') on element of TaxCollectorDialogQuestionExtendedMessage.pods.');
-            }
-            this.itemsValue = param1.readVarUhInt();
-            if (this.itemsValue < 0) {
-                throw new Error('Forbidden value (' + this.itemsValue + ') on element of TaxCollectorDialogQuestionExtendedMessage.itemsValue.');
-            }
 
         }
     }
@@ -25962,52 +27805,6 @@ module Protocol {
 
         }
     }
-    export class AbstractPartyEventMessage extends AbstractPartyMessage {
-        public static ID: number = 6273;
-
-
-
-        constructor() {
-
-            super();
-        }
-
-        public getMessageId(): number {
-            return AbstractPartyEventMessage.ID;
-        }
-
-        public reset(): void {
-
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_AbstractPartyEventMessage(param1);
-        }
-
-        public serializeAs_AbstractPartyEventMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractPartyMessage(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_AbstractPartyEventMessage(param1);
-        }
-
-        public deserializeAs_AbstractPartyEventMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-
-        }
-    }
     export class AbstractPartyMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 6274;
 
@@ -26057,6 +27854,52 @@ module Protocol {
             if (this.partyId < 0) {
                 throw new Error('Forbidden value (' + this.partyId + ') on element of AbstractPartyMessage.partyId.');
             }
+
+        }
+    }
+    export class AbstractPartyEventMessage extends AbstractPartyMessage {
+        public static ID: number = 6273;
+
+
+
+        constructor() {
+
+            super();
+        }
+
+        public getMessageId(): number {
+            return AbstractPartyEventMessage.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_AbstractPartyEventMessage(param1);
+        }
+
+        public serializeAs_AbstractPartyEventMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractPartyMessage(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_AbstractPartyEventMessage(param1);
+        }
+
+        public deserializeAs_AbstractPartyEventMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
 
         }
     }
@@ -27084,6 +28927,52 @@ module Protocol {
 
         }
     }
+    export class PartyInvitationRequestMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5585;
+
+        name: string;
+
+        constructor() {
+            this.name = '';
+            super();
+        }
+
+        public getMessageId(): number {
+            return PartyInvitationRequestMessage.ID;
+        }
+
+        public reset(): void {
+            this.name = '';
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyInvitationRequestMessage(param1);
+        }
+
+        public serializeAs_PartyInvitationRequestMessage(param1: ICustomDataOutput): void {
+            param1.writeUTF(this.name);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyInvitationRequestMessage(param1);
+        }
+
+        public deserializeAs_PartyInvitationRequestMessage(param1: ICustomDataInput): void {
+            this.name = param1.readUTF();
+
+        }
+    }
     export class PartyInvitationArenaRequestMessage extends PartyInvitationRequestMessage {
         public static ID: number = 6283;
 
@@ -27420,6 +29309,100 @@ module Protocol {
 
         }
     }
+    export class PartyInvitationMessage extends AbstractPartyMessage {
+        public static ID: number = 5586;
+
+        partyType: number;
+        partyName: string;
+        maxParticipants: number;
+        fromId: number;
+        fromName: string;
+        toId: number;
+
+        constructor() {
+            this.partyType = 0;
+            this.partyName = '';
+            this.maxParticipants = 0;
+            this.fromId = 0;
+            this.fromName = '';
+            this.toId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return PartyInvitationMessage.ID;
+        }
+
+        public reset(): void {
+            this.partyType = 0;
+            this.partyName = '';
+            this.maxParticipants = 0;
+            this.fromId = 0;
+            this.fromName = '';
+            this.toId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyInvitationMessage(param1);
+        }
+
+        public serializeAs_PartyInvitationMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractPartyMessage(param1);
+            param1.writeByte(this.partyType);
+            param1.writeUTF(this.partyName);
+            if (this.maxParticipants < 0) {
+                throw new Error('Forbidden value (' + this.maxParticipants + ') on element maxParticipants.');
+            }
+            param1.writeByte(this.maxParticipants);
+            if (this.fromId < 0) {
+                throw new Error('Forbidden value (' + this.fromId + ') on element fromId.');
+            }
+            param1.writeVarInt(this.fromId);
+            param1.writeUTF(this.fromName);
+            if (this.toId < 0) {
+                throw new Error('Forbidden value (' + this.toId + ') on element toId.');
+            }
+            param1.writeVarInt(this.toId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyInvitationMessage(param1);
+        }
+
+        public deserializeAs_PartyInvitationMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.partyType = param1.readByte();
+            if (this.partyType < 0) {
+                throw new Error('Forbidden value (' + this.partyType + ') on element of PartyInvitationMessage.partyType.');
+            }
+            this.partyName = param1.readUTF();
+            this.maxParticipants = param1.readByte();
+            if (this.maxParticipants < 0) {
+                throw new Error('Forbidden value (' + this.maxParticipants + ') on element of PartyInvitationMessage.maxParticipants.');
+            }
+            this.fromId = param1.readVarUhInt();
+            if (this.fromId < 0) {
+                throw new Error('Forbidden value (' + this.fromId + ') on element of PartyInvitationMessage.fromId.');
+            }
+            this.fromName = param1.readUTF();
+            this.toId = param1.readVarUhInt();
+            if (this.toId < 0) {
+                throw new Error('Forbidden value (' + this.toId + ') on element of PartyInvitationMessage.toId.');
+            }
+
+        }
+    }
     export class PartyInvitationDungeonMessage extends PartyInvitationMessage {
         public static ID: number = 6244;
 
@@ -27525,146 +29508,6 @@ module Protocol {
             if (this.dungeonId < 0) {
                 throw new Error('Forbidden value (' + this.dungeonId + ') on element of PartyInvitationDungeonRequestMessage.dungeonId.');
             }
-
-        }
-    }
-    export class PartyInvitationMessage extends AbstractPartyMessage {
-        public static ID: number = 5586;
-
-        partyType: number;
-        partyName: string;
-        maxParticipants: number;
-        fromId: number;
-        fromName: string;
-        toId: number;
-
-        constructor() {
-            this.partyType = 0;
-            this.partyName = '';
-            this.maxParticipants = 0;
-            this.fromId = 0;
-            this.fromName = '';
-            this.toId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return PartyInvitationMessage.ID;
-        }
-
-        public reset(): void {
-            this.partyType = 0;
-            this.partyName = '';
-            this.maxParticipants = 0;
-            this.fromId = 0;
-            this.fromName = '';
-            this.toId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyInvitationMessage(param1);
-        }
-
-        public serializeAs_PartyInvitationMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractPartyMessage(param1);
-            param1.writeByte(this.partyType);
-            param1.writeUTF(this.partyName);
-            if (this.maxParticipants < 0) {
-                throw new Error('Forbidden value (' + this.maxParticipants + ') on element maxParticipants.');
-            }
-            param1.writeByte(this.maxParticipants);
-            if (this.fromId < 0) {
-                throw new Error('Forbidden value (' + this.fromId + ') on element fromId.');
-            }
-            param1.writeVarInt(this.fromId);
-            param1.writeUTF(this.fromName);
-            if (this.toId < 0) {
-                throw new Error('Forbidden value (' + this.toId + ') on element toId.');
-            }
-            param1.writeVarInt(this.toId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyInvitationMessage(param1);
-        }
-
-        public deserializeAs_PartyInvitationMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.partyType = param1.readByte();
-            if (this.partyType < 0) {
-                throw new Error('Forbidden value (' + this.partyType + ') on element of PartyInvitationMessage.partyType.');
-            }
-            this.partyName = param1.readUTF();
-            this.maxParticipants = param1.readByte();
-            if (this.maxParticipants < 0) {
-                throw new Error('Forbidden value (' + this.maxParticipants + ') on element of PartyInvitationMessage.maxParticipants.');
-            }
-            this.fromId = param1.readVarUhInt();
-            if (this.fromId < 0) {
-                throw new Error('Forbidden value (' + this.fromId + ') on element of PartyInvitationMessage.fromId.');
-            }
-            this.fromName = param1.readUTF();
-            this.toId = param1.readVarUhInt();
-            if (this.toId < 0) {
-                throw new Error('Forbidden value (' + this.toId + ') on element of PartyInvitationMessage.toId.');
-            }
-
-        }
-    }
-    export class PartyInvitationRequestMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5585;
-
-        name: string;
-
-        constructor() {
-            this.name = '';
-            super();
-        }
-
-        public getMessageId(): number {
-            return PartyInvitationRequestMessage.ID;
-        }
-
-        public reset(): void {
-            this.name = '';
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyInvitationRequestMessage(param1);
-        }
-
-        public serializeAs_PartyInvitationRequestMessage(param1: ICustomDataOutput): void {
-            param1.writeUTF(this.name);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyInvitationRequestMessage(param1);
-        }
-
-        public deserializeAs_PartyInvitationRequestMessage(param1: ICustomDataInput): void {
-            this.name = param1.readUTF();
 
         }
     }
@@ -28153,6 +29996,60 @@ module Protocol {
 
         }
     }
+    export class PartyMemberRemoveMessage extends AbstractPartyEventMessage {
+        public static ID: number = 5579;
+
+        leavingPlayerId: number;
+
+        constructor() {
+            this.leavingPlayerId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return PartyMemberRemoveMessage.ID;
+        }
+
+        public reset(): void {
+            this.leavingPlayerId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyMemberRemoveMessage(param1);
+        }
+
+        public serializeAs_PartyMemberRemoveMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractPartyEventMessage(param1);
+            if (this.leavingPlayerId < 0) {
+                throw new Error('Forbidden value (' + this.leavingPlayerId + ') on element leavingPlayerId.');
+            }
+            param1.writeVarInt(this.leavingPlayerId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyMemberRemoveMessage(param1);
+        }
+
+        public deserializeAs_PartyMemberRemoveMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.leavingPlayerId = param1.readVarUhInt();
+            if (this.leavingPlayerId < 0) {
+                throw new Error('Forbidden value (' + this.leavingPlayerId + ') on element of PartyMemberRemoveMessage.leavingPlayerId.');
+            }
+
+        }
+    }
     export class PartyMemberEjectedMessage extends PartyMemberRemoveMessage {
         public static ID: number = 6252;
 
@@ -28298,60 +30195,6 @@ module Protocol {
             this.fightMap = new MapCoordinatesExtended();
             this.fightMap.deserialize(param1);
             this.timeBeforeFightStart = param1.readVarShort();
-
-        }
-    }
-    export class PartyMemberRemoveMessage extends AbstractPartyEventMessage {
-        public static ID: number = 5579;
-
-        leavingPlayerId: number;
-
-        constructor() {
-            this.leavingPlayerId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return PartyMemberRemoveMessage.ID;
-        }
-
-        public reset(): void {
-            this.leavingPlayerId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyMemberRemoveMessage(param1);
-        }
-
-        public serializeAs_PartyMemberRemoveMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractPartyEventMessage(param1);
-            if (this.leavingPlayerId < 0) {
-                throw new Error('Forbidden value (' + this.leavingPlayerId + ') on element leavingPlayerId.');
-            }
-            param1.writeVarInt(this.leavingPlayerId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyMemberRemoveMessage(param1);
-        }
-
-        public deserializeAs_PartyMemberRemoveMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.leavingPlayerId = param1.readVarUhInt();
-            if (this.leavingPlayerId < 0) {
-                throw new Error('Forbidden value (' + this.leavingPlayerId + ') on element of PartyMemberRemoveMessage.leavingPlayerId.');
-            }
 
         }
     }
@@ -28596,6 +30439,57 @@ module Protocol {
             super.deserialize(param1);
             this.guest = new PartyGuestInformations();
             this.guest.deserialize(param1);
+
+        }
+    }
+    export class PartyUpdateMessage extends AbstractPartyEventMessage {
+        public static ID: number = 5575;
+
+        memberInformations: PartyMemberInformations;
+
+        constructor() {
+            this.memberInformations = new PartyMemberInformations();
+            super();
+        }
+
+        public getMessageId(): number {
+            return PartyUpdateMessage.ID;
+        }
+
+        public reset(): void {
+            this.memberInformations = new PartyMemberInformations();
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyUpdateMessage(param1);
+        }
+
+        public serializeAs_PartyUpdateMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractPartyEventMessage(param1);
+            param1.writeShort(this.memberInformations.getTypeId());
+            this.memberInformations.serialize(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyUpdateMessage(param1);
+        }
+
+        public deserializeAs_PartyUpdateMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            var _loc2_: number = param1.readUnsignedShort();
+            this.memberInformations = <PartyMemberInformations>ProtocolTypeManager.getInstance(PartyMemberInformations, _loc2_);
+            this.memberInformations.deserialize(param1);
 
         }
     }
@@ -28982,57 +30876,6 @@ module Protocol {
             if (this.regenRate < 0 || this.regenRate > 255) {
                 throw new Error('Forbidden value (' + this.regenRate + ') on element of PartyUpdateLightMessage.regenRate.');
             }
-
-        }
-    }
-    export class PartyUpdateMessage extends AbstractPartyEventMessage {
-        public static ID: number = 5575;
-
-        memberInformations: PartyMemberInformations;
-
-        constructor() {
-            this.memberInformations = new PartyMemberInformations();
-            super();
-        }
-
-        public getMessageId(): number {
-            return PartyUpdateMessage.ID;
-        }
-
-        public reset(): void {
-            this.memberInformations = new PartyMemberInformations();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyUpdateMessage(param1);
-        }
-
-        public serializeAs_PartyUpdateMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractPartyEventMessage(param1);
-            param1.writeShort(this.memberInformations.getTypeId());
-            this.memberInformations.serialize(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyUpdateMessage(param1);
-        }
-
-        public deserializeAs_PartyUpdateMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            var _loc2_: number = param1.readUnsignedShort();
-            this.memberInformations = <PartyMemberInformations>ProtocolTypeManager.getInstance(PartyMemberInformations, _loc2_);
-            this.memberInformations.deserialize(param1);
 
         }
     }
@@ -30563,60 +32406,6 @@ module Protocol {
 
         }
     }
-    export class TreasureHuntDigRequestAnswerFailedMessage extends TreasureHuntDigRequestAnswerMessage {
-        public static ID: number = 6509;
-
-        wrongFlagCount: number;
-
-        constructor() {
-            this.wrongFlagCount = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return TreasureHuntDigRequestAnswerFailedMessage.ID;
-        }
-
-        public reset(): void {
-            this.wrongFlagCount = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1);
-        }
-
-        public serializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_TreasureHuntDigRequestAnswerMessage(param1);
-            if (this.wrongFlagCount < 0) {
-                throw new Error('Forbidden value (' + this.wrongFlagCount + ') on element wrongFlagCount.');
-            }
-            param1.writeByte(this.wrongFlagCount);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1);
-        }
-
-        public deserializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.wrongFlagCount = param1.readByte();
-            if (this.wrongFlagCount < 0) {
-                throw new Error('Forbidden value (' + this.wrongFlagCount + ') on element of TreasureHuntDigRequestAnswerFailedMessage.wrongFlagCount.');
-            }
-
-        }
-    }
     export class TreasureHuntDigRequestAnswerMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 6484;
 
@@ -30670,6 +32459,60 @@ module Protocol {
             this.result = param1.readByte();
             if (this.result < 0) {
                 throw new Error('Forbidden value (' + this.result + ') on element of TreasureHuntDigRequestAnswerMessage.result.');
+            }
+
+        }
+    }
+    export class TreasureHuntDigRequestAnswerFailedMessage extends TreasureHuntDigRequestAnswerMessage {
+        public static ID: number = 6509;
+
+        wrongFlagCount: number;
+
+        constructor() {
+            this.wrongFlagCount = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return TreasureHuntDigRequestAnswerFailedMessage.ID;
+        }
+
+        public reset(): void {
+            this.wrongFlagCount = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1);
+        }
+
+        public serializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_TreasureHuntDigRequestAnswerMessage(param1);
+            if (this.wrongFlagCount < 0) {
+                throw new Error('Forbidden value (' + this.wrongFlagCount + ') on element wrongFlagCount.');
+            }
+            param1.writeByte(this.wrongFlagCount);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1);
+        }
+
+        public deserializeAs_TreasureHuntDigRequestAnswerFailedMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.wrongFlagCount = param1.readByte();
+            if (this.wrongFlagCount < 0) {
+                throw new Error('Forbidden value (' + this.wrongFlagCount + ') on element of TreasureHuntDigRequestAnswerFailedMessage.wrongFlagCount.');
             }
 
         }
@@ -39803,6 +41646,63 @@ module Protocol {
 
         }
     }
+    export class ExchangeBidPriceMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5755;
+
+        genericId: number;
+        averagePrice: number;
+
+        constructor() {
+            this.genericId = 0;
+            this.averagePrice = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeBidPriceMessage.ID;
+        }
+
+        public reset(): void {
+            this.genericId = 0;
+            this.averagePrice = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeBidPriceMessage(param1);
+        }
+
+        public serializeAs_ExchangeBidPriceMessage(param1: ICustomDataOutput): void {
+            if (this.genericId < 0) {
+                throw new Error('Forbidden value (' + this.genericId + ') on element genericId.');
+            }
+            param1.writeVarShort(this.genericId);
+            param1.writeVarInt(this.averagePrice);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeBidPriceMessage(param1);
+        }
+
+        public deserializeAs_ExchangeBidPriceMessage(param1: ICustomDataInput): void {
+            this.genericId = param1.readVarUhShort();
+            if (this.genericId < 0) {
+                throw new Error('Forbidden value (' + this.genericId + ') on element of ExchangeBidPriceMessage.genericId.');
+            }
+            this.averagePrice = param1.readVarInt();
+
+        }
+    }
     export class ExchangeBidPriceForSellerMessage extends ExchangeBidPriceMessage {
         public static ID: number = 6464;
 
@@ -39871,63 +41771,6 @@ module Protocol {
                 this.minimalPrices.push(_loc4_);
                 _loc3_++;
             }
-
-        }
-    }
-    export class ExchangeBidPriceMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5755;
-
-        genericId: number;
-        averagePrice: number;
-
-        constructor() {
-            this.genericId = 0;
-            this.averagePrice = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeBidPriceMessage.ID;
-        }
-
-        public reset(): void {
-            this.genericId = 0;
-            this.averagePrice = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeBidPriceMessage(param1);
-        }
-
-        public serializeAs_ExchangeBidPriceMessage(param1: ICustomDataOutput): void {
-            if (this.genericId < 0) {
-                throw new Error('Forbidden value (' + this.genericId + ') on element genericId.');
-            }
-            param1.writeVarShort(this.genericId);
-            param1.writeVarInt(this.averagePrice);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeBidPriceMessage(param1);
-        }
-
-        public deserializeAs_ExchangeBidPriceMessage(param1: ICustomDataInput): void {
-            this.genericId = param1.readVarUhShort();
-            if (this.genericId < 0) {
-                throw new Error('Forbidden value (' + this.genericId + ') on element of ExchangeBidPriceMessage.genericId.');
-            }
-            this.averagePrice = param1.readVarInt();
 
         }
     }
@@ -40174,6 +42017,109 @@ module Protocol {
 
         }
     }
+    export class ExchangeCraftResultMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5790;
+
+        craftResult: number;
+
+        constructor() {
+            this.craftResult = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeCraftResultMessage.ID;
+        }
+
+        public reset(): void {
+            this.craftResult = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeCraftResultMessage(param1);
+        }
+
+        public serializeAs_ExchangeCraftResultMessage(param1: ICustomDataOutput): void {
+            param1.writeByte(this.craftResult);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeCraftResultMessage(param1);
+        }
+
+        public deserializeAs_ExchangeCraftResultMessage(param1: ICustomDataInput): void {
+            this.craftResult = param1.readByte();
+            if (this.craftResult < 0) {
+                throw new Error('Forbidden value (' + this.craftResult + ') on element of ExchangeCraftResultMessage.craftResult.');
+            }
+
+        }
+    }
+    export class ExchangeCraftResultWithObjectIdMessage extends ExchangeCraftResultMessage {
+        public static ID: number = 6000;
+
+        objectGenericId: number;
+
+        constructor() {
+            this.objectGenericId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeCraftResultWithObjectIdMessage.ID;
+        }
+
+        public reset(): void {
+            this.objectGenericId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeCraftResultWithObjectIdMessage(param1);
+        }
+
+        public serializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ExchangeCraftResultMessage(param1);
+            if (this.objectGenericId < 0) {
+                throw new Error('Forbidden value (' + this.objectGenericId + ') on element objectGenericId.');
+            }
+            param1.writeVarShort(this.objectGenericId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeCraftResultWithObjectIdMessage(param1);
+        }
+
+        public deserializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.objectGenericId = param1.readVarUhShort();
+            if (this.objectGenericId < 0) {
+                throw new Error('Forbidden value (' + this.objectGenericId + ') on element of ExchangeCraftResultWithObjectIdMessage.objectGenericId.');
+            }
+
+        }
+    }
     export class ExchangeCraftInformationObjectMessage extends ExchangeCraftResultWithObjectIdMessage {
         public static ID: number = 5794;
 
@@ -40332,103 +42278,6 @@ module Protocol {
 
         }
     }
-    export class ExchangeCraftResultMagicWithObjectDescMessage extends ExchangeCraftResultWithObjectDescMessage {
-        public static ID: number = 6188;
-
-        magicPoolStatus: number;
-
-        constructor() {
-            this.magicPoolStatus = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeCraftResultMagicWithObjectDescMessage.ID;
-        }
-
-        public reset(): void {
-            this.magicPoolStatus = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1);
-        }
-
-        public serializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ExchangeCraftResultWithObjectDescMessage(param1);
-            param1.writeByte(this.magicPoolStatus);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1);
-        }
-
-        public deserializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.magicPoolStatus = param1.readByte();
-
-        }
-    }
-    export class ExchangeCraftResultMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5790;
-
-        craftResult: number;
-
-        constructor() {
-            this.craftResult = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeCraftResultMessage.ID;
-        }
-
-        public reset(): void {
-            this.craftResult = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeCraftResultMessage(param1);
-        }
-
-        public serializeAs_ExchangeCraftResultMessage(param1: ICustomDataOutput): void {
-            param1.writeByte(this.craftResult);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeCraftResultMessage(param1);
-        }
-
-        public deserializeAs_ExchangeCraftResultMessage(param1: ICustomDataInput): void {
-            this.craftResult = param1.readByte();
-            if (this.craftResult < 0) {
-                throw new Error('Forbidden value (' + this.craftResult + ') on element of ExchangeCraftResultMessage.craftResult.');
-            }
-
-        }
-    }
     export class ExchangeCraftResultWithObjectDescMessage extends ExchangeCraftResultMessage {
         public static ID: number = 5999;
 
@@ -40478,22 +42327,22 @@ module Protocol {
 
         }
     }
-    export class ExchangeCraftResultWithObjectIdMessage extends ExchangeCraftResultMessage {
-        public static ID: number = 6000;
+    export class ExchangeCraftResultMagicWithObjectDescMessage extends ExchangeCraftResultWithObjectDescMessage {
+        public static ID: number = 6188;
 
-        objectGenericId: number;
+        magicPoolStatus: number;
 
         constructor() {
-            this.objectGenericId = 0;
+            this.magicPoolStatus = 0;
             super();
         }
 
         public getMessageId(): number {
-            return ExchangeCraftResultWithObjectIdMessage.ID;
+            return ExchangeCraftResultMagicWithObjectDescMessage.ID;
         }
 
         public reset(): void {
-            this.objectGenericId = 0;
+            this.magicPoolStatus = 0;
         }
 
         public pack(param1: ICustomDataOutput): void {
@@ -40507,28 +42356,22 @@ module Protocol {
         }
 
         public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeCraftResultWithObjectIdMessage(param1);
+            this.serializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1);
         }
 
-        public serializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ExchangeCraftResultMessage(param1);
-            if (this.objectGenericId < 0) {
-                throw new Error('Forbidden value (' + this.objectGenericId + ') on element objectGenericId.');
-            }
-            param1.writeVarShort(this.objectGenericId);
+        public serializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ExchangeCraftResultWithObjectDescMessage(param1);
+            param1.writeByte(this.magicPoolStatus);
 
         }
 
         public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeCraftResultWithObjectIdMessage(param1);
+            this.deserializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1);
         }
 
-        public deserializeAs_ExchangeCraftResultWithObjectIdMessage(param1: ICustomDataInput): void {
+        public deserializeAs_ExchangeCraftResultMagicWithObjectDescMessage(param1: ICustomDataInput): void {
             super.deserialize(param1);
-            this.objectGenericId = param1.readVarUhShort();
-            if (this.objectGenericId < 0) {
-                throw new Error('Forbidden value (' + this.objectGenericId + ') on element of ExchangeCraftResultWithObjectIdMessage.objectGenericId.');
-            }
+            this.magicPoolStatus = param1.readByte();
 
         }
     }
@@ -41511,55 +43354,6 @@ module Protocol {
 
         }
     }
-    export class ExchangeObjectAddedMessage extends ExchangeObjectMessage {
-        public static ID: number = 5516;
-
-        object: ObjectItem;
-
-        constructor() {
-            this.object = new ObjectItem();
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeObjectAddedMessage.ID;
-        }
-
-        public reset(): void {
-            this.object = new ObjectItem();
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeObjectAddedMessage(param1);
-        }
-
-        public serializeAs_ExchangeObjectAddedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ExchangeObjectMessage(param1);
-            this.object.serializeAs_ObjectItem(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeObjectAddedMessage(param1);
-        }
-
-        public deserializeAs_ExchangeObjectAddedMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.object = new ObjectItem();
-            this.object.deserialize(param1);
-
-        }
-    }
     export class ExchangeObjectMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 5515;
 
@@ -41606,22 +43400,22 @@ module Protocol {
 
         }
     }
-    export class ExchangeObjectModifyPricedMessage extends ExchangeObjectMovePricedMessage {
-        public static ID: number = 6238;
+    export class ExchangeObjectAddedMessage extends ExchangeObjectMessage {
+        public static ID: number = 5516;
 
-
+        object: ObjectItem;
 
         constructor() {
-
+            this.object = new ObjectItem();
             super();
         }
 
         public getMessageId(): number {
-            return ExchangeObjectModifyPricedMessage.ID;
+            return ExchangeObjectAddedMessage.ID;
         }
 
         public reset(): void {
-
+            this.object = new ObjectItem();
         }
 
         public pack(param1: ICustomDataOutput): void {
@@ -41635,66 +43429,23 @@ module Protocol {
         }
 
         public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeObjectModifyPricedMessage(param1);
+            this.serializeAs_ExchangeObjectAddedMessage(param1);
         }
 
-        public serializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ExchangeObjectMovePricedMessage(param1);
+        public serializeAs_ExchangeObjectAddedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ExchangeObjectMessage(param1);
+            this.object.serializeAs_ObjectItem(param1);
 
         }
 
         public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeObjectModifyPricedMessage(param1);
+            this.deserializeAs_ExchangeObjectAddedMessage(param1);
         }
 
-        public deserializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataInput): void {
+        public deserializeAs_ExchangeObjectAddedMessage(param1: ICustomDataInput): void {
             super.deserialize(param1);
-
-        }
-    }
-    export class ExchangeObjectMoveKamaMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5520;
-
-        quantity: number;
-
-        constructor() {
-            this.quantity = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeObjectMoveKamaMessage.ID;
-        }
-
-        public reset(): void {
-            this.quantity = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeObjectMoveKamaMessage(param1);
-        }
-
-        public serializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataOutput): void {
-            param1.writeVarInt(this.quantity);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeObjectMoveKamaMessage(param1);
-        }
-
-        public deserializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataInput): void {
-            this.quantity = param1.readVarInt();
+            this.object = new ObjectItem();
+            this.object.deserialize(param1);
 
         }
     }
@@ -41806,6 +43557,98 @@ module Protocol {
             if (this.price < 0) {
                 throw new Error('Forbidden value (' + this.price + ') on element of ExchangeObjectMovePricedMessage.price.');
             }
+
+        }
+    }
+    export class ExchangeObjectModifyPricedMessage extends ExchangeObjectMovePricedMessage {
+        public static ID: number = 6238;
+
+
+
+        constructor() {
+
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeObjectModifyPricedMessage.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeObjectModifyPricedMessage(param1);
+        }
+
+        public serializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ExchangeObjectMovePricedMessage(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeObjectModifyPricedMessage(param1);
+        }
+
+        public deserializeAs_ExchangeObjectModifyPricedMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+
+        }
+    }
+    export class ExchangeObjectMoveKamaMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5520;
+
+        quantity: number;
+
+        constructor() {
+            this.quantity = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeObjectMoveKamaMessage.ID;
+        }
+
+        public reset(): void {
+            this.quantity = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeObjectMoveKamaMessage(param1);
+        }
+
+        public serializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataOutput): void {
+            param1.writeVarInt(this.quantity);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeObjectMoveKamaMessage(param1);
+        }
+
+        public deserializeAs_ExchangeObjectMoveKamaMessage(param1: ICustomDataInput): void {
+            this.quantity = param1.readVarInt();
 
         }
     }
@@ -42449,6 +44292,52 @@ module Protocol {
 
         }
     }
+    export class ExchangeRequestMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5505;
+
+        exchangeType: number;
+
+        constructor() {
+            this.exchangeType = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeRequestMessage.ID;
+        }
+
+        public reset(): void {
+            this.exchangeType = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeRequestMessage(param1);
+        }
+
+        public serializeAs_ExchangeRequestMessage(param1: ICustomDataOutput): void {
+            param1.writeByte(this.exchangeType);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeRequestMessage(param1);
+        }
+
+        public deserializeAs_ExchangeRequestMessage(param1: ICustomDataInput): void {
+            this.exchangeType = param1.readByte();
+
+        }
+    }
     export class ExchangePlayerMultiCraftRequestMessage extends ExchangeRequestMessage {
         public static ID: number = 5784;
 
@@ -42729,52 +44618,6 @@ module Protocol {
             if (this.totalTaxValue < 0) {
                 throw new Error('Forbidden value (' + this.totalTaxValue + ') on element of ExchangeReplyTaxVendorMessage.totalTaxValue.');
             }
-
-        }
-    }
-    export class ExchangeRequestMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5505;
-
-        exchangeType: number;
-
-        constructor() {
-            this.exchangeType = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeRequestMessage.ID;
-        }
-
-        public reset(): void {
-            this.exchangeType = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeRequestMessage(param1);
-        }
-
-        public serializeAs_ExchangeRequestMessage(param1: ICustomDataOutput): void {
-            param1.writeByte(this.exchangeType);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeRequestMessage(param1);
-        }
-
-        public deserializeAs_ExchangeRequestMessage(param1: ICustomDataInput): void {
-            this.exchangeType = param1.readByte();
 
         }
     }
@@ -43783,6 +45626,65 @@ module Protocol {
 
         }
     }
+    export class ExchangeStartOkMountWithOutPaddockMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 5991;
+
+        stabledMountsDescription: MountClientData[];
+
+        constructor() {
+            this.stabledMountsDescription = [];
+            super();
+        }
+
+        public getMessageId(): number {
+            return ExchangeStartOkMountWithOutPaddockMessage.ID;
+        }
+
+        public reset(): void {
+            this.stabledMountsDescription = [];
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1);
+        }
+
+        public serializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataOutput): void {
+            param1.writeShort(this.stabledMountsDescription.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.stabledMountsDescription.length) {
+                (this.stabledMountsDescription[_loc2_]).serializeAs_MountClientData(param1);
+                _loc2_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1);
+        }
+
+        public deserializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataInput): void {
+            var _loc4_: MountClientData = null;
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = new MountClientData();
+                _loc4_.deserialize(param1);
+                this.stabledMountsDescription.push(_loc4_);
+                _loc3_++;
+            }
+
+        }
+    }
     export class ExchangeStartOkMountMessage extends ExchangeStartOkMountWithOutPaddockMessage {
         public static ID: number = 5979;
 
@@ -43839,65 +45741,6 @@ module Protocol {
             _loc4_ = new MountClientData();
                 _loc4_.deserialize(param1);
                 this.paddockedMountsDescription.push(_loc4_);
-                _loc3_++;
-            }
-
-        }
-    }
-    export class ExchangeStartOkMountWithOutPaddockMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 5991;
-
-        stabledMountsDescription: MountClientData[];
-
-        constructor() {
-            this.stabledMountsDescription = [];
-            super();
-        }
-
-        public getMessageId(): number {
-            return ExchangeStartOkMountWithOutPaddockMessage.ID;
-        }
-
-        public reset(): void {
-            this.stabledMountsDescription = [];
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1);
-        }
-
-        public serializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataOutput): void {
-            param1.writeShort(this.stabledMountsDescription.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.stabledMountsDescription.length) {
-                (this.stabledMountsDescription[_loc2_]).serializeAs_MountClientData(param1);
-                _loc2_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1);
-        }
-
-        public deserializeAs_ExchangeStartOkMountWithOutPaddockMessage(param1: ICustomDataInput): void {
-            var _loc4_: MountClientData = null;
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = new MountClientData();
-                _loc4_.deserialize(param1);
-                this.stabledMountsDescription.push(_loc4_);
                 _loc3_++;
             }
 
@@ -45699,6 +47542,76 @@ module Protocol {
 
         }
     }
+    export class InventoryContentMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 3016;
+
+        objects: ObjectItem[];
+        kamas: number;
+
+        constructor() {
+            this.objects = [];
+            this.kamas = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return InventoryContentMessage.ID;
+        }
+
+        public reset(): void {
+            this.objects = [];
+            this.kamas = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_InventoryContentMessage(param1);
+        }
+
+        public serializeAs_InventoryContentMessage(param1: ICustomDataOutput): void {
+            param1.writeShort(this.objects.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.objects.length) {
+                (this.objects[_loc2_]).serializeAs_ObjectItem(param1);
+                _loc2_++;
+            }
+            if (this.kamas < 0) {
+                throw new Error('Forbidden value (' + this.kamas + ') on element kamas.');
+            }
+            param1.writeVarInt(this.kamas);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_InventoryContentMessage(param1);
+        }
+
+        public deserializeAs_InventoryContentMessage(param1: ICustomDataInput): void {
+            var _loc4_: ObjectItem = null;
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = new ObjectItem();
+                _loc4_.deserialize(param1);
+                this.objects.push(_loc4_);
+                _loc3_++;
+            }
+            this.kamas = param1.readVarUhInt();
+            if (this.kamas < 0) {
+                throw new Error('Forbidden value (' + this.kamas + ') on element of InventoryContentMessage.kamas.');
+            }
+
+        }
+    }
     export class InventoryContentAndPresetMessage extends InventoryContentMessage {
         public static ID: number = 6162;
 
@@ -45774,76 +47687,6 @@ module Protocol {
                 _loc7_.deserialize(param1);
                 this.idolsPresets.push(_loc7_);
                 _loc5_++;
-            }
-
-        }
-    }
-    export class InventoryContentMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 3016;
-
-        objects: ObjectItem[];
-        kamas: number;
-
-        constructor() {
-            this.objects = [];
-            this.kamas = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return InventoryContentMessage.ID;
-        }
-
-        public reset(): void {
-            this.objects = [];
-            this.kamas = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_InventoryContentMessage(param1);
-        }
-
-        public serializeAs_InventoryContentMessage(param1: ICustomDataOutput): void {
-            param1.writeShort(this.objects.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.objects.length) {
-                (this.objects[_loc2_]).serializeAs_ObjectItem(param1);
-                _loc2_++;
-            }
-            if (this.kamas < 0) {
-                throw new Error('Forbidden value (' + this.kamas + ') on element kamas.');
-            }
-            param1.writeVarInt(this.kamas);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_InventoryContentMessage(param1);
-        }
-
-        public deserializeAs_InventoryContentMessage(param1: ICustomDataInput): void {
-            var _loc4_: ObjectItem = null;
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = new ObjectItem();
-                _loc4_.deserialize(param1);
-                this.objects.push(_loc4_);
-                _loc3_++;
-            }
-            this.kamas = param1.readVarUhInt();
-            if (this.kamas < 0) {
-                throw new Error('Forbidden value (' + this.kamas + ') on element of InventoryContentMessage.kamas.');
             }
 
         }
@@ -46207,6 +48050,58 @@ module Protocol {
 
         }
     }
+    export class SymbioticObjectAssociatedMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 6527;
+
+        hostUID: number;
+
+        constructor() {
+            this.hostUID = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return SymbioticObjectAssociatedMessage.ID;
+        }
+
+        public reset(): void {
+            this.hostUID = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_SymbioticObjectAssociatedMessage(param1);
+        }
+
+        public serializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataOutput): void {
+            if (this.hostUID < 0) {
+                throw new Error('Forbidden value (' + this.hostUID + ') on element hostUID.');
+            }
+            param1.writeVarInt(this.hostUID);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_SymbioticObjectAssociatedMessage(param1);
+        }
+
+        public deserializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataInput): void {
+            this.hostUID = param1.readVarUhInt();
+            if (this.hostUID < 0) {
+                throw new Error('Forbidden value (' + this.hostUID + ') on element of SymbioticObjectAssociatedMessage.hostUID.');
+            }
+
+        }
+    }
     export class MimicryObjectAssociatedMessage extends SymbioticObjectAssociatedMessage {
         public static ID: number = 6462;
 
@@ -46316,6 +48211,100 @@ module Protocol {
 
         }
     }
+    export class ObjectErrorMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 3004;
+
+        reason: number;
+
+        constructor() {
+            this.reason = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ObjectErrorMessage.ID;
+        }
+
+        public reset(): void {
+            this.reason = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ObjectErrorMessage(param1);
+        }
+
+        public serializeAs_ObjectErrorMessage(param1: ICustomDataOutput): void {
+            param1.writeByte(this.reason);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ObjectErrorMessage(param1);
+        }
+
+        public deserializeAs_ObjectErrorMessage(param1: ICustomDataInput): void {
+            this.reason = param1.readByte();
+
+        }
+    }
+    export class SymbioticObjectErrorMessage extends ObjectErrorMessage {
+        public static ID: number = 6526;
+
+        errorCode: number;
+
+        constructor() {
+            this.errorCode = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return SymbioticObjectErrorMessage.ID;
+        }
+
+        public reset(): void {
+            this.errorCode = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_SymbioticObjectErrorMessage(param1);
+        }
+
+        public serializeAs_SymbioticObjectErrorMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ObjectErrorMessage(param1);
+            param1.writeByte(this.errorCode);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_SymbioticObjectErrorMessage(param1);
+        }
+
+        public deserializeAs_SymbioticObjectErrorMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.errorCode = param1.readByte();
+
+        }
+    }
     export class MimicryObjectErrorMessage extends SymbioticObjectErrorMessage {
         public static ID: number = 6461;
 
@@ -46361,6 +48350,91 @@ module Protocol {
         public deserializeAs_MimicryObjectErrorMessage(param1: ICustomDataInput): void {
             super.deserialize(param1);
             this.preview = param1.readBoolean();
+
+        }
+    }
+    export class SymbioticObjectAssociateRequestMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 6522;
+
+        symbioteUID: number;
+        symbiotePos: number;
+        hostUID: number;
+        hostPos: number;
+
+        constructor() {
+            this.symbioteUID = 0;
+            this.symbiotePos = 0;
+            this.hostUID = 0;
+            this.hostPos = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return SymbioticObjectAssociateRequestMessage.ID;
+        }
+
+        public reset(): void {
+            this.symbioteUID = 0;
+            this.symbiotePos = 0;
+            this.hostUID = 0;
+            this.hostPos = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_SymbioticObjectAssociateRequestMessage(param1);
+        }
+
+        public serializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataOutput): void {
+            if (this.symbioteUID < 0) {
+                throw new Error('Forbidden value (' + this.symbioteUID + ') on element symbioteUID.');
+            }
+            param1.writeVarInt(this.symbioteUID);
+            if (this.symbiotePos < 0 || this.symbiotePos > 255) {
+                throw new Error('Forbidden value (' + this.symbiotePos + ') on element symbiotePos.');
+            }
+            param1.writeByte(this.symbiotePos);
+            if (this.hostUID < 0) {
+                throw new Error('Forbidden value (' + this.hostUID + ') on element hostUID.');
+            }
+            param1.writeVarInt(this.hostUID);
+            if (this.hostPos < 0 || this.hostPos > 255) {
+                throw new Error('Forbidden value (' + this.hostPos + ') on element hostPos.');
+            }
+            param1.writeByte(this.hostPos);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_SymbioticObjectAssociateRequestMessage(param1);
+        }
+
+        public deserializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataInput): void {
+            this.symbioteUID = param1.readVarUhInt();
+            if (this.symbioteUID < 0) {
+                throw new Error('Forbidden value (' + this.symbioteUID + ') on element of SymbioticObjectAssociateRequestMessage.symbioteUID.');
+            }
+            this.symbiotePos = param1.readUnsignedByte();
+            if (this.symbiotePos < 0 || this.symbiotePos > 255) {
+                throw new Error('Forbidden value (' + this.symbiotePos + ') on element of SymbioticObjectAssociateRequestMessage.symbiotePos.');
+            }
+            this.hostUID = param1.readVarUhInt();
+            if (this.hostUID < 0) {
+                throw new Error('Forbidden value (' + this.hostUID + ') on element of SymbioticObjectAssociateRequestMessage.hostUID.');
+            }
+            this.hostPos = param1.readUnsignedByte();
+            if (this.hostPos < 0 || this.hostPos > 255) {
+                throw new Error('Forbidden value (' + this.hostPos + ') on element of SymbioticObjectAssociateRequestMessage.hostPos.');
+            }
 
         }
     }
@@ -46703,52 +48777,6 @@ module Protocol {
             if (this.quantity < 0) {
                 throw new Error('Forbidden value (' + this.quantity + ') on element of ObjectDropMessage.quantity.');
             }
-
-        }
-    }
-    export class ObjectErrorMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 3004;
-
-        reason: number;
-
-        constructor() {
-            this.reason = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ObjectErrorMessage.ID;
-        }
-
-        public reset(): void {
-            this.reason = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ObjectErrorMessage(param1);
-        }
-
-        public serializeAs_ObjectErrorMessage(param1: ICustomDataOutput): void {
-            param1.writeByte(this.reason);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ObjectErrorMessage(param1);
-        }
-
-        public deserializeAs_ObjectErrorMessage(param1: ICustomDataInput): void {
-            this.reason = param1.readByte();
 
         }
     }
@@ -47799,191 +49827,6 @@ module Protocol {
                 this.setEffects.push(_loc8_);
                 _loc5_++;
             }
-
-        }
-    }
-    export class SymbioticObjectAssociateRequestMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 6522;
-
-        symbioteUID: number;
-        symbiotePos: number;
-        hostUID: number;
-        hostPos: number;
-
-        constructor() {
-            this.symbioteUID = 0;
-            this.symbiotePos = 0;
-            this.hostUID = 0;
-            this.hostPos = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return SymbioticObjectAssociateRequestMessage.ID;
-        }
-
-        public reset(): void {
-            this.symbioteUID = 0;
-            this.symbiotePos = 0;
-            this.hostUID = 0;
-            this.hostPos = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_SymbioticObjectAssociateRequestMessage(param1);
-        }
-
-        public serializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataOutput): void {
-            if (this.symbioteUID < 0) {
-                throw new Error('Forbidden value (' + this.symbioteUID + ') on element symbioteUID.');
-            }
-            param1.writeVarInt(this.symbioteUID);
-            if (this.symbiotePos < 0 || this.symbiotePos > 255) {
-                throw new Error('Forbidden value (' + this.symbiotePos + ') on element symbiotePos.');
-            }
-            param1.writeByte(this.symbiotePos);
-            if (this.hostUID < 0) {
-                throw new Error('Forbidden value (' + this.hostUID + ') on element hostUID.');
-            }
-            param1.writeVarInt(this.hostUID);
-            if (this.hostPos < 0 || this.hostPos > 255) {
-                throw new Error('Forbidden value (' + this.hostPos + ') on element hostPos.');
-            }
-            param1.writeByte(this.hostPos);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_SymbioticObjectAssociateRequestMessage(param1);
-        }
-
-        public deserializeAs_SymbioticObjectAssociateRequestMessage(param1: ICustomDataInput): void {
-            this.symbioteUID = param1.readVarUhInt();
-            if (this.symbioteUID < 0) {
-                throw new Error('Forbidden value (' + this.symbioteUID + ') on element of SymbioticObjectAssociateRequestMessage.symbioteUID.');
-            }
-            this.symbiotePos = param1.readUnsignedByte();
-            if (this.symbiotePos < 0 || this.symbiotePos > 255) {
-                throw new Error('Forbidden value (' + this.symbiotePos + ') on element of SymbioticObjectAssociateRequestMessage.symbiotePos.');
-            }
-            this.hostUID = param1.readVarUhInt();
-            if (this.hostUID < 0) {
-                throw new Error('Forbidden value (' + this.hostUID + ') on element of SymbioticObjectAssociateRequestMessage.hostUID.');
-            }
-            this.hostPos = param1.readUnsignedByte();
-            if (this.hostPos < 0 || this.hostPos > 255) {
-                throw new Error('Forbidden value (' + this.hostPos + ') on element of SymbioticObjectAssociateRequestMessage.hostPos.');
-            }
-
-        }
-    }
-    export class SymbioticObjectAssociatedMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 6527;
-
-        hostUID: number;
-
-        constructor() {
-            this.hostUID = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return SymbioticObjectAssociatedMessage.ID;
-        }
-
-        public reset(): void {
-            this.hostUID = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_SymbioticObjectAssociatedMessage(param1);
-        }
-
-        public serializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataOutput): void {
-            if (this.hostUID < 0) {
-                throw new Error('Forbidden value (' + this.hostUID + ') on element hostUID.');
-            }
-            param1.writeVarInt(this.hostUID);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_SymbioticObjectAssociatedMessage(param1);
-        }
-
-        public deserializeAs_SymbioticObjectAssociatedMessage(param1: ICustomDataInput): void {
-            this.hostUID = param1.readVarUhInt();
-            if (this.hostUID < 0) {
-                throw new Error('Forbidden value (' + this.hostUID + ') on element of SymbioticObjectAssociatedMessage.hostUID.');
-            }
-
-        }
-    }
-    export class SymbioticObjectErrorMessage extends ObjectErrorMessage {
-        public static ID: number = 6526;
-
-        errorCode: number;
-
-        constructor() {
-            this.errorCode = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return SymbioticObjectErrorMessage.ID;
-        }
-
-        public reset(): void {
-            this.errorCode = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_SymbioticObjectErrorMessage(param1);
-        }
-
-        public serializeAs_SymbioticObjectErrorMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ObjectErrorMessage(param1);
-            param1.writeByte(this.errorCode);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_SymbioticObjectErrorMessage(param1);
-        }
-
-        public deserializeAs_SymbioticObjectErrorMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.errorCode = param1.readByte();
 
         }
     }
@@ -52150,60 +53993,6 @@ module Protocol {
 
         }
     }
-    export class ContactLookRequestByIdMessage extends ContactLookRequestMessage {
-        public static ID: number = 5935;
-
-        playerId: number;
-
-        constructor() {
-            this.playerId = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ContactLookRequestByIdMessage.ID;
-        }
-
-        public reset(): void {
-            this.playerId = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ContactLookRequestByIdMessage(param1);
-        }
-
-        public serializeAs_ContactLookRequestByIdMessage(param1: ICustomDataOutput): void {
-            super.serializeAs_ContactLookRequestMessage(param1);
-            if (this.playerId < 0) {
-                throw new Error('Forbidden value (' + this.playerId + ') on element playerId.');
-            }
-            param1.writeVarInt(this.playerId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ContactLookRequestByIdMessage(param1);
-        }
-
-        public deserializeAs_ContactLookRequestByIdMessage(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.playerId = param1.readVarUhInt();
-            if (this.playerId < 0) {
-                throw new Error('Forbidden value (' + this.playerId + ') on element of ContactLookRequestByIdMessage.playerId.');
-            }
-
-        }
-    }
     export class ContactLookRequestMessage extends NetworkMessage implements INetworkMessage {
         public static ID: number = 5932;
 
@@ -52260,6 +54049,60 @@ module Protocol {
             this.contactType = param1.readByte();
             if (this.contactType < 0) {
                 throw new Error('Forbidden value (' + this.contactType + ') on element of ContactLookRequestMessage.contactType.');
+            }
+
+        }
+    }
+    export class ContactLookRequestByIdMessage extends ContactLookRequestMessage {
+        public static ID: number = 5935;
+
+        playerId: number;
+
+        constructor() {
+            this.playerId = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ContactLookRequestByIdMessage.ID;
+        }
+
+        public reset(): void {
+            this.playerId = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ContactLookRequestByIdMessage(param1);
+        }
+
+        public serializeAs_ContactLookRequestByIdMessage(param1: ICustomDataOutput): void {
+            super.serializeAs_ContactLookRequestMessage(param1);
+            if (this.playerId < 0) {
+                throw new Error('Forbidden value (' + this.playerId + ') on element playerId.');
+            }
+            param1.writeVarInt(this.playerId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ContactLookRequestByIdMessage(param1);
+        }
+
+        public deserializeAs_ContactLookRequestByIdMessage(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.playerId = param1.readVarUhInt();
+            if (this.playerId < 0) {
+                throw new Error('Forbidden value (' + this.playerId + ') on element of ContactLookRequestByIdMessage.playerId.');
             }
 
         }
@@ -53304,6 +55147,55 @@ module Protocol {
 
         }
     }
+    export class ClientUIOpenedMessage extends NetworkMessage implements INetworkMessage {
+        public static ID: number = 6459;
+
+        type: number;
+
+        constructor() {
+            this.type = 0;
+            super();
+        }
+
+        public getMessageId(): number {
+            return ClientUIOpenedMessage.ID;
+        }
+
+        public reset(): void {
+            this.type = 0;
+        }
+
+        public pack(param1: ICustomDataOutput): void {
+            let loc2 = new ByteArray();
+            this.serialize(new CustomDataWrapper(loc2));
+            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
+        }
+
+        public unpack(param1: ICustomDataInput, param2: number): void {
+            this.deserialize(param1);
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ClientUIOpenedMessage(param1);
+        }
+
+        public serializeAs_ClientUIOpenedMessage(param1: ICustomDataOutput): void {
+            param1.writeByte(this.type);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ClientUIOpenedMessage(param1);
+        }
+
+        public deserializeAs_ClientUIOpenedMessage(param1: ICustomDataInput): void {
+            this.type = param1.readByte();
+            if (this.type < 0) {
+                throw new Error('Forbidden value (' + this.type + ') on element of ClientUIOpenedMessage.type.');
+            }
+
+        }
+    }
     export class ClientUIOpenedByObjectMessage extends ClientUIOpenedMessage {
         public static ID: number = 6463;
 
@@ -53354,55 +55246,6 @@ module Protocol {
             this.uid = param1.readVarUhInt();
             if (this.uid < 0) {
                 throw new Error('Forbidden value (' + this.uid + ') on element of ClientUIOpenedByObjectMessage.uid.');
-            }
-
-        }
-    }
-    export class ClientUIOpenedMessage extends NetworkMessage implements INetworkMessage {
-        public static ID: number = 6459;
-
-        type: number;
-
-        constructor() {
-            this.type = 0;
-            super();
-        }
-
-        public getMessageId(): number {
-            return ClientUIOpenedMessage.ID;
-        }
-
-        public reset(): void {
-            this.type = 0;
-        }
-
-        public pack(param1: ICustomDataOutput): void {
-            let loc2 = new ByteArray();
-            this.serialize(new CustomDataWrapper(loc2));
-            NetworkMessage.writePacket(param1, this.getMessageId(), loc2);
-        }
-
-        public unpack(param1: ICustomDataInput, param2: number): void {
-            this.deserialize(param1);
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ClientUIOpenedMessage(param1);
-        }
-
-        public serializeAs_ClientUIOpenedMessage(param1: ICustomDataOutput): void {
-            param1.writeByte(this.type);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ClientUIOpenedMessage(param1);
-        }
-
-        public deserializeAs_ClientUIOpenedMessage(param1: ICustomDataInput): void {
-            this.type = param1.readByte();
-            if (this.type < 0) {
-                throw new Error('Forbidden value (' + this.type + ') on element of ClientUIOpenedMessage.type.');
             }
 
         }
@@ -56377,84 +58220,6 @@ module Protocol {
 
         }
     }
-    export class CharacterMinimalAllianceInformations extends CharacterMinimalGuildInformations implements INetworkType {
-        public static ID: number = 444;
-
-        alliance: BasicAllianceInformations;
-
-        constructor() {
-            this.alliance = new BasicAllianceInformations();
-            super();
-        }
-
-        public getTypeId(): number {
-            return CharacterMinimalAllianceInformations.ID;
-        }
-
-        public reset(): void {
-            this.alliance = new BasicAllianceInformations();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterMinimalAllianceInformations(param1);
-        }
-
-        public serializeAs_CharacterMinimalAllianceInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_CharacterMinimalGuildInformations(param1);
-            this.alliance.serializeAs_BasicAllianceInformations(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterMinimalAllianceInformations(param1);
-        }
-
-        public deserializeAs_CharacterMinimalAllianceInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.alliance = new BasicAllianceInformations();
-            this.alliance.deserialize(param1);
-
-        }
-    }
-    export class CharacterMinimalGuildInformations extends CharacterMinimalPlusLookInformations implements INetworkType {
-        public static ID: number = 445;
-
-        guild: BasicGuildInformations;
-
-        constructor() {
-            this.guild = new BasicGuildInformations();
-            super();
-        }
-
-        public getTypeId(): number {
-            return CharacterMinimalGuildInformations.ID;
-        }
-
-        public reset(): void {
-            this.guild = new BasicGuildInformations();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterMinimalGuildInformations(param1);
-        }
-
-        public serializeAs_CharacterMinimalGuildInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_CharacterMinimalPlusLookInformations(param1);
-            this.guild.serializeAs_BasicGuildInformations(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterMinimalGuildInformations(param1);
-        }
-
-        public deserializeAs_CharacterMinimalGuildInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.guild = new BasicGuildInformations();
-            this.guild.deserialize(param1);
-
-        }
-    }
     export class CharacterMinimalInformations extends AbstractCharacterInformation implements INetworkType {
         public static ID: number = 110;
 
@@ -56504,6 +58269,123 @@ module Protocol {
 
         }
     }
+    export class CharacterMinimalPlusLookInformations extends CharacterMinimalInformations implements INetworkType {
+        public static ID: number = 163;
+
+        entityLook: EntityLook;
+
+        constructor() {
+            this.entityLook = new EntityLook();
+            super();
+        }
+
+        public getTypeId(): number {
+            return CharacterMinimalPlusLookInformations.ID;
+        }
+
+        public reset(): void {
+            this.entityLook = new EntityLook();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterMinimalPlusLookInformations(param1);
+        }
+
+        public serializeAs_CharacterMinimalPlusLookInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_CharacterMinimalInformations(param1);
+            this.entityLook.serializeAs_EntityLook(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterMinimalPlusLookInformations(param1);
+        }
+
+        public deserializeAs_CharacterMinimalPlusLookInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.entityLook = new EntityLook();
+            this.entityLook.deserialize(param1);
+
+        }
+    }
+    export class CharacterMinimalGuildInformations extends CharacterMinimalPlusLookInformations implements INetworkType {
+        public static ID: number = 445;
+
+        guild: BasicGuildInformations;
+
+        constructor() {
+            this.guild = new BasicGuildInformations();
+            super();
+        }
+
+        public getTypeId(): number {
+            return CharacterMinimalGuildInformations.ID;
+        }
+
+        public reset(): void {
+            this.guild = new BasicGuildInformations();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterMinimalGuildInformations(param1);
+        }
+
+        public serializeAs_CharacterMinimalGuildInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_CharacterMinimalPlusLookInformations(param1);
+            this.guild.serializeAs_BasicGuildInformations(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterMinimalGuildInformations(param1);
+        }
+
+        public deserializeAs_CharacterMinimalGuildInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.guild = new BasicGuildInformations();
+            this.guild.deserialize(param1);
+
+        }
+    }
+    export class CharacterMinimalAllianceInformations extends CharacterMinimalGuildInformations implements INetworkType {
+        public static ID: number = 444;
+
+        alliance: BasicAllianceInformations;
+
+        constructor() {
+            this.alliance = new BasicAllianceInformations();
+            super();
+        }
+
+        public getTypeId(): number {
+            return CharacterMinimalAllianceInformations.ID;
+        }
+
+        public reset(): void {
+            this.alliance = new BasicAllianceInformations();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_CharacterMinimalAllianceInformations(param1);
+        }
+
+        public serializeAs_CharacterMinimalAllianceInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_CharacterMinimalGuildInformations(param1);
+            this.alliance.serializeAs_BasicAllianceInformations(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_CharacterMinimalAllianceInformations(param1);
+        }
+
+        public deserializeAs_CharacterMinimalAllianceInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.alliance = new BasicAllianceInformations();
+            this.alliance.deserialize(param1);
+
+        }
+    }
     export class CharacterMinimalPlusLookAndGradeInformations extends CharacterMinimalPlusLookInformations implements INetworkType {
         public static ID: number = 193;
 
@@ -56545,45 +58427,6 @@ module Protocol {
             if (this.grade < 0) {
                 throw new Error('Forbidden value (' + this.grade + ') on element of CharacterMinimalPlusLookAndGradeInformations.grade.');
             }
-
-        }
-    }
-    export class CharacterMinimalPlusLookInformations extends CharacterMinimalInformations implements INetworkType {
-        public static ID: number = 163;
-
-        entityLook: EntityLook;
-
-        constructor() {
-            this.entityLook = new EntityLook();
-            super();
-        }
-
-        public getTypeId(): number {
-            return CharacterMinimalPlusLookInformations.ID;
-        }
-
-        public reset(): void {
-            this.entityLook = new EntityLook();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_CharacterMinimalPlusLookInformations(param1);
-        }
-
-        public serializeAs_CharacterMinimalPlusLookInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_CharacterMinimalInformations(param1);
-            this.entityLook.serializeAs_EntityLook(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_CharacterMinimalPlusLookInformations(param1);
-        }
-
-        public deserializeAs_CharacterMinimalPlusLookInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.entityLook = new EntityLook();
-            this.entityLook.deserialize(param1);
 
         }
     }
@@ -58288,6 +60131,42 @@ module Protocol {
 
         }
     }
+    export class GameRolePlayActorInformations extends GameContextActorInformations implements INetworkType {
+        public static ID: number = 141;
+
+
+
+        constructor() {
+
+            super();
+        }
+
+        public getTypeId(): number {
+            return GameRolePlayActorInformations.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameRolePlayActorInformations(param1);
+        }
+
+        public serializeAs_GameRolePlayActorInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameContextActorInformations(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameRolePlayActorInformations(param1);
+        }
+
+        public deserializeAs_GameRolePlayActorInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+
+        }
+    }
     export class GameRolePlayTaxCollectorInformations extends GameRolePlayActorInformations implements INetworkType {
         public static ID: number = 148;
 
@@ -58517,45 +60396,6 @@ module Protocol {
 
         }
     }
-    export class TaxCollectorStaticExtendedInformations extends TaxCollectorStaticInformations implements INetworkType {
-        public static ID: number = 440;
-
-        allianceIdentity: AllianceInformations;
-
-        constructor() {
-            this.allianceIdentity = new AllianceInformations();
-            super();
-        }
-
-        public getTypeId(): number {
-            return TaxCollectorStaticExtendedInformations.ID;
-        }
-
-        public reset(): void {
-            this.allianceIdentity = new AllianceInformations();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_TaxCollectorStaticExtendedInformations(param1);
-        }
-
-        public serializeAs_TaxCollectorStaticExtendedInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_TaxCollectorStaticInformations(param1);
-            this.allianceIdentity.serializeAs_AllianceInformations(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_TaxCollectorStaticExtendedInformations(param1);
-        }
-
-        public deserializeAs_TaxCollectorStaticExtendedInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.allianceIdentity = new AllianceInformations();
-            this.allianceIdentity.deserialize(param1);
-
-        }
-    }
     export class TaxCollectorStaticInformations implements INetworkType {
         public static ID: number = 147;
 
@@ -58611,6 +60451,45 @@ module Protocol {
             }
             this.guildIdentity = new GuildInformations();
             this.guildIdentity.deserialize(param1);
+
+        }
+    }
+    export class TaxCollectorStaticExtendedInformations extends TaxCollectorStaticInformations implements INetworkType {
+        public static ID: number = 440;
+
+        allianceIdentity: AllianceInformations;
+
+        constructor() {
+            this.allianceIdentity = new AllianceInformations();
+            super();
+        }
+
+        public getTypeId(): number {
+            return TaxCollectorStaticExtendedInformations.ID;
+        }
+
+        public reset(): void {
+            this.allianceIdentity = new AllianceInformations();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_TaxCollectorStaticExtendedInformations(param1);
+        }
+
+        public serializeAs_TaxCollectorStaticExtendedInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_TaxCollectorStaticInformations(param1);
+            this.allianceIdentity.serializeAs_AllianceInformations(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_TaxCollectorStaticExtendedInformations(param1);
+        }
+
+        public deserializeAs_TaxCollectorStaticExtendedInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.allianceIdentity = new AllianceInformations();
+            this.allianceIdentity.deserialize(param1);
 
         }
     }
@@ -58677,6 +60556,60 @@ module Protocol {
             this.nbWaves = param1.readByte();
             if (this.nbWaves < 0) {
                 throw new Error('Forbidden value (' + this.nbWaves + ') on element of AbstractFightTeamInformations.nbWaves.');
+            }
+
+        }
+    }
+    export class FightTeamInformations extends AbstractFightTeamInformations implements INetworkType {
+        public static ID: number = 33;
+
+        teamMembers: FightTeamMemberInformations[];
+
+        constructor() {
+            this.teamMembers = [];
+            super();
+        }
+
+        public getTypeId(): number {
+            return FightTeamInformations.ID;
+        }
+
+        public reset(): void {
+            this.teamMembers = [];
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_FightTeamInformations(param1);
+        }
+
+        public serializeAs_FightTeamInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractFightTeamInformations(param1);
+            param1.writeShort(this.teamMembers.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.teamMembers.length) {
+                param1.writeShort((this.teamMembers[_loc2_]).getTypeId());
+                (this.teamMembers[_loc2_]).serialize(param1);
+                _loc2_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_FightTeamInformations(param1);
+        }
+
+        public deserializeAs_FightTeamInformations(param1: ICustomDataInput): void {
+            var _loc4_: number = 0;
+            var _loc5_: FightTeamMemberInformations = null;
+            super.deserialize(param1);
+            var _loc2_: number = param1.readUnsignedShort();
+            var _loc3_: number = 0;
+            while (_loc3_ < _loc2_) {
+            _loc4_ = param1.readUnsignedShort();
+                _loc5_ = <FightTeamMemberInformations>ProtocolTypeManager.getInstance(FightTeamMemberInformations, _loc4_);
+                _loc5_.deserialize(param1);
+                this.teamMembers.push(_loc5_);
+                _loc3_++;
             }
 
         }
@@ -59206,49 +61139,6 @@ module Protocol {
 
         }
     }
-    export class FightResultFighterListEntry extends FightResultListEntry implements INetworkType {
-        public static ID: number = 189;
-
-        id: number;
-        alive: boolean;
-
-        constructor() {
-            this.id = 0;
-            this.alive = false;
-            super();
-        }
-
-        public getTypeId(): number {
-            return FightResultFighterListEntry.ID;
-        }
-
-        public reset(): void {
-            this.id = 0;
-            this.alive = false;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_FightResultFighterListEntry(param1);
-        }
-
-        public serializeAs_FightResultFighterListEntry(param1: ICustomDataOutput): void {
-            super.serializeAs_FightResultListEntry(param1);
-            param1.writeInt(this.id);
-            param1.writeBoolean(this.alive);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_FightResultFighterListEntry(param1);
-        }
-
-        public deserializeAs_FightResultFighterListEntry(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.id = param1.readInt();
-            this.alive = param1.readBoolean();
-
-        }
-    }
     export class FightResultListEntry implements INetworkType {
         public static ID: number = 16;
 
@@ -59301,6 +61191,49 @@ module Protocol {
             }
             this.rewards = new FightLoot();
             this.rewards.deserialize(param1);
+
+        }
+    }
+    export class FightResultFighterListEntry extends FightResultListEntry implements INetworkType {
+        public static ID: number = 189;
+
+        id: number;
+        alive: boolean;
+
+        constructor() {
+            this.id = 0;
+            this.alive = false;
+            super();
+        }
+
+        public getTypeId(): number {
+            return FightResultFighterListEntry.ID;
+        }
+
+        public reset(): void {
+            this.id = 0;
+            this.alive = false;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_FightResultFighterListEntry(param1);
+        }
+
+        public serializeAs_FightResultFighterListEntry(param1: ICustomDataOutput): void {
+            super.serializeAs_FightResultListEntry(param1);
+            param1.writeInt(this.id);
+            param1.writeBoolean(this.alive);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_FightResultFighterListEntry(param1);
+        }
+
+        public deserializeAs_FightResultFighterListEntry(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.id = param1.readInt();
+            this.alive = param1.readBoolean();
 
         }
     }
@@ -59550,60 +61483,6 @@ module Protocol {
 
         }
     }
-    export class FightTeamInformations extends AbstractFightTeamInformations implements INetworkType {
-        public static ID: number = 33;
-
-        teamMembers: FightTeamMemberInformations[];
-
-        constructor() {
-            this.teamMembers = [];
-            super();
-        }
-
-        public getTypeId(): number {
-            return FightTeamInformations.ID;
-        }
-
-        public reset(): void {
-            this.teamMembers = [];
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_FightTeamInformations(param1);
-        }
-
-        public serializeAs_FightTeamInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractFightTeamInformations(param1);
-            param1.writeShort(this.teamMembers.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.teamMembers.length) {
-                param1.writeShort((this.teamMembers[_loc2_]).getTypeId());
-                (this.teamMembers[_loc2_]).serialize(param1);
-                _loc2_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_FightTeamInformations(param1);
-        }
-
-        public deserializeAs_FightTeamInformations(param1: ICustomDataInput): void {
-            var _loc4_: number = 0;
-            var _loc5_: FightTeamMemberInformations = null;
-            super.deserialize(param1);
-            var _loc2_: number = param1.readUnsignedShort();
-            var _loc3_: number = 0;
-            while (_loc3_ < _loc2_) {
-            _loc4_ = param1.readUnsignedShort();
-                _loc5_ = <FightTeamMemberInformations>ProtocolTypeManager.getInstance(FightTeamMemberInformations, _loc4_);
-                _loc5_.deserialize(param1);
-                this.teamMembers.push(_loc5_);
-                _loc3_++;
-            }
-
-        }
-    }
     export class FightTeamLightInformations extends AbstractFightTeamInformations implements INetworkType {
         public static ID: number = 115;
 
@@ -59684,6 +61563,41 @@ module Protocol {
             if (this.meanLevel < 0) {
                 throw new Error('Forbidden value (' + this.meanLevel + ') on element of FightTeamLightInformations.meanLevel.');
             }
+
+        }
+    }
+    export class FightTeamMemberInformations implements INetworkType {
+        public static ID: number = 44;
+
+        id: number;
+
+        constructor() {
+            this.id = 0;
+        }
+
+        public getTypeId(): number {
+            return FightTeamMemberInformations.ID;
+        }
+
+        public reset(): void {
+            this.id = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_FightTeamMemberInformations(param1);
+        }
+
+        public serializeAs_FightTeamMemberInformations(param1: ICustomDataOutput): void {
+            param1.writeInt(this.id);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_FightTeamMemberInformations(param1);
+        }
+
+        public deserializeAs_FightTeamMemberInformations(param1: ICustomDataInput): void {
+            this.id = param1.readInt();
 
         }
     }
@@ -59793,41 +61707,6 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.level + ') on element of FightTeamMemberCompanionInformations.level.');
             }
             this.masterId = param1.readInt();
-
-        }
-    }
-    export class FightTeamMemberInformations implements INetworkType {
-        public static ID: number = 44;
-
-        id: number;
-
-        constructor() {
-            this.id = 0;
-        }
-
-        public getTypeId(): number {
-            return FightTeamMemberInformations.ID;
-        }
-
-        public reset(): void {
-            this.id = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_FightTeamMemberInformations(param1);
-        }
-
-        public serializeAs_FightTeamMemberInformations(param1: ICustomDataOutput): void {
-            param1.writeInt(this.id);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_FightTeamMemberInformations(param1);
-        }
-
-        public deserializeAs_FightTeamMemberInformations(param1: ICustomDataInput): void {
-            this.id = param1.readInt();
 
         }
     }
@@ -60007,6 +61886,94 @@ module Protocol {
 
         }
     }
+    export class GameFightFighterInformations extends GameContextActorInformations implements INetworkType {
+        public static ID: number = 143;
+
+        teamId: number;
+        wave: number;
+        alive: boolean;
+        stats: GameFightMinimalStats;
+        previousPositions: number[];
+
+        constructor() {
+            this.teamId = 2;
+            this.wave = 0;
+            this.alive = false;
+            this.stats = new GameFightMinimalStats();
+            this.previousPositions = [];
+            super();
+        }
+
+        public getTypeId(): number {
+            return GameFightFighterInformations.ID;
+        }
+
+        public reset(): void {
+            this.teamId = 2;
+            this.wave = 0;
+            this.alive = false;
+            this.stats = new GameFightMinimalStats();
+            this.previousPositions = [];
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameFightFighterInformations(param1);
+        }
+
+        public serializeAs_GameFightFighterInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameContextActorInformations(param1);
+            param1.writeByte(this.teamId);
+            if (this.wave < 0) {
+                throw new Error('Forbidden value (' + this.wave + ') on element wave.');
+            }
+            param1.writeByte(this.wave);
+            param1.writeBoolean(this.alive);
+            param1.writeShort(this.stats.getTypeId());
+            this.stats.serialize(param1);
+            param1.writeShort(this.previousPositions.length);
+            var _loc2_: number = 0;
+            while (_loc2_ < this.previousPositions.length) {
+                if (this.previousPositions[_loc2_] < 0 || this.previousPositions[_loc2_] > 559) {
+                    throw new Error('Forbidden value (' + this.previousPositions[_loc2_] + ') on element 5 (starting at 1) of previousPositions.');
+                }
+                param1.writeVarShort(this.previousPositions[_loc2_]);
+                _loc2_++;
+            }
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameFightFighterInformations(param1);
+        }
+
+        public deserializeAs_GameFightFighterInformations(param1: ICustomDataInput): void {
+            var _loc5_: number = 0;
+            super.deserialize(param1);
+            this.teamId = param1.readByte();
+            if (this.teamId < 0) {
+                throw new Error('Forbidden value (' + this.teamId + ') on element of GameFightFighterInformations.teamId.');
+            }
+            this.wave = param1.readByte();
+            if (this.wave < 0) {
+                throw new Error('Forbidden value (' + this.wave + ') on element of GameFightFighterInformations.wave.');
+            }
+            this.alive = param1.readBoolean();
+            var _loc2_: number = param1.readUnsignedShort();
+            this.stats = <GameFightMinimalStats>ProtocolTypeManager.getInstance(GameFightMinimalStats, _loc2_);
+            this.stats.deserialize(param1);
+            var _loc3_: number = param1.readUnsignedShort();
+            var _loc4_: number = 0;
+            while (_loc4_ < _loc3_) {
+            _loc5_ = param1.readVarUhShort();
+                if (_loc5_ < 0 || _loc5_ > 559) {
+                    throw new Error('Forbidden value (' + _loc5_ + ') on elements of previousPositions.');
+                }
+                this.previousPositions.push(_loc5_);
+                _loc4_++;
+            }
+
+        }
+    }
     export class GameFightAIInformations extends GameFightFighterInformations implements INetworkType {
         public static ID: number = 151;
 
@@ -60040,6 +62007,50 @@ module Protocol {
 
         public deserializeAs_GameFightAIInformations(param1: ICustomDataInput): void {
             super.deserialize(param1);
+
+        }
+    }
+    export class GameFightFighterNamedInformations extends GameFightFighterInformations implements INetworkType {
+        public static ID: number = 158;
+
+        name: string;
+        status: PlayerStatus;
+
+        constructor() {
+            this.name = '';
+            this.status = new PlayerStatus();
+            super();
+        }
+
+        public getTypeId(): number {
+            return GameFightFighterNamedInformations.ID;
+        }
+
+        public reset(): void {
+            this.name = '';
+            this.status = new PlayerStatus();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameFightFighterNamedInformations(param1);
+        }
+
+        public serializeAs_GameFightFighterNamedInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameFightFighterInformations(param1);
+            param1.writeUTF(this.name);
+            this.status.serializeAs_PlayerStatus(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameFightFighterNamedInformations(param1);
+        }
+
+        public deserializeAs_GameFightFighterNamedInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.name = param1.readUTF();
+            this.status = new PlayerStatus();
+            this.status.deserialize(param1);
 
         }
     }
@@ -60163,143 +62174,6 @@ module Protocol {
 
         }
     }
-    export class GameFightFighterCompanionLightInformations extends GameFightFighterLightInformations implements INetworkType {
-        public static ID: number = 454;
-
-        companionId: number;
-        masterId: number;
-
-        constructor() {
-            this.companionId = 0;
-            this.masterId = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return GameFightFighterCompanionLightInformations.ID;
-        }
-
-        public reset(): void {
-            this.companionId = 0;
-            this.masterId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameFightFighterCompanionLightInformations(param1);
-        }
-
-        public serializeAs_GameFightFighterCompanionLightInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameFightFighterLightInformations(param1);
-            if (this.companionId < 0) {
-                throw new Error('Forbidden value (' + this.companionId + ') on element companionId.');
-            }
-            param1.writeByte(this.companionId);
-            param1.writeInt(this.masterId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameFightFighterCompanionLightInformations(param1);
-        }
-
-        public deserializeAs_GameFightFighterCompanionLightInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.companionId = param1.readByte();
-            if (this.companionId < 0) {
-                throw new Error('Forbidden value (' + this.companionId + ') on element of GameFightFighterCompanionLightInformations.companionId.');
-            }
-            this.masterId = param1.readInt();
-
-        }
-    }
-    export class GameFightFighterInformations extends GameContextActorInformations implements INetworkType {
-        public static ID: number = 143;
-
-        teamId: number;
-        wave: number;
-        alive: boolean;
-        stats: GameFightMinimalStats;
-        previousPositions: number[];
-
-        constructor() {
-            this.teamId = 2;
-            this.wave = 0;
-            this.alive = false;
-            this.stats = new GameFightMinimalStats();
-            this.previousPositions = [];
-            super();
-        }
-
-        public getTypeId(): number {
-            return GameFightFighterInformations.ID;
-        }
-
-        public reset(): void {
-            this.teamId = 2;
-            this.wave = 0;
-            this.alive = false;
-            this.stats = new GameFightMinimalStats();
-            this.previousPositions = [];
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameFightFighterInformations(param1);
-        }
-
-        public serializeAs_GameFightFighterInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameContextActorInformations(param1);
-            param1.writeByte(this.teamId);
-            if (this.wave < 0) {
-                throw new Error('Forbidden value (' + this.wave + ') on element wave.');
-            }
-            param1.writeByte(this.wave);
-            param1.writeBoolean(this.alive);
-            param1.writeShort(this.stats.getTypeId());
-            this.stats.serialize(param1);
-            param1.writeShort(this.previousPositions.length);
-            var _loc2_: number = 0;
-            while (_loc2_ < this.previousPositions.length) {
-                if (this.previousPositions[_loc2_] < 0 || this.previousPositions[_loc2_] > 559) {
-                    throw new Error('Forbidden value (' + this.previousPositions[_loc2_] + ') on element 5 (starting at 1) of previousPositions.');
-                }
-                param1.writeVarShort(this.previousPositions[_loc2_]);
-                _loc2_++;
-            }
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameFightFighterInformations(param1);
-        }
-
-        public deserializeAs_GameFightFighterInformations(param1: ICustomDataInput): void {
-            var _loc5_: number = 0;
-            super.deserialize(param1);
-            this.teamId = param1.readByte();
-            if (this.teamId < 0) {
-                throw new Error('Forbidden value (' + this.teamId + ') on element of GameFightFighterInformations.teamId.');
-            }
-            this.wave = param1.readByte();
-            if (this.wave < 0) {
-                throw new Error('Forbidden value (' + this.wave + ') on element of GameFightFighterInformations.wave.');
-            }
-            this.alive = param1.readBoolean();
-            var _loc2_: number = param1.readUnsignedShort();
-            this.stats = <GameFightMinimalStats>ProtocolTypeManager.getInstance(GameFightMinimalStats, _loc2_);
-            this.stats.deserialize(param1);
-            var _loc3_: number = param1.readUnsignedShort();
-            var _loc4_: number = 0;
-            while (_loc4_ < _loc3_) {
-            _loc5_ = param1.readVarUhShort();
-                if (_loc5_ < 0 || _loc5_ > 559) {
-                    throw new Error('Forbidden value (' + _loc5_ + ') on elements of previousPositions.');
-                }
-                this.previousPositions.push(_loc5_);
-                _loc4_++;
-            }
-
-        }
-    }
     export class GameFightFighterLightInformations implements INetworkType {
         public static ID: number = 413;
 
@@ -60375,6 +62249,55 @@ module Protocol {
 
         }
     }
+    export class GameFightFighterCompanionLightInformations extends GameFightFighterLightInformations implements INetworkType {
+        public static ID: number = 454;
+
+        companionId: number;
+        masterId: number;
+
+        constructor() {
+            this.companionId = 0;
+            this.masterId = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return GameFightFighterCompanionLightInformations.ID;
+        }
+
+        public reset(): void {
+            this.companionId = 0;
+            this.masterId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GameFightFighterCompanionLightInformations(param1);
+        }
+
+        public serializeAs_GameFightFighterCompanionLightInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameFightFighterLightInformations(param1);
+            if (this.companionId < 0) {
+                throw new Error('Forbidden value (' + this.companionId + ') on element companionId.');
+            }
+            param1.writeByte(this.companionId);
+            param1.writeInt(this.masterId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GameFightFighterCompanionLightInformations(param1);
+        }
+
+        public deserializeAs_GameFightFighterCompanionLightInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.companionId = param1.readByte();
+            if (this.companionId < 0) {
+                throw new Error('Forbidden value (' + this.companionId + ') on element of GameFightFighterCompanionLightInformations.companionId.');
+            }
+            this.masterId = param1.readInt();
+
+        }
+    }
     export class GameFightFighterMonsterLightInformations extends GameFightFighterLightInformations implements INetworkType {
         public static ID: number = 455;
 
@@ -60416,50 +62339,6 @@ module Protocol {
             if (this.creatureGenericId < 0) {
                 throw new Error('Forbidden value (' + this.creatureGenericId + ') on element of GameFightFighterMonsterLightInformations.creatureGenericId.');
             }
-
-        }
-    }
-    export class GameFightFighterNamedInformations extends GameFightFighterInformations implements INetworkType {
-        public static ID: number = 158;
-
-        name: string;
-        status: PlayerStatus;
-
-        constructor() {
-            this.name = '';
-            this.status = new PlayerStatus();
-            super();
-        }
-
-        public getTypeId(): number {
-            return GameFightFighterNamedInformations.ID;
-        }
-
-        public reset(): void {
-            this.name = '';
-            this.status = new PlayerStatus();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameFightFighterNamedInformations(param1);
-        }
-
-        public serializeAs_GameFightFighterNamedInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameFightFighterInformations(param1);
-            param1.writeUTF(this.name);
-            this.status.serializeAs_PlayerStatus(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameFightFighterNamedInformations(param1);
-        }
-
-        public deserializeAs_GameFightFighterNamedInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.name = param1.readUTF();
-            this.status = new PlayerStatus();
-            this.status.deserialize(param1);
 
         }
     }
@@ -61190,6 +63069,126 @@ module Protocol {
 
         }
     }
+    export class AbstractSocialGroupInfos implements INetworkType {
+        public static ID: number = 416;
+
+
+
+        constructor() {
+
+        }
+
+        public getTypeId(): number {
+            return AbstractSocialGroupInfos.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_AbstractSocialGroupInfos(param1);
+        }
+
+        public serializeAs_AbstractSocialGroupInfos(param1: ICustomDataOutput): void {
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_AbstractSocialGroupInfos(param1);
+        }
+
+        public deserializeAs_AbstractSocialGroupInfos(param1: ICustomDataInput): void {
+
+        }
+    }
+    export class BasicAllianceInformations extends AbstractSocialGroupInfos implements INetworkType {
+        public static ID: number = 419;
+
+        allianceId: number;
+        allianceTag: string;
+
+        constructor() {
+            this.allianceId = 0;
+            this.allianceTag = '';
+            super();
+        }
+
+        public getTypeId(): number {
+            return BasicAllianceInformations.ID;
+        }
+
+        public reset(): void {
+            this.allianceId = 0;
+            this.allianceTag = '';
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_BasicAllianceInformations(param1);
+        }
+
+        public serializeAs_BasicAllianceInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_AbstractSocialGroupInfos(param1);
+            if (this.allianceId < 0) {
+                throw new Error('Forbidden value (' + this.allianceId + ') on element allianceId.');
+            }
+            param1.writeVarInt(this.allianceId);
+            param1.writeUTF(this.allianceTag);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_BasicAllianceInformations(param1);
+        }
+
+        public deserializeAs_BasicAllianceInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.allianceId = param1.readVarUhInt();
+            if (this.allianceId < 0) {
+                throw new Error('Forbidden value (' + this.allianceId + ') on element of BasicAllianceInformations.allianceId.');
+            }
+            this.allianceTag = param1.readUTF();
+
+        }
+    }
+    export class BasicNamedAllianceInformations extends BasicAllianceInformations implements INetworkType {
+        public static ID: number = 418;
+
+        allianceName: string;
+
+        constructor() {
+            this.allianceName = '';
+            super();
+        }
+
+        public getTypeId(): number {
+            return BasicNamedAllianceInformations.ID;
+        }
+
+        public reset(): void {
+            this.allianceName = '';
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_BasicNamedAllianceInformations(param1);
+        }
+
+        public serializeAs_BasicNamedAllianceInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_BasicAllianceInformations(param1);
+            param1.writeUTF(this.allianceName);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_BasicNamedAllianceInformations(param1);
+        }
+
+        public deserializeAs_BasicNamedAllianceInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.allianceName = param1.readUTF();
+
+        }
+    }
     export class AllianceInformations extends BasicNamedAllianceInformations implements INetworkType {
         public static ID: number = 417;
 
@@ -61338,55 +63337,6 @@ module Protocol {
 
         }
     }
-    export class BasicAllianceInformations extends AbstractSocialGroupInfos implements INetworkType {
-        public static ID: number = 419;
-
-        allianceId: number;
-        allianceTag: string;
-
-        constructor() {
-            this.allianceId = 0;
-            this.allianceTag = '';
-            super();
-        }
-
-        public getTypeId(): number {
-            return BasicAllianceInformations.ID;
-        }
-
-        public reset(): void {
-            this.allianceId = 0;
-            this.allianceTag = '';
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_BasicAllianceInformations(param1);
-        }
-
-        public serializeAs_BasicAllianceInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_AbstractSocialGroupInfos(param1);
-            if (this.allianceId < 0) {
-                throw new Error('Forbidden value (' + this.allianceId + ') on element allianceId.');
-            }
-            param1.writeVarInt(this.allianceId);
-            param1.writeUTF(this.allianceTag);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_BasicAllianceInformations(param1);
-        }
-
-        public deserializeAs_BasicAllianceInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.allianceId = param1.readVarUhInt();
-            if (this.allianceId < 0) {
-                throw new Error('Forbidden value (' + this.allianceId + ') on element of BasicAllianceInformations.allianceId.');
-            }
-            this.allianceTag = param1.readUTF();
-
-        }
-    }
     export class BasicGuildInformations extends AbstractSocialGroupInfos implements INetworkType {
         public static ID: number = 365;
 
@@ -61436,77 +63386,93 @@ module Protocol {
 
         }
     }
-    export class BasicNamedAllianceInformations extends BasicAllianceInformations implements INetworkType {
-        public static ID: number = 418;
+    export class GameRolePlayNamedActorInformations extends GameRolePlayActorInformations implements INetworkType {
+        public static ID: number = 154;
 
-        allianceName: string;
+        name: string;
 
         constructor() {
-            this.allianceName = '';
+            this.name = '';
             super();
         }
 
         public getTypeId(): number {
-            return BasicNamedAllianceInformations.ID;
+            return GameRolePlayNamedActorInformations.ID;
         }
 
         public reset(): void {
-            this.allianceName = '';
+            this.name = '';
         }
 
         public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_BasicNamedAllianceInformations(param1);
+            this.serializeAs_GameRolePlayNamedActorInformations(param1);
         }
 
-        public serializeAs_BasicNamedAllianceInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_BasicAllianceInformations(param1);
-            param1.writeUTF(this.allianceName);
+        public serializeAs_GameRolePlayNamedActorInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameRolePlayActorInformations(param1);
+            param1.writeUTF(this.name);
 
         }
 
         public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_BasicNamedAllianceInformations(param1);
+            this.deserializeAs_GameRolePlayNamedActorInformations(param1);
         }
 
-        public deserializeAs_BasicNamedAllianceInformations(param1: ICustomDataInput): void {
+        public deserializeAs_GameRolePlayNamedActorInformations(param1: ICustomDataInput): void {
             super.deserialize(param1);
-            this.allianceName = param1.readUTF();
+            this.name = param1.readUTF();
 
         }
     }
-    export class GameRolePlayActorInformations extends GameContextActorInformations implements INetworkType {
-        public static ID: number = 141;
+    export class GameRolePlayHumanoidInformations extends GameRolePlayNamedActorInformations implements INetworkType {
+        public static ID: number = 159;
 
-
+        humanoidInfo: HumanInformations;
+        accountId: number;
 
         constructor() {
-
+            this.humanoidInfo = new HumanInformations();
+            this.accountId = 0;
             super();
         }
 
         public getTypeId(): number {
-            return GameRolePlayActorInformations.ID;
+            return GameRolePlayHumanoidInformations.ID;
         }
 
         public reset(): void {
-
+            this.humanoidInfo = new HumanInformations();
+            this.accountId = 0;
         }
 
         public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameRolePlayActorInformations(param1);
+            this.serializeAs_GameRolePlayHumanoidInformations(param1);
         }
 
-        public serializeAs_GameRolePlayActorInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameContextActorInformations(param1);
+        public serializeAs_GameRolePlayHumanoidInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_GameRolePlayNamedActorInformations(param1);
+            param1.writeShort(this.humanoidInfo.getTypeId());
+            this.humanoidInfo.serialize(param1);
+            if (this.accountId < 0) {
+                throw new Error('Forbidden value (' + this.accountId + ') on element accountId.');
+            }
+            param1.writeInt(this.accountId);
 
         }
 
         public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameRolePlayActorInformations(param1);
+            this.deserializeAs_GameRolePlayHumanoidInformations(param1);
         }
 
-        public deserializeAs_GameRolePlayActorInformations(param1: ICustomDataInput): void {
+        public deserializeAs_GameRolePlayHumanoidInformations(param1: ICustomDataInput): void {
             super.deserialize(param1);
+            var _loc2_: number = param1.readUnsignedShort();
+            this.humanoidInfo = <HumanInformations>ProtocolTypeManager.getInstance(HumanInformations, _loc2_);
+            this.humanoidInfo.deserialize(param1);
+            this.accountId = param1.readInt();
+            if (this.accountId < 0) {
+                throw new Error('Forbidden value (' + this.accountId + ') on element of GameRolePlayHumanoidInformations.accountId.');
+            }
 
         }
     }
@@ -61711,58 +63677,6 @@ module Protocol {
 
         }
     }
-    export class GameRolePlayHumanoidInformations extends GameRolePlayNamedActorInformations implements INetworkType {
-        public static ID: number = 159;
-
-        humanoidInfo: HumanInformations;
-        accountId: number;
-
-        constructor() {
-            this.humanoidInfo = new HumanInformations();
-            this.accountId = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return GameRolePlayHumanoidInformations.ID;
-        }
-
-        public reset(): void {
-            this.humanoidInfo = new HumanInformations();
-            this.accountId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameRolePlayHumanoidInformations(param1);
-        }
-
-        public serializeAs_GameRolePlayHumanoidInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameRolePlayNamedActorInformations(param1);
-            param1.writeShort(this.humanoidInfo.getTypeId());
-            this.humanoidInfo.serialize(param1);
-            if (this.accountId < 0) {
-                throw new Error('Forbidden value (' + this.accountId + ') on element accountId.');
-            }
-            param1.writeInt(this.accountId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameRolePlayHumanoidInformations(param1);
-        }
-
-        public deserializeAs_GameRolePlayHumanoidInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            var _loc2_: number = param1.readUnsignedShort();
-            this.humanoidInfo = <HumanInformations>ProtocolTypeManager.getInstance(HumanInformations, _loc2_);
-            this.humanoidInfo.deserialize(param1);
-            this.accountId = param1.readInt();
-            if (this.accountId < 0) {
-                throw new Error('Forbidden value (' + this.accountId + ') on element of GameRolePlayHumanoidInformations.accountId.');
-            }
-
-        }
-    }
     export class GameRolePlayMerchantInformations extends GameRolePlayNamedActorInformations implements INetworkType {
         public static ID: number = 129;
 
@@ -61923,44 +63837,6 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.monsterId + ') on element of GameRolePlayMutantInformations.monsterId.');
             }
             this.powerLevel = param1.readByte();
-
-        }
-    }
-    export class GameRolePlayNamedActorInformations extends GameRolePlayActorInformations implements INetworkType {
-        public static ID: number = 154;
-
-        name: string;
-
-        constructor() {
-            this.name = '';
-            super();
-        }
-
-        public getTypeId(): number {
-            return GameRolePlayNamedActorInformations.ID;
-        }
-
-        public reset(): void {
-            this.name = '';
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GameRolePlayNamedActorInformations(param1);
-        }
-
-        public serializeAs_GameRolePlayNamedActorInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_GameRolePlayActorInformations(param1);
-            param1.writeUTF(this.name);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GameRolePlayNamedActorInformations(param1);
-        }
-
-        public deserializeAs_GameRolePlayNamedActorInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.name = param1.readUTF();
 
         }
     }
@@ -62294,6 +64170,45 @@ module Protocol {
 
         }
     }
+    export class GuildInformations extends BasicGuildInformations implements INetworkType {
+        public static ID: number = 127;
+
+        guildEmblem: GuildEmblem;
+
+        constructor() {
+            this.guildEmblem = new GuildEmblem();
+            super();
+        }
+
+        public getTypeId(): number {
+            return GuildInformations.ID;
+        }
+
+        public reset(): void {
+            this.guildEmblem = new GuildEmblem();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GuildInformations(param1);
+        }
+
+        public serializeAs_GuildInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_BasicGuildInformations(param1);
+            this.guildEmblem.serializeAs_GuildEmblem(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GuildInformations(param1);
+        }
+
+        public deserializeAs_GuildInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.guildEmblem = new GuildEmblem();
+            this.guildEmblem.deserialize(param1);
+
+        }
+    }
     export class GuildInAllianceInformations extends GuildInformations implements INetworkType {
         public static ID: number = 420;
 
@@ -62351,45 +64266,6 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.nbMembers + ') on element of GuildInAllianceInformations.nbMembers.');
             }
             this.enabled = param1.readBoolean();
-
-        }
-    }
-    export class GuildInformations extends BasicGuildInformations implements INetworkType {
-        public static ID: number = 127;
-
-        guildEmblem: GuildEmblem;
-
-        constructor() {
-            this.guildEmblem = new GuildEmblem();
-            super();
-        }
-
-        public getTypeId(): number {
-            return GuildInformations.ID;
-        }
-
-        public reset(): void {
-            this.guildEmblem = new GuildEmblem();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GuildInformations(param1);
-        }
-
-        public serializeAs_GuildInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_BasicGuildInformations(param1);
-            this.guildEmblem.serializeAs_GuildEmblem(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GuildInformations(param1);
-        }
-
-        public deserializeAs_GuildInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.guildEmblem = new GuildEmblem();
-            this.guildEmblem.deserialize(param1);
 
         }
     }
@@ -62836,45 +64712,6 @@ module Protocol {
 
         }
     }
-    export class MonsterInGroupInformations extends MonsterInGroupLightInformations implements INetworkType {
-        public static ID: number = 144;
-
-        look: EntityLook;
-
-        constructor() {
-            this.look = new EntityLook();
-            super();
-        }
-
-        public getTypeId(): number {
-            return MonsterInGroupInformations.ID;
-        }
-
-        public reset(): void {
-            this.look = new EntityLook();
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_MonsterInGroupInformations(param1);
-        }
-
-        public serializeAs_MonsterInGroupInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_MonsterInGroupLightInformations(param1);
-            this.look.serializeAs_EntityLook(param1);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_MonsterInGroupInformations(param1);
-        }
-
-        public deserializeAs_MonsterInGroupInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.look = new EntityLook();
-            this.look.deserialize(param1);
-
-        }
-    }
     export class MonsterInGroupLightInformations implements INetworkType {
         public static ID: number = 395;
 
@@ -62918,6 +64755,45 @@ module Protocol {
             if (this.grade < 0) {
                 throw new Error('Forbidden value (' + this.grade + ') on element of MonsterInGroupLightInformations.grade.');
             }
+
+        }
+    }
+    export class MonsterInGroupInformations extends MonsterInGroupLightInformations implements INetworkType {
+        public static ID: number = 144;
+
+        look: EntityLook;
+
+        constructor() {
+            this.look = new EntityLook();
+            super();
+        }
+
+        public getTypeId(): number {
+            return MonsterInGroupInformations.ID;
+        }
+
+        public reset(): void {
+            this.look = new EntityLook();
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_MonsterInGroupInformations(param1);
+        }
+
+        public serializeAs_MonsterInGroupInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_MonsterInGroupLightInformations(param1);
+            this.look.serializeAs_EntityLook(param1);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_MonsterInGroupInformations(param1);
+        }
+
+        public deserializeAs_MonsterInGroupInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.look = new EntityLook();
+            this.look.deserialize(param1);
 
         }
     }
@@ -63844,129 +65720,6 @@ module Protocol {
 
         }
     }
-    export class PartyMemberArenaInformations extends PartyMemberInformations implements INetworkType {
-        public static ID: number = 391;
-
-        rank: number;
-
-        constructor() {
-            this.rank = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return PartyMemberArenaInformations.ID;
-        }
-
-        public reset(): void {
-            this.rank = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyMemberArenaInformations(param1);
-        }
-
-        public serializeAs_PartyMemberArenaInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_PartyMemberInformations(param1);
-            if (this.rank < 0 || this.rank > 2300) {
-                throw new Error('Forbidden value (' + this.rank + ') on element rank.');
-            }
-            param1.writeVarShort(this.rank);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyMemberArenaInformations(param1);
-        }
-
-        public deserializeAs_PartyMemberArenaInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.rank = param1.readVarUhShort();
-            if (this.rank < 0 || this.rank > 2300) {
-                throw new Error('Forbidden value (' + this.rank + ') on element of PartyMemberArenaInformations.rank.');
-            }
-
-        }
-    }
-    export class PartyMemberGeoPosition implements INetworkType {
-        public static ID: number = 378;
-
-        memberId: number;
-        worldX: number;
-        worldY: number;
-        mapId: number;
-        subAreaId: number;
-
-        constructor() {
-            this.memberId = 0;
-            this.worldX = 0;
-            this.worldY = 0;
-            this.mapId = 0;
-            this.subAreaId = 0;
-        }
-
-        public getTypeId(): number {
-            return PartyMemberGeoPosition.ID;
-        }
-
-        public reset(): void {
-            this.memberId = 0;
-            this.worldX = 0;
-            this.worldY = 0;
-            this.mapId = 0;
-            this.subAreaId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PartyMemberGeoPosition(param1);
-        }
-
-        public serializeAs_PartyMemberGeoPosition(param1: ICustomDataOutput): void {
-            if (this.memberId < 0) {
-                throw new Error('Forbidden value (' + this.memberId + ') on element memberId.');
-            }
-            param1.writeInt(this.memberId);
-            if (this.worldX < -255 || this.worldX > 255) {
-                throw new Error('Forbidden value (' + this.worldX + ') on element worldX.');
-            }
-            param1.writeShort(this.worldX);
-            if (this.worldY < -255 || this.worldY > 255) {
-                throw new Error('Forbidden value (' + this.worldY + ') on element worldY.');
-            }
-            param1.writeShort(this.worldY);
-            param1.writeInt(this.mapId);
-            if (this.subAreaId < 0) {
-                throw new Error('Forbidden value (' + this.subAreaId + ') on element subAreaId.');
-            }
-            param1.writeVarShort(this.subAreaId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PartyMemberGeoPosition(param1);
-        }
-
-        public deserializeAs_PartyMemberGeoPosition(param1: ICustomDataInput): void {
-            this.memberId = param1.readInt();
-            if (this.memberId < 0) {
-                throw new Error('Forbidden value (' + this.memberId + ') on element of PartyMemberGeoPosition.memberId.');
-            }
-            this.worldX = param1.readShort();
-            if (this.worldX < -255 || this.worldX > 255) {
-                throw new Error('Forbidden value (' + this.worldX + ') on element of PartyMemberGeoPosition.worldX.');
-            }
-            this.worldY = param1.readShort();
-            if (this.worldY < -255 || this.worldY > 255) {
-                throw new Error('Forbidden value (' + this.worldY + ') on element of PartyMemberGeoPosition.worldY.');
-            }
-            this.mapId = param1.readInt();
-            this.subAreaId = param1.readVarUhShort();
-            if (this.subAreaId < 0) {
-                throw new Error('Forbidden value (' + this.subAreaId + ') on element of PartyMemberGeoPosition.subAreaId.');
-            }
-
-        }
-    }
     export class PartyMemberInformations extends CharacterBaseInformations implements INetworkType {
         public static ID: number = 90;
 
@@ -64120,6 +65873,129 @@ module Protocol {
                 _loc5_.deserialize(param1);
                 this.companions.push(_loc5_);
                 _loc4_++;
+            }
+
+        }
+    }
+    export class PartyMemberArenaInformations extends PartyMemberInformations implements INetworkType {
+        public static ID: number = 391;
+
+        rank: number;
+
+        constructor() {
+            this.rank = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return PartyMemberArenaInformations.ID;
+        }
+
+        public reset(): void {
+            this.rank = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyMemberArenaInformations(param1);
+        }
+
+        public serializeAs_PartyMemberArenaInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_PartyMemberInformations(param1);
+            if (this.rank < 0 || this.rank > 2300) {
+                throw new Error('Forbidden value (' + this.rank + ') on element rank.');
+            }
+            param1.writeVarShort(this.rank);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyMemberArenaInformations(param1);
+        }
+
+        public deserializeAs_PartyMemberArenaInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.rank = param1.readVarUhShort();
+            if (this.rank < 0 || this.rank > 2300) {
+                throw new Error('Forbidden value (' + this.rank + ') on element of PartyMemberArenaInformations.rank.');
+            }
+
+        }
+    }
+    export class PartyMemberGeoPosition implements INetworkType {
+        public static ID: number = 378;
+
+        memberId: number;
+        worldX: number;
+        worldY: number;
+        mapId: number;
+        subAreaId: number;
+
+        constructor() {
+            this.memberId = 0;
+            this.worldX = 0;
+            this.worldY = 0;
+            this.mapId = 0;
+            this.subAreaId = 0;
+        }
+
+        public getTypeId(): number {
+            return PartyMemberGeoPosition.ID;
+        }
+
+        public reset(): void {
+            this.memberId = 0;
+            this.worldX = 0;
+            this.worldY = 0;
+            this.mapId = 0;
+            this.subAreaId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PartyMemberGeoPosition(param1);
+        }
+
+        public serializeAs_PartyMemberGeoPosition(param1: ICustomDataOutput): void {
+            if (this.memberId < 0) {
+                throw new Error('Forbidden value (' + this.memberId + ') on element memberId.');
+            }
+            param1.writeInt(this.memberId);
+            if (this.worldX < -255 || this.worldX > 255) {
+                throw new Error('Forbidden value (' + this.worldX + ') on element worldX.');
+            }
+            param1.writeShort(this.worldX);
+            if (this.worldY < -255 || this.worldY > 255) {
+                throw new Error('Forbidden value (' + this.worldY + ') on element worldY.');
+            }
+            param1.writeShort(this.worldY);
+            param1.writeInt(this.mapId);
+            if (this.subAreaId < 0) {
+                throw new Error('Forbidden value (' + this.subAreaId + ') on element subAreaId.');
+            }
+            param1.writeVarShort(this.subAreaId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PartyMemberGeoPosition(param1);
+        }
+
+        public deserializeAs_PartyMemberGeoPosition(param1: ICustomDataInput): void {
+            this.memberId = param1.readInt();
+            if (this.memberId < 0) {
+                throw new Error('Forbidden value (' + this.memberId + ') on element of PartyMemberGeoPosition.memberId.');
+            }
+            this.worldX = param1.readShort();
+            if (this.worldX < -255 || this.worldX > 255) {
+                throw new Error('Forbidden value (' + this.worldX + ') on element of PartyMemberGeoPosition.worldX.');
+            }
+            this.worldY = param1.readShort();
+            if (this.worldY < -255 || this.worldY > 255) {
+                throw new Error('Forbidden value (' + this.worldY + ') on element of PartyMemberGeoPosition.worldY.');
+            }
+            this.mapId = param1.readInt();
+            this.subAreaId = param1.readVarUhShort();
+            if (this.subAreaId < 0) {
+                throw new Error('Forbidden value (' + this.subAreaId + ') on element of PartyMemberGeoPosition.subAreaId.');
             }
 
         }
@@ -64346,6 +66222,47 @@ module Protocol {
 
         }
     }
+    export class QuestActiveInformations implements INetworkType {
+        public static ID: number = 381;
+
+        questId: number;
+
+        constructor() {
+            this.questId = 0;
+        }
+
+        public getTypeId(): number {
+            return QuestActiveInformations.ID;
+        }
+
+        public reset(): void {
+            this.questId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_QuestActiveInformations(param1);
+        }
+
+        public serializeAs_QuestActiveInformations(param1: ICustomDataOutput): void {
+            if (this.questId < 0) {
+                throw new Error('Forbidden value (' + this.questId + ') on element questId.');
+            }
+            param1.writeVarShort(this.questId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_QuestActiveInformations(param1);
+        }
+
+        public deserializeAs_QuestActiveInformations(param1: ICustomDataInput): void {
+            this.questId = param1.readVarUhShort();
+            if (this.questId < 0) {
+                throw new Error('Forbidden value (' + this.questId + ') on element of QuestActiveInformations.questId.');
+            }
+
+        }
+    }
     export class QuestActiveDetailedInformations extends QuestActiveInformations implements INetworkType {
         public static ID: number = 382;
 
@@ -64407,47 +66324,6 @@ module Protocol {
                 _loc5_.deserialize(param1);
                 this.objectives.push(_loc5_);
                 _loc3_++;
-            }
-
-        }
-    }
-    export class QuestActiveInformations implements INetworkType {
-        public static ID: number = 381;
-
-        questId: number;
-
-        constructor() {
-            this.questId = 0;
-        }
-
-        public getTypeId(): number {
-            return QuestActiveInformations.ID;
-        }
-
-        public reset(): void {
-            this.questId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_QuestActiveInformations(param1);
-        }
-
-        public serializeAs_QuestActiveInformations(param1: ICustomDataOutput): void {
-            if (this.questId < 0) {
-                throw new Error('Forbidden value (' + this.questId + ') on element questId.');
-            }
-            param1.writeVarShort(this.questId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_QuestActiveInformations(param1);
-        }
-
-        public deserializeAs_QuestActiveInformations(param1: ICustomDataInput): void {
-            this.questId = param1.readVarUhShort();
-            if (this.questId < 0) {
-                throw new Error('Forbidden value (' + this.questId + ') on element of QuestActiveInformations.questId.');
             }
 
         }
@@ -65001,6 +66877,39 @@ module Protocol {
 
         }
     }
+    export class Item implements INetworkType {
+        public static ID: number = 7;
+
+
+
+        constructor() {
+
+        }
+
+        public getTypeId(): number {
+            return Item.ID;
+        }
+
+        public reset(): void {
+
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_Item(param1);
+        }
+
+        public serializeAs_Item(param1: ICustomDataOutput): void {
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_Item(param1);
+        }
+
+        public deserializeAs_Item(param1: ICustomDataInput): void {
+
+        }
+    }
     export class GoldItem extends Item implements INetworkType {
         public static ID: number = 123;
 
@@ -65042,39 +66951,6 @@ module Protocol {
             if (this.sum < 0) {
                 throw new Error('Forbidden value (' + this.sum + ') on element of GoldItem.sum.');
             }
-
-        }
-    }
-    export class Item implements INetworkType {
-        public static ID: number = 7;
-
-
-
-        constructor() {
-
-        }
-
-        public getTypeId(): number {
-            return Item.ID;
-        }
-
-        public reset(): void {
-
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_Item(param1);
-        }
-
-        public serializeAs_Item(param1: ICustomDataOutput): void {
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_Item(param1);
-        }
-
-        public deserializeAs_Item(param1: ICustomDataInput): void {
 
         }
     }
@@ -65228,50 +67104,6 @@ module Protocol {
 
         }
     }
-    export class ObjectItemInformationWithQuantity extends ObjectItemMinimalInformation implements INetworkType {
-        public static ID: number = 387;
-
-        quantity: number;
-
-        constructor() {
-            this.quantity = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return ObjectItemInformationWithQuantity.ID;
-        }
-
-        public reset(): void {
-            this.quantity = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_ObjectItemInformationWithQuantity(param1);
-        }
-
-        public serializeAs_ObjectItemInformationWithQuantity(param1: ICustomDataOutput): void {
-            super.serializeAs_ObjectItemMinimalInformation(param1);
-            if (this.quantity < 0) {
-                throw new Error('Forbidden value (' + this.quantity + ') on element quantity.');
-            }
-            param1.writeVarInt(this.quantity);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_ObjectItemInformationWithQuantity(param1);
-        }
-
-        public deserializeAs_ObjectItemInformationWithQuantity(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.quantity = param1.readVarUhInt();
-            if (this.quantity < 0) {
-                throw new Error('Forbidden value (' + this.quantity + ') on element of ObjectItemInformationWithQuantity.quantity.');
-            }
-
-        }
-    }
     export class ObjectItemMinimalInformation extends Item implements INetworkType {
         public static ID: number = 124;
 
@@ -65333,6 +67165,50 @@ module Protocol {
                 _loc5_.deserialize(param1);
                 this.effects.push(_loc5_);
                 _loc3_++;
+            }
+
+        }
+    }
+    export class ObjectItemInformationWithQuantity extends ObjectItemMinimalInformation implements INetworkType {
+        public static ID: number = 387;
+
+        quantity: number;
+
+        constructor() {
+            this.quantity = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return ObjectItemInformationWithQuantity.ID;
+        }
+
+        public reset(): void {
+            this.quantity = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_ObjectItemInformationWithQuantity(param1);
+        }
+
+        public serializeAs_ObjectItemInformationWithQuantity(param1: ICustomDataOutput): void {
+            super.serializeAs_ObjectItemMinimalInformation(param1);
+            if (this.quantity < 0) {
+                throw new Error('Forbidden value (' + this.quantity + ') on element quantity.');
+            }
+            param1.writeVarInt(this.quantity);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_ObjectItemInformationWithQuantity(param1);
+        }
+
+        public deserializeAs_ObjectItemInformationWithQuantity(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.quantity = param1.readVarUhInt();
+            if (this.quantity < 0) {
+                throw new Error('Forbidden value (' + this.quantity + ') on element of ObjectItemInformationWithQuantity.quantity.');
             }
 
         }
@@ -68546,50 +70422,6 @@ module Protocol {
 
         }
     }
-    export class InteractiveElementNamedSkill extends InteractiveElementSkill implements INetworkType {
-        public static ID: number = 220;
-
-        nameId: number;
-
-        constructor() {
-            this.nameId = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return InteractiveElementNamedSkill.ID;
-        }
-
-        public reset(): void {
-            this.nameId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_InteractiveElementNamedSkill(param1);
-        }
-
-        public serializeAs_InteractiveElementNamedSkill(param1: ICustomDataOutput): void {
-            super.serializeAs_InteractiveElementSkill(param1);
-            if (this.nameId < 0) {
-                throw new Error('Forbidden value (' + this.nameId + ') on element nameId.');
-            }
-            param1.writeVarInt(this.nameId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_InteractiveElementNamedSkill(param1);
-        }
-
-        public deserializeAs_InteractiveElementNamedSkill(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.nameId = param1.readVarUhInt();
-            if (this.nameId < 0) {
-                throw new Error('Forbidden value (' + this.nameId + ') on element of InteractiveElementNamedSkill.nameId.');
-            }
-
-        }
-    }
     export class InteractiveElementSkill implements INetworkType {
         public static ID: number = 219;
 
@@ -68638,6 +70470,50 @@ module Protocol {
             this.skillInstanceUid = param1.readInt();
             if (this.skillInstanceUid < 0) {
                 throw new Error('Forbidden value (' + this.skillInstanceUid + ') on element of InteractiveElementSkill.skillInstanceUid.');
+            }
+
+        }
+    }
+    export class InteractiveElementNamedSkill extends InteractiveElementSkill implements INetworkType {
+        public static ID: number = 220;
+
+        nameId: number;
+
+        constructor() {
+            this.nameId = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return InteractiveElementNamedSkill.ID;
+        }
+
+        public reset(): void {
+            this.nameId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_InteractiveElementNamedSkill(param1);
+        }
+
+        public serializeAs_InteractiveElementNamedSkill(param1: ICustomDataOutput): void {
+            super.serializeAs_InteractiveElementSkill(param1);
+            if (this.nameId < 0) {
+                throw new Error('Forbidden value (' + this.nameId + ') on element nameId.');
+            }
+            param1.writeVarInt(this.nameId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_InteractiveElementNamedSkill(param1);
+        }
+
+        public deserializeAs_InteractiveElementNamedSkill(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.nameId = param1.readVarUhInt();
+            if (this.nameId < 0) {
+                throw new Error('Forbidden value (' + this.nameId + ') on element of InteractiveElementNamedSkill.nameId.');
             }
 
         }
@@ -68839,6 +70715,50 @@ module Protocol {
 
         }
     }
+    export class SkillActionDescriptionTimed extends SkillActionDescription implements INetworkType {
+        public static ID: number = 103;
+
+        time: number;
+
+        constructor() {
+            this.time = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return SkillActionDescriptionTimed.ID;
+        }
+
+        public reset(): void {
+            this.time = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_SkillActionDescriptionTimed(param1);
+        }
+
+        public serializeAs_SkillActionDescriptionTimed(param1: ICustomDataOutput): void {
+            super.serializeAs_SkillActionDescription(param1);
+            if (this.time < 0 || this.time > 255) {
+                throw new Error('Forbidden value (' + this.time + ') on element time.');
+            }
+            param1.writeByte(this.time);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_SkillActionDescriptionTimed(param1);
+        }
+
+        public deserializeAs_SkillActionDescriptionTimed(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.time = param1.readUnsignedByte();
+            if (this.time < 0 || this.time > 255) {
+                throw new Error('Forbidden value (' + this.time + ') on element of SkillActionDescriptionTimed.time.');
+            }
+
+        }
+    }
     export class SkillActionDescriptionCollect extends SkillActionDescriptionTimed implements INetworkType {
         public static ID: number = 99;
 
@@ -68934,50 +70854,6 @@ module Protocol {
             this.probability = param1.readByte();
             if (this.probability < 0) {
                 throw new Error('Forbidden value (' + this.probability + ') on element of SkillActionDescriptionCraft.probability.');
-            }
-
-        }
-    }
-    export class SkillActionDescriptionTimed extends SkillActionDescription implements INetworkType {
-        public static ID: number = 103;
-
-        time: number;
-
-        constructor() {
-            this.time = 0;
-            super();
-        }
-
-        public getTypeId(): number {
-            return SkillActionDescriptionTimed.ID;
-        }
-
-        public reset(): void {
-            this.time = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_SkillActionDescriptionTimed(param1);
-        }
-
-        public serializeAs_SkillActionDescriptionTimed(param1: ICustomDataOutput): void {
-            super.serializeAs_SkillActionDescription(param1);
-            if (this.time < 0 || this.time > 255) {
-                throw new Error('Forbidden value (' + this.time + ') on element time.');
-            }
-            param1.writeByte(this.time);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_SkillActionDescriptionTimed(param1);
-        }
-
-        public deserializeAs_SkillActionDescriptionTimed(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.time = param1.readUnsignedByte();
-            if (this.time < 0 || this.time > 255) {
-                throw new Error('Forbidden value (' + this.time + ') on element of SkillActionDescriptionTimed.time.');
             }
 
         }
@@ -69939,41 +71815,55 @@ module Protocol {
 
         }
     }
-    export class PaddockAbandonnedInformations extends PaddockBuyableInformations implements INetworkType {
-        public static ID: number = 133;
+    export class PaddockInformations implements INetworkType {
+        public static ID: number = 132;
 
-        guildId: number;
+        maxOutdoorMount: number;
+        maxItems: number;
 
         constructor() {
-            this.guildId = 0;
-            super();
+            this.maxOutdoorMount = 0;
+            this.maxItems = 0;
         }
 
         public getTypeId(): number {
-            return PaddockAbandonnedInformations.ID;
+            return PaddockInformations.ID;
         }
 
         public reset(): void {
-            this.guildId = 0;
+            this.maxOutdoorMount = 0;
+            this.maxItems = 0;
         }
 
         public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PaddockAbandonnedInformations(param1);
+            this.serializeAs_PaddockInformations(param1);
         }
 
-        public serializeAs_PaddockAbandonnedInformations(param1: ICustomDataOutput): void {
-            super.serializeAs_PaddockBuyableInformations(param1);
-            param1.writeInt(this.guildId);
+        public serializeAs_PaddockInformations(param1: ICustomDataOutput): void {
+            if (this.maxOutdoorMount < 0) {
+                throw new Error('Forbidden value (' + this.maxOutdoorMount + ') on element maxOutdoorMount.');
+            }
+            param1.writeVarShort(this.maxOutdoorMount);
+            if (this.maxItems < 0) {
+                throw new Error('Forbidden value (' + this.maxItems + ') on element maxItems.');
+            }
+            param1.writeVarShort(this.maxItems);
 
         }
 
         public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PaddockAbandonnedInformations(param1);
+            this.deserializeAs_PaddockInformations(param1);
         }
 
-        public deserializeAs_PaddockAbandonnedInformations(param1: ICustomDataInput): void {
-            super.deserialize(param1);
-            this.guildId = param1.readInt();
+        public deserializeAs_PaddockInformations(param1: ICustomDataInput): void {
+            this.maxOutdoorMount = param1.readVarUhShort();
+            if (this.maxOutdoorMount < 0) {
+                throw new Error('Forbidden value (' + this.maxOutdoorMount + ') on element of PaddockInformations.maxOutdoorMount.');
+            }
+            this.maxItems = param1.readVarUhShort();
+            if (this.maxItems < 0) {
+                throw new Error('Forbidden value (' + this.maxItems + ') on element of PaddockInformations.maxItems.');
+            }
 
         }
     }
@@ -70023,6 +71913,44 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.price + ') on element of PaddockBuyableInformations.price.');
             }
             this.locked = param1.readBoolean();
+
+        }
+    }
+    export class PaddockAbandonnedInformations extends PaddockBuyableInformations implements INetworkType {
+        public static ID: number = 133;
+
+        guildId: number;
+
+        constructor() {
+            this.guildId = 0;
+            super();
+        }
+
+        public getTypeId(): number {
+            return PaddockAbandonnedInformations.ID;
+        }
+
+        public reset(): void {
+            this.guildId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PaddockAbandonnedInformations(param1);
+        }
+
+        public serializeAs_PaddockAbandonnedInformations(param1: ICustomDataOutput): void {
+            super.serializeAs_PaddockBuyableInformations(param1);
+            param1.writeInt(this.guildId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PaddockAbandonnedInformations(param1);
+        }
+
+        public deserializeAs_PaddockAbandonnedInformations(param1: ICustomDataInput): void {
+            super.deserialize(param1);
+            this.guildId = param1.readInt();
 
         }
     }
@@ -70121,58 +72049,6 @@ module Protocol {
                 _loc4_.deserialize(param1);
                 this.mountsInformations.push(_loc4_);
                 _loc3_++;
-            }
-
-        }
-    }
-    export class PaddockInformations implements INetworkType {
-        public static ID: number = 132;
-
-        maxOutdoorMount: number;
-        maxItems: number;
-
-        constructor() {
-            this.maxOutdoorMount = 0;
-            this.maxItems = 0;
-        }
-
-        public getTypeId(): number {
-            return PaddockInformations.ID;
-        }
-
-        public reset(): void {
-            this.maxOutdoorMount = 0;
-            this.maxItems = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PaddockInformations(param1);
-        }
-
-        public serializeAs_PaddockInformations(param1: ICustomDataOutput): void {
-            if (this.maxOutdoorMount < 0) {
-                throw new Error('Forbidden value (' + this.maxOutdoorMount + ') on element maxOutdoorMount.');
-            }
-            param1.writeVarShort(this.maxOutdoorMount);
-            if (this.maxItems < 0) {
-                throw new Error('Forbidden value (' + this.maxItems + ') on element maxItems.');
-            }
-            param1.writeVarShort(this.maxItems);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PaddockInformations(param1);
-        }
-
-        public deserializeAs_PaddockInformations(param1: ICustomDataInput): void {
-            this.maxOutdoorMount = param1.readVarUhShort();
-            if (this.maxOutdoorMount < 0) {
-                throw new Error('Forbidden value (' + this.maxOutdoorMount + ') on element of PaddockInformations.maxOutdoorMount.');
-            }
-            this.maxItems = param1.readVarUhShort();
-            if (this.maxItems < 0) {
-                throw new Error('Forbidden value (' + this.maxItems + ') on element of PaddockInformations.maxItems.');
             }
 
         }
@@ -70341,6 +72217,88 @@ module Protocol {
             super.deserialize(param1);
             this.guildInfo = new GuildInformations();
             this.guildInfo.deserialize(param1);
+
+        }
+    }
+    export class PrismInformation implements INetworkType {
+        public static ID: number = 428;
+
+        typeId: number;
+        state: number;
+        nextVulnerabilityDate: number;
+        placementDate: number;
+        rewardTokenCount: number;
+
+        constructor() {
+            this.typeId = 0;
+            this.state = 1;
+            this.nextVulnerabilityDate = 0;
+            this.placementDate = 0;
+            this.rewardTokenCount = 0;
+        }
+
+        public getTypeId(): number {
+            return PrismInformation.ID;
+        }
+
+        public reset(): void {
+            this.typeId = 0;
+            this.state = 1;
+            this.nextVulnerabilityDate = 0;
+            this.placementDate = 0;
+            this.rewardTokenCount = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PrismInformation(param1);
+        }
+
+        public serializeAs_PrismInformation(param1: ICustomDataOutput): void {
+            if (this.typeId < 0) {
+                throw new Error('Forbidden value (' + this.typeId + ') on element typeId.');
+            }
+            param1.writeByte(this.typeId);
+            param1.writeByte(this.state);
+            if (this.nextVulnerabilityDate < 0) {
+                throw new Error('Forbidden value (' + this.nextVulnerabilityDate + ') on element nextVulnerabilityDate.');
+            }
+            param1.writeInt(this.nextVulnerabilityDate);
+            if (this.placementDate < 0) {
+                throw new Error('Forbidden value (' + this.placementDate + ') on element placementDate.');
+            }
+            param1.writeInt(this.placementDate);
+            if (this.rewardTokenCount < 0) {
+                throw new Error('Forbidden value (' + this.rewardTokenCount + ') on element rewardTokenCount.');
+            }
+            param1.writeVarInt(this.rewardTokenCount);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PrismInformation(param1);
+        }
+
+        public deserializeAs_PrismInformation(param1: ICustomDataInput): void {
+            this.typeId = param1.readByte();
+            if (this.typeId < 0) {
+                throw new Error('Forbidden value (' + this.typeId + ') on element of PrismInformation.typeId.');
+            }
+            this.state = param1.readByte();
+            if (this.state < 0) {
+                throw new Error('Forbidden value (' + this.state + ') on element of PrismInformation.state.');
+            }
+            this.nextVulnerabilityDate = param1.readInt();
+            if (this.nextVulnerabilityDate < 0) {
+                throw new Error('Forbidden value (' + this.nextVulnerabilityDate + ') on element of PrismInformation.nextVulnerabilityDate.');
+            }
+            this.placementDate = param1.readInt();
+            if (this.placementDate < 0) {
+                throw new Error('Forbidden value (' + this.placementDate + ') on element of PrismInformation.placementDate.');
+            }
+            this.rewardTokenCount = param1.readVarUhInt();
+            if (this.rewardTokenCount < 0) {
+                throw new Error('Forbidden value (' + this.rewardTokenCount + ') on element of PrismInformation.rewardTokenCount.');
+            }
 
         }
     }
@@ -70561,6 +72519,58 @@ module Protocol {
 
         }
     }
+    export class PrismSubareaEmptyInfo implements INetworkType {
+        public static ID: number = 438;
+
+        subAreaId: number;
+        allianceId: number;
+
+        constructor() {
+            this.subAreaId = 0;
+            this.allianceId = 0;
+        }
+
+        public getTypeId(): number {
+            return PrismSubareaEmptyInfo.ID;
+        }
+
+        public reset(): void {
+            this.subAreaId = 0;
+            this.allianceId = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_PrismSubareaEmptyInfo(param1);
+        }
+
+        public serializeAs_PrismSubareaEmptyInfo(param1: ICustomDataOutput): void {
+            if (this.subAreaId < 0) {
+                throw new Error('Forbidden value (' + this.subAreaId + ') on element subAreaId.');
+            }
+            param1.writeVarShort(this.subAreaId);
+            if (this.allianceId < 0) {
+                throw new Error('Forbidden value (' + this.allianceId + ') on element allianceId.');
+            }
+            param1.writeVarInt(this.allianceId);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_PrismSubareaEmptyInfo(param1);
+        }
+
+        public deserializeAs_PrismSubareaEmptyInfo(param1: ICustomDataInput): void {
+            this.subAreaId = param1.readVarUhShort();
+            if (this.subAreaId < 0) {
+                throw new Error('Forbidden value (' + this.subAreaId + ') on element of PrismSubareaEmptyInfo.subAreaId.');
+            }
+            this.allianceId = param1.readVarUhInt();
+            if (this.allianceId < 0) {
+                throw new Error('Forbidden value (' + this.allianceId + ') on element of PrismSubareaEmptyInfo.allianceId.');
+            }
+
+        }
+    }
     export class PrismGeolocalizedInformation extends PrismSubareaEmptyInfo implements INetworkType {
         public static ID: number = 434;
 
@@ -70626,140 +72636,6 @@ module Protocol {
             var _loc2_: number = param1.readUnsignedShort();
             this.prism = <PrismInformation>ProtocolTypeManager.getInstance(PrismInformation, _loc2_);
             this.prism.deserialize(param1);
-
-        }
-    }
-    export class PrismInformation implements INetworkType {
-        public static ID: number = 428;
-
-        typeId: number;
-        state: number;
-        nextVulnerabilityDate: number;
-        placementDate: number;
-        rewardTokenCount: number;
-
-        constructor() {
-            this.typeId = 0;
-            this.state = 1;
-            this.nextVulnerabilityDate = 0;
-            this.placementDate = 0;
-            this.rewardTokenCount = 0;
-        }
-
-        public getTypeId(): number {
-            return PrismInformation.ID;
-        }
-
-        public reset(): void {
-            this.typeId = 0;
-            this.state = 1;
-            this.nextVulnerabilityDate = 0;
-            this.placementDate = 0;
-            this.rewardTokenCount = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PrismInformation(param1);
-        }
-
-        public serializeAs_PrismInformation(param1: ICustomDataOutput): void {
-            if (this.typeId < 0) {
-                throw new Error('Forbidden value (' + this.typeId + ') on element typeId.');
-            }
-            param1.writeByte(this.typeId);
-            param1.writeByte(this.state);
-            if (this.nextVulnerabilityDate < 0) {
-                throw new Error('Forbidden value (' + this.nextVulnerabilityDate + ') on element nextVulnerabilityDate.');
-            }
-            param1.writeInt(this.nextVulnerabilityDate);
-            if (this.placementDate < 0) {
-                throw new Error('Forbidden value (' + this.placementDate + ') on element placementDate.');
-            }
-            param1.writeInt(this.placementDate);
-            if (this.rewardTokenCount < 0) {
-                throw new Error('Forbidden value (' + this.rewardTokenCount + ') on element rewardTokenCount.');
-            }
-            param1.writeVarInt(this.rewardTokenCount);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PrismInformation(param1);
-        }
-
-        public deserializeAs_PrismInformation(param1: ICustomDataInput): void {
-            this.typeId = param1.readByte();
-            if (this.typeId < 0) {
-                throw new Error('Forbidden value (' + this.typeId + ') on element of PrismInformation.typeId.');
-            }
-            this.state = param1.readByte();
-            if (this.state < 0) {
-                throw new Error('Forbidden value (' + this.state + ') on element of PrismInformation.state.');
-            }
-            this.nextVulnerabilityDate = param1.readInt();
-            if (this.nextVulnerabilityDate < 0) {
-                throw new Error('Forbidden value (' + this.nextVulnerabilityDate + ') on element of PrismInformation.nextVulnerabilityDate.');
-            }
-            this.placementDate = param1.readInt();
-            if (this.placementDate < 0) {
-                throw new Error('Forbidden value (' + this.placementDate + ') on element of PrismInformation.placementDate.');
-            }
-            this.rewardTokenCount = param1.readVarUhInt();
-            if (this.rewardTokenCount < 0) {
-                throw new Error('Forbidden value (' + this.rewardTokenCount + ') on element of PrismInformation.rewardTokenCount.');
-            }
-
-        }
-    }
-    export class PrismSubareaEmptyInfo implements INetworkType {
-        public static ID: number = 438;
-
-        subAreaId: number;
-        allianceId: number;
-
-        constructor() {
-            this.subAreaId = 0;
-            this.allianceId = 0;
-        }
-
-        public getTypeId(): number {
-            return PrismSubareaEmptyInfo.ID;
-        }
-
-        public reset(): void {
-            this.subAreaId = 0;
-            this.allianceId = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_PrismSubareaEmptyInfo(param1);
-        }
-
-        public serializeAs_PrismSubareaEmptyInfo(param1: ICustomDataOutput): void {
-            if (this.subAreaId < 0) {
-                throw new Error('Forbidden value (' + this.subAreaId + ') on element subAreaId.');
-            }
-            param1.writeVarShort(this.subAreaId);
-            if (this.allianceId < 0) {
-                throw new Error('Forbidden value (' + this.allianceId + ') on element allianceId.');
-            }
-            param1.writeVarInt(this.allianceId);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_PrismSubareaEmptyInfo(param1);
-        }
-
-        public deserializeAs_PrismSubareaEmptyInfo(param1: ICustomDataInput): void {
-            this.subAreaId = param1.readVarUhShort();
-            if (this.subAreaId < 0) {
-                throw new Error('Forbidden value (' + this.subAreaId + ') on element of PrismSubareaEmptyInfo.subAreaId.');
-            }
-            this.allianceId = param1.readVarUhInt();
-            if (this.allianceId < 0) {
-                throw new Error('Forbidden value (' + this.allianceId + ') on element of PrismSubareaEmptyInfo.allianceId.');
-            }
 
         }
     }
@@ -71103,39 +72979,6 @@ module Protocol {
 
         }
     }
-    export class AbstractSocialGroupInfos implements INetworkType {
-        public static ID: number = 416;
-
-
-
-        constructor() {
-
-        }
-
-        public getTypeId(): number {
-            return AbstractSocialGroupInfos.ID;
-        }
-
-        public reset(): void {
-
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_AbstractSocialGroupInfos(param1);
-        }
-
-        public serializeAs_AbstractSocialGroupInfos(param1: ICustomDataOutput): void {
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_AbstractSocialGroupInfos(param1);
-        }
-
-        public deserializeAs_AbstractSocialGroupInfos(param1: ICustomDataInput): void {
-
-        }
-    }
     export class AllianceFactSheetInformations extends AllianceInformations implements INetworkType {
         public static ID: number = 421;
 
@@ -71359,6 +73202,80 @@ module Protocol {
 
         }
     }
+    export class GuildVersatileInformations implements INetworkType {
+        public static ID: number = 435;
+
+        guildId: number;
+        leaderId: number;
+        guildLevel: number;
+        nbMembers: number;
+
+        constructor() {
+            this.guildId = 0;
+            this.leaderId = 0;
+            this.guildLevel = 0;
+            this.nbMembers = 0;
+        }
+
+        public getTypeId(): number {
+            return GuildVersatileInformations.ID;
+        }
+
+        public reset(): void {
+            this.guildId = 0;
+            this.leaderId = 0;
+            this.guildLevel = 0;
+            this.nbMembers = 0;
+        }
+
+        public serialize(param1: ICustomDataOutput): void {
+            this.serializeAs_GuildVersatileInformations(param1);
+        }
+
+        public serializeAs_GuildVersatileInformations(param1: ICustomDataOutput): void {
+            if (this.guildId < 0) {
+                throw new Error('Forbidden value (' + this.guildId + ') on element guildId.');
+            }
+            param1.writeVarInt(this.guildId);
+            if (this.leaderId < 0) {
+                throw new Error('Forbidden value (' + this.leaderId + ') on element leaderId.');
+            }
+            param1.writeVarInt(this.leaderId);
+            if (this.guildLevel < 1 || this.guildLevel > 200) {
+                throw new Error('Forbidden value (' + this.guildLevel + ') on element guildLevel.');
+            }
+            param1.writeByte(this.guildLevel);
+            if (this.nbMembers < 1 || this.nbMembers > 240) {
+                throw new Error('Forbidden value (' + this.nbMembers + ') on element nbMembers.');
+            }
+            param1.writeByte(this.nbMembers);
+
+        }
+
+        public deserialize(param1: ICustomDataInput): void {
+            this.deserializeAs_GuildVersatileInformations(param1);
+        }
+
+        public deserializeAs_GuildVersatileInformations(param1: ICustomDataInput): void {
+            this.guildId = param1.readVarUhInt();
+            if (this.guildId < 0) {
+                throw new Error('Forbidden value (' + this.guildId + ') on element of GuildVersatileInformations.guildId.');
+            }
+            this.leaderId = param1.readVarUhInt();
+            if (this.leaderId < 0) {
+                throw new Error('Forbidden value (' + this.leaderId + ') on element of GuildVersatileInformations.leaderId.');
+            }
+            this.guildLevel = param1.readUnsignedByte();
+            if (this.guildLevel < 1 || this.guildLevel > 200) {
+                throw new Error('Forbidden value (' + this.guildLevel + ') on element of GuildVersatileInformations.guildLevel.');
+            }
+            this.nbMembers = param1.readUnsignedByte();
+            if (this.nbMembers < 1 || this.nbMembers > 240) {
+                throw new Error('Forbidden value (' + this.nbMembers + ') on element of GuildVersatileInformations.nbMembers.');
+            }
+
+        }
+    }
     export class GuildInAllianceVersatileInformations extends GuildVersatileInformations implements INetworkType {
         public static ID: number = 437;
 
@@ -71476,80 +73393,6 @@ module Protocol {
                 throw new Error('Forbidden value (' + this.lastActivity + ') on element of GuildInsiderFactSheetInformations.lastActivity.');
             }
             this.enabled = param1.readBoolean();
-
-        }
-    }
-    export class GuildVersatileInformations implements INetworkType {
-        public static ID: number = 435;
-
-        guildId: number;
-        leaderId: number;
-        guildLevel: number;
-        nbMembers: number;
-
-        constructor() {
-            this.guildId = 0;
-            this.leaderId = 0;
-            this.guildLevel = 0;
-            this.nbMembers = 0;
-        }
-
-        public getTypeId(): number {
-            return GuildVersatileInformations.ID;
-        }
-
-        public reset(): void {
-            this.guildId = 0;
-            this.leaderId = 0;
-            this.guildLevel = 0;
-            this.nbMembers = 0;
-        }
-
-        public serialize(param1: ICustomDataOutput): void {
-            this.serializeAs_GuildVersatileInformations(param1);
-        }
-
-        public serializeAs_GuildVersatileInformations(param1: ICustomDataOutput): void {
-            if (this.guildId < 0) {
-                throw new Error('Forbidden value (' + this.guildId + ') on element guildId.');
-            }
-            param1.writeVarInt(this.guildId);
-            if (this.leaderId < 0) {
-                throw new Error('Forbidden value (' + this.leaderId + ') on element leaderId.');
-            }
-            param1.writeVarInt(this.leaderId);
-            if (this.guildLevel < 1 || this.guildLevel > 200) {
-                throw new Error('Forbidden value (' + this.guildLevel + ') on element guildLevel.');
-            }
-            param1.writeByte(this.guildLevel);
-            if (this.nbMembers < 1 || this.nbMembers > 240) {
-                throw new Error('Forbidden value (' + this.nbMembers + ') on element nbMembers.');
-            }
-            param1.writeByte(this.nbMembers);
-
-        }
-
-        public deserialize(param1: ICustomDataInput): void {
-            this.deserializeAs_GuildVersatileInformations(param1);
-        }
-
-        public deserializeAs_GuildVersatileInformations(param1: ICustomDataInput): void {
-            this.guildId = param1.readVarUhInt();
-            if (this.guildId < 0) {
-                throw new Error('Forbidden value (' + this.guildId + ') on element of GuildVersatileInformations.guildId.');
-            }
-            this.leaderId = param1.readVarUhInt();
-            if (this.leaderId < 0) {
-                throw new Error('Forbidden value (' + this.leaderId + ') on element of GuildVersatileInformations.leaderId.');
-            }
-            this.guildLevel = param1.readUnsignedByte();
-            if (this.guildLevel < 1 || this.guildLevel > 200) {
-                throw new Error('Forbidden value (' + this.guildLevel + ') on element of GuildVersatileInformations.guildLevel.');
-            }
-            this.nbMembers = param1.readUnsignedByte();
-            if (this.nbMembers < 1 || this.nbMembers > 240) {
-                throw new Error('Forbidden value (' + this.nbMembers + ') on element of GuildVersatileInformations.nbMembers.');
-            }
 
         }
     }
@@ -71924,1848 +73767,6 @@ module Protocol {
             this.bound = param1.readBoolean();
 
         }
-    }
-    export class MessageReceiver {
-        private static _list: { [idx: number]: () => INetworkMessage };
-
-        constructor() {
-            MessageReceiver._list = {};
-            MessageReceiver._list[AdminCommandMessage.ID] = () => { return new AdminCommandMessage(); };
-            MessageReceiver._list[AdminQuietCommandMessage.ID] = () => { return new AdminQuietCommandMessage(); };
-            MessageReceiver._list[ConsoleCommandsListMessage.ID] = () => { return new ConsoleCommandsListMessage(); };
-            MessageReceiver._list[ConsoleMessage.ID] = () => { return new ConsoleMessage(); };
-            MessageReceiver._list[NetworkDataContainerMessage.ID] = () => { return new NetworkDataContainerMessage(); };
-            MessageReceiver._list[BasicPingMessage.ID] = () => { return new BasicPingMessage(); };
-            MessageReceiver._list[BasicPongMessage.ID] = () => { return new BasicPongMessage(); };
-            MessageReceiver._list[BasicStatMessage.ID] = () => { return new BasicStatMessage(); };
-            MessageReceiver._list[CredentialsAcknowledgementMessage.ID] = () => { return new CredentialsAcknowledgementMessage(); };
-            MessageReceiver._list[HelloConnectMessage.ID] = () => { return new HelloConnectMessage(); };
-            MessageReceiver._list[IdentificationAccountForceMessage.ID] = () => { return new IdentificationAccountForceMessage(); };
-            MessageReceiver._list[IdentificationFailedBannedMessage.ID] = () => { return new IdentificationFailedBannedMessage(); };
-            MessageReceiver._list[IdentificationFailedForBadVersionMessage.ID] = () => { return new IdentificationFailedForBadVersionMessage(); };
-            MessageReceiver._list[IdentificationFailedMessage.ID] = () => { return new IdentificationFailedMessage(); };
-            MessageReceiver._list[IdentificationMessage.ID] = () => { return new IdentificationMessage(); };
-            MessageReceiver._list[IdentificationSuccessMessage.ID] = () => { return new IdentificationSuccessMessage(); };
-            MessageReceiver._list[IdentificationSuccessWithLoginTokenMessage.ID] = () => { return new IdentificationSuccessWithLoginTokenMessage(); };
-            MessageReceiver._list[SelectedServerDataExtendedMessage.ID] = () => { return new SelectedServerDataExtendedMessage(); };
-            MessageReceiver._list[SelectedServerDataMessage.ID] = () => { return new SelectedServerDataMessage(); };
-            MessageReceiver._list[SelectedServerRefusedMessage.ID] = () => { return new SelectedServerRefusedMessage(); };
-            MessageReceiver._list[ServerSelectionMessage.ID] = () => { return new ServerSelectionMessage(); };
-            MessageReceiver._list[ServerStatusUpdateMessage.ID] = () => { return new ServerStatusUpdateMessage(); };
-            MessageReceiver._list[ServersListMessage.ID] = () => { return new ServersListMessage(); };
-            MessageReceiver._list[AccountLinkRequiredMessage.ID] = () => { return new AccountLinkRequiredMessage(); };
-            MessageReceiver._list[NicknameAcceptedMessage.ID] = () => { return new NicknameAcceptedMessage(); };
-            MessageReceiver._list[NicknameChoiceRequestMessage.ID] = () => { return new NicknameChoiceRequestMessage(); };
-            MessageReceiver._list[NicknameRefusedMessage.ID] = () => { return new NicknameRefusedMessage(); };
-            MessageReceiver._list[NicknameRegistrationMessage.ID] = () => { return new NicknameRegistrationMessage(); };
-            MessageReceiver._list[AcquaintanceSearchErrorMessage.ID] = () => { return new AcquaintanceSearchErrorMessage(); };
-            MessageReceiver._list[AcquaintanceSearchMessage.ID] = () => { return new AcquaintanceSearchMessage(); };
-            MessageReceiver._list[AcquaintanceServerListMessage.ID] = () => { return new AcquaintanceServerListMessage(); };
-            MessageReceiver._list[DebugClearHighlightCellsMessage.ID] = () => { return new DebugClearHighlightCellsMessage(); };
-            MessageReceiver._list[DebugHighlightCellsMessage.ID] = () => { return new DebugHighlightCellsMessage(); };
-            MessageReceiver._list[DebugInClientMessage.ID] = () => { return new DebugInClientMessage(); };
-            MessageReceiver._list[AchievementDetailedListMessage.ID] = () => { return new AchievementDetailedListMessage(); };
-            MessageReceiver._list[AchievementDetailedListRequestMessage.ID] = () => { return new AchievementDetailedListRequestMessage(); };
-            MessageReceiver._list[AchievementDetailsMessage.ID] = () => { return new AchievementDetailsMessage(); };
-            MessageReceiver._list[AchievementDetailsRequestMessage.ID] = () => { return new AchievementDetailsRequestMessage(); };
-            MessageReceiver._list[AchievementFinishedInformationMessage.ID] = () => { return new AchievementFinishedInformationMessage(); };
-            MessageReceiver._list[AchievementFinishedMessage.ID] = () => { return new AchievementFinishedMessage(); };
-            MessageReceiver._list[AchievementListMessage.ID] = () => { return new AchievementListMessage(); };
-            MessageReceiver._list[AchievementRewardErrorMessage.ID] = () => { return new AchievementRewardErrorMessage(); };
-            MessageReceiver._list[AchievementRewardRequestMessage.ID] = () => { return new AchievementRewardRequestMessage(); };
-            MessageReceiver._list[AchievementRewardSuccessMessage.ID] = () => { return new AchievementRewardSuccessMessage(); };
-            MessageReceiver._list[FriendGuildSetWarnOnAchievementCompleteMessage.ID] = () => { return new FriendGuildSetWarnOnAchievementCompleteMessage(); };
-            MessageReceiver._list[FriendGuildWarnOnAchievementCompleteStateMessage.ID] = () => { return new FriendGuildWarnOnAchievementCompleteStateMessage(); };
-            MessageReceiver._list[AbstractGameActionMessage.ID] = () => { return new AbstractGameActionMessage(); };
-            MessageReceiver._list[AbstractGameActionWithAckMessage.ID] = () => { return new AbstractGameActionWithAckMessage(); };
-            MessageReceiver._list[GameActionAcknowledgementMessage.ID] = () => { return new GameActionAcknowledgementMessage(); };
-            MessageReceiver._list[GameActionNoopMessage.ID] = () => { return new GameActionNoopMessage(); };
-            MessageReceiver._list[AbstractGameActionFightTargetedAbilityMessage.ID] = () => { return new AbstractGameActionFightTargetedAbilityMessage(); };
-            MessageReceiver._list[GameActionFightActivateGlyphTrapMessage.ID] = () => { return new GameActionFightActivateGlyphTrapMessage(); };
-            MessageReceiver._list[GameActionFightCarryCharacterMessage.ID] = () => { return new GameActionFightCarryCharacterMessage(); };
-            MessageReceiver._list[GameActionFightCastOnTargetRequestMessage.ID] = () => { return new GameActionFightCastOnTargetRequestMessage(); };
-            MessageReceiver._list[GameActionFightCastRequestMessage.ID] = () => { return new GameActionFightCastRequestMessage(); };
-            MessageReceiver._list[GameActionFightChangeLookMessage.ID] = () => { return new GameActionFightChangeLookMessage(); };
-            MessageReceiver._list[GameActionFightCloseCombatMessage.ID] = () => { return new GameActionFightCloseCombatMessage(); };
-            MessageReceiver._list[GameActionFightDeathMessage.ID] = () => { return new GameActionFightDeathMessage(); };
-            MessageReceiver._list[GameActionFightDispellEffectMessage.ID] = () => { return new GameActionFightDispellEffectMessage(); };
-            MessageReceiver._list[GameActionFightDispellMessage.ID] = () => { return new GameActionFightDispellMessage(); };
-            MessageReceiver._list[GameActionFightDispellSpellMessage.ID] = () => { return new GameActionFightDispellSpellMessage(); };
-            MessageReceiver._list[GameActionFightDispellableEffectMessage.ID] = () => { return new GameActionFightDispellableEffectMessage(); };
-            MessageReceiver._list[GameActionFightDodgePointLossMessage.ID] = () => { return new GameActionFightDodgePointLossMessage(); };
-            MessageReceiver._list[GameActionFightDropCharacterMessage.ID] = () => { return new GameActionFightDropCharacterMessage(); };
-            MessageReceiver._list[GameActionFightExchangePositionsMessage.ID] = () => { return new GameActionFightExchangePositionsMessage(); };
-            MessageReceiver._list[GameActionFightInvisibilityMessage.ID] = () => { return new GameActionFightInvisibilityMessage(); };
-            MessageReceiver._list[GameActionFightInvisibleDetectedMessage.ID] = () => { return new GameActionFightInvisibleDetectedMessage(); };
-            MessageReceiver._list[GameActionFightKillMessage.ID] = () => { return new GameActionFightKillMessage(); };
-            MessageReceiver._list[GameActionFightLifeAndShieldPointsLostMessage.ID] = () => { return new GameActionFightLifeAndShieldPointsLostMessage(); };
-            MessageReceiver._list[GameActionFightLifePointsGainMessage.ID] = () => { return new GameActionFightLifePointsGainMessage(); };
-            MessageReceiver._list[GameActionFightLifePointsLostMessage.ID] = () => { return new GameActionFightLifePointsLostMessage(); };
-            MessageReceiver._list[GameActionFightMarkCellsMessage.ID] = () => { return new GameActionFightMarkCellsMessage(); };
-            MessageReceiver._list[GameActionFightModifyEffectsDurationMessage.ID] = () => { return new GameActionFightModifyEffectsDurationMessage(); };
-            MessageReceiver._list[GameActionFightNoSpellCastMessage.ID] = () => { return new GameActionFightNoSpellCastMessage(); };
-            MessageReceiver._list[GameActionFightPointsVariationMessage.ID] = () => { return new GameActionFightPointsVariationMessage(); };
-            MessageReceiver._list[GameActionFightReduceDamagesMessage.ID] = () => { return new GameActionFightReduceDamagesMessage(); };
-            MessageReceiver._list[GameActionFightReflectDamagesMessage.ID] = () => { return new GameActionFightReflectDamagesMessage(); };
-            MessageReceiver._list[GameActionFightReflectSpellMessage.ID] = () => { return new GameActionFightReflectSpellMessage(); };
-            MessageReceiver._list[GameActionFightSlideMessage.ID] = () => { return new GameActionFightSlideMessage(); };
-            MessageReceiver._list[GameActionFightSpellCastMessage.ID] = () => { return new GameActionFightSpellCastMessage(); };
-            MessageReceiver._list[GameActionFightSpellCooldownVariationMessage.ID] = () => { return new GameActionFightSpellCooldownVariationMessage(); };
-            MessageReceiver._list[GameActionFightSpellImmunityMessage.ID] = () => { return new GameActionFightSpellImmunityMessage(); };
-            MessageReceiver._list[GameActionFightStealKamaMessage.ID] = () => { return new GameActionFightStealKamaMessage(); };
-            MessageReceiver._list[GameActionFightSummonMessage.ID] = () => { return new GameActionFightSummonMessage(); };
-            MessageReceiver._list[GameActionFightTackledMessage.ID] = () => { return new GameActionFightTackledMessage(); };
-            MessageReceiver._list[GameActionFightTeleportOnSameMapMessage.ID] = () => { return new GameActionFightTeleportOnSameMapMessage(); };
-            MessageReceiver._list[GameActionFightThrowCharacterMessage.ID] = () => { return new GameActionFightThrowCharacterMessage(); };
-            MessageReceiver._list[GameActionFightTriggerEffectMessage.ID] = () => { return new GameActionFightTriggerEffectMessage(); };
-            MessageReceiver._list[GameActionFightTriggerGlyphTrapMessage.ID] = () => { return new GameActionFightTriggerGlyphTrapMessage(); };
-            MessageReceiver._list[GameActionFightUnmarkCellsMessage.ID] = () => { return new GameActionFightUnmarkCellsMessage(); };
-            MessageReceiver._list[GameActionFightVanishMessage.ID] = () => { return new GameActionFightVanishMessage(); };
-            MessageReceiver._list[SequenceEndMessage.ID] = () => { return new SequenceEndMessage(); };
-            MessageReceiver._list[SequenceStartMessage.ID] = () => { return new SequenceStartMessage(); };
-            MessageReceiver._list[AllianceChangeGuildRightsMessage.ID] = () => { return new AllianceChangeGuildRightsMessage(); };
-            MessageReceiver._list[AllianceCreationResultMessage.ID] = () => { return new AllianceCreationResultMessage(); };
-            MessageReceiver._list[AllianceCreationStartedMessage.ID] = () => { return new AllianceCreationStartedMessage(); };
-            MessageReceiver._list[AllianceCreationValidMessage.ID] = () => { return new AllianceCreationValidMessage(); };
-            MessageReceiver._list[AllianceFactsErrorMessage.ID] = () => { return new AllianceFactsErrorMessage(); };
-            MessageReceiver._list[AllianceFactsMessage.ID] = () => { return new AllianceFactsMessage(); };
-            MessageReceiver._list[AllianceFactsRequestMessage.ID] = () => { return new AllianceFactsRequestMessage(); };
-            MessageReceiver._list[AllianceGuildLeavingMessage.ID] = () => { return new AllianceGuildLeavingMessage(); };
-            MessageReceiver._list[AllianceInsiderInfoMessage.ID] = () => { return new AllianceInsiderInfoMessage(); };
-            MessageReceiver._list[AllianceInsiderInfoRequestMessage.ID] = () => { return new AllianceInsiderInfoRequestMessage(); };
-            MessageReceiver._list[AllianceInvitationAnswerMessage.ID] = () => { return new AllianceInvitationAnswerMessage(); };
-            MessageReceiver._list[AllianceInvitationMessage.ID] = () => { return new AllianceInvitationMessage(); };
-            MessageReceiver._list[AllianceInvitationStateRecrutedMessage.ID] = () => { return new AllianceInvitationStateRecrutedMessage(); };
-            MessageReceiver._list[AllianceInvitationStateRecruterMessage.ID] = () => { return new AllianceInvitationStateRecruterMessage(); };
-            MessageReceiver._list[AllianceInvitedMessage.ID] = () => { return new AllianceInvitedMessage(); };
-            MessageReceiver._list[AllianceJoinedMessage.ID] = () => { return new AllianceJoinedMessage(); };
-            MessageReceiver._list[AllianceKickRequestMessage.ID] = () => { return new AllianceKickRequestMessage(); };
-            MessageReceiver._list[AllianceLeftMessage.ID] = () => { return new AllianceLeftMessage(); };
-            MessageReceiver._list[AllianceListMessage.ID] = () => { return new AllianceListMessage(); };
-            MessageReceiver._list[AllianceMembershipMessage.ID] = () => { return new AllianceMembershipMessage(); };
-            MessageReceiver._list[AllianceModificationEmblemValidMessage.ID] = () => { return new AllianceModificationEmblemValidMessage(); };
-            MessageReceiver._list[AllianceModificationNameAndTagValidMessage.ID] = () => { return new AllianceModificationNameAndTagValidMessage(); };
-            MessageReceiver._list[AllianceModificationStartedMessage.ID] = () => { return new AllianceModificationStartedMessage(); };
-            MessageReceiver._list[AllianceModificationValidMessage.ID] = () => { return new AllianceModificationValidMessage(); };
-            MessageReceiver._list[AlliancePartialListMessage.ID] = () => { return new AlliancePartialListMessage(); };
-            MessageReceiver._list[AllianceVersatileInfoListMessage.ID] = () => { return new AllianceVersatileInfoListMessage(); };
-            MessageReceiver._list[KohUpdateMessage.ID] = () => { return new KohUpdateMessage(); };
-            MessageReceiver._list[AlmanachCalendarDateMessage.ID] = () => { return new AlmanachCalendarDateMessage(); };
-            MessageReceiver._list[AccountCapabilitiesMessage.ID] = () => { return new AccountCapabilitiesMessage(); };
-            MessageReceiver._list[AccountLoggingKickedMessage.ID] = () => { return new AccountLoggingKickedMessage(); };
-            MessageReceiver._list[AlreadyConnectedMessage.ID] = () => { return new AlreadyConnectedMessage(); };
-            MessageReceiver._list[AuthenticationTicketAcceptedMessage.ID] = () => { return new AuthenticationTicketAcceptedMessage(); };
-            MessageReceiver._list[AuthenticationTicketMessage.ID] = () => { return new AuthenticationTicketMessage(); };
-            MessageReceiver._list[AuthenticationTicketRefusedMessage.ID] = () => { return new AuthenticationTicketRefusedMessage(); };
-            MessageReceiver._list[HelloGameMessage.ID] = () => { return new HelloGameMessage(); };
-            MessageReceiver._list[ReloginTokenRequestMessage.ID] = () => { return new ReloginTokenRequestMessage(); };
-            MessageReceiver._list[ReloginTokenStatusMessage.ID] = () => { return new ReloginTokenStatusMessage(); };
-            MessageReceiver._list[ServerOptionalFeaturesMessage.ID] = () => { return new ServerOptionalFeaturesMessage(); };
-            MessageReceiver._list[ServerSessionConstantsMessage.ID] = () => { return new ServerSessionConstantsMessage(); };
-            MessageReceiver._list[ServerSettingsMessage.ID] = () => { return new ServerSettingsMessage(); };
-            MessageReceiver._list[AtlasPointInformationsMessage.ID] = () => { return new AtlasPointInformationsMessage(); };
-            MessageReceiver._list[CompassResetMessage.ID] = () => { return new CompassResetMessage(); };
-            MessageReceiver._list[CompassUpdateMessage.ID] = () => { return new CompassUpdateMessage(); };
-            MessageReceiver._list[CompassUpdatePartyMemberMessage.ID] = () => { return new CompassUpdatePartyMemberMessage(); };
-            MessageReceiver._list[CompassUpdatePvpSeekMessage.ID] = () => { return new CompassUpdatePvpSeekMessage(); };
-            MessageReceiver._list[BasicAckMessage.ID] = () => { return new BasicAckMessage(); };
-            MessageReceiver._list[BasicDateMessage.ID] = () => { return new BasicDateMessage(); };
-            MessageReceiver._list[BasicLatencyStatsMessage.ID] = () => { return new BasicLatencyStatsMessage(); };
-            MessageReceiver._list[BasicLatencyStatsRequestMessage.ID] = () => { return new BasicLatencyStatsRequestMessage(); };
-            MessageReceiver._list[BasicNoOperationMessage.ID] = () => { return new BasicNoOperationMessage(); };
-            MessageReceiver._list[BasicTimeMessage.ID] = () => { return new BasicTimeMessage(); };
-            MessageReceiver._list[BasicWhoAmIRequestMessage.ID] = () => { return new BasicWhoAmIRequestMessage(); };
-            MessageReceiver._list[BasicWhoIsMessage.ID] = () => { return new BasicWhoIsMessage(); };
-            MessageReceiver._list[BasicWhoIsNoMatchMessage.ID] = () => { return new BasicWhoIsNoMatchMessage(); };
-            MessageReceiver._list[BasicWhoIsRequestMessage.ID] = () => { return new BasicWhoIsRequestMessage(); };
-            MessageReceiver._list[CurrentServerStatusUpdateMessage.ID] = () => { return new CurrentServerStatusUpdateMessage(); };
-            MessageReceiver._list[NumericWhoIsMessage.ID] = () => { return new NumericWhoIsMessage(); };
-            MessageReceiver._list[NumericWhoIsRequestMessage.ID] = () => { return new NumericWhoIsRequestMessage(); };
-            MessageReceiver._list[SequenceNumberMessage.ID] = () => { return new SequenceNumberMessage(); };
-            MessageReceiver._list[SequenceNumberRequestMessage.ID] = () => { return new SequenceNumberRequestMessage(); };
-            MessageReceiver._list[TextInformationMessage.ID] = () => { return new TextInformationMessage(); };
-            MessageReceiver._list[BasicCharactersListMessage.ID] = () => { return new BasicCharactersListMessage(); };
-            MessageReceiver._list[CharacterFirstSelectionMessage.ID] = () => { return new CharacterFirstSelectionMessage(); };
-            MessageReceiver._list[CharacterReplayWithRemodelRequestMessage.ID] = () => { return new CharacterReplayWithRemodelRequestMessage(); };
-            MessageReceiver._list[CharacterSelectedErrorMessage.ID] = () => { return new CharacterSelectedErrorMessage(); };
-            MessageReceiver._list[CharacterSelectedForceMessage.ID] = () => { return new CharacterSelectedForceMessage(); };
-            MessageReceiver._list[CharacterSelectedForceReadyMessage.ID] = () => { return new CharacterSelectedForceReadyMessage(); };
-            MessageReceiver._list[CharacterSelectedSuccessMessage.ID] = () => { return new CharacterSelectedSuccessMessage(); };
-            MessageReceiver._list[CharacterSelectionMessage.ID] = () => { return new CharacterSelectionMessage(); };
-            MessageReceiver._list[CharacterSelectionWithRemodelMessage.ID] = () => { return new CharacterSelectionWithRemodelMessage(); };
-            MessageReceiver._list[CharactersListErrorMessage.ID] = () => { return new CharactersListErrorMessage(); };
-            MessageReceiver._list[CharactersListMessage.ID] = () => { return new CharactersListMessage(); };
-            MessageReceiver._list[CharactersListRequestMessage.ID] = () => { return new CharactersListRequestMessage(); };
-            MessageReceiver._list[CharactersListWithModificationsMessage.ID] = () => { return new CharactersListWithModificationsMessage(); };
-            MessageReceiver._list[CharactersListWithRemodelingMessage.ID] = () => { return new CharactersListWithRemodelingMessage(); };
-            MessageReceiver._list[CharacterCreationRequestMessage.ID] = () => { return new CharacterCreationRequestMessage(); };
-            MessageReceiver._list[CharacterCreationResultMessage.ID] = () => { return new CharacterCreationResultMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionFailureMessage.ID] = () => { return new CharacterNameSuggestionFailureMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionRequestMessage.ID] = () => { return new CharacterNameSuggestionRequestMessage(); };
-            MessageReceiver._list[CharacterNameSuggestionSuccessMessage.ID] = () => { return new CharacterNameSuggestionSuccessMessage(); };
-            MessageReceiver._list[CharacterDeletionErrorMessage.ID] = () => { return new CharacterDeletionErrorMessage(); };
-            MessageReceiver._list[CharacterDeletionRequestMessage.ID] = () => { return new CharacterDeletionRequestMessage(); };
-            MessageReceiver._list[CharacterReplayRequestMessage.ID] = () => { return new CharacterReplayRequestMessage(); };
-            MessageReceiver._list[CharacterExperienceGainMessage.ID] = () => { return new CharacterExperienceGainMessage(); };
-            MessageReceiver._list[CharacterLevelUpInformationMessage.ID] = () => { return new CharacterLevelUpInformationMessage(); };
-            MessageReceiver._list[CharacterLevelUpMessage.ID] = () => { return new CharacterLevelUpMessage(); };
-            MessageReceiver._list[CharacterStatsListMessage.ID] = () => { return new CharacterStatsListMessage(); };
-            MessageReceiver._list[FighterStatsListMessage.ID] = () => { return new FighterStatsListMessage(); };
-            MessageReceiver._list[LifePointsRegenBeginMessage.ID] = () => { return new LifePointsRegenBeginMessage(); };
-            MessageReceiver._list[LifePointsRegenEndMessage.ID] = () => { return new LifePointsRegenEndMessage(); };
-            MessageReceiver._list[UpdateLifePointsMessage.ID] = () => { return new UpdateLifePointsMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateErrorMessage.ID] = () => { return new PlayerStatusUpdateErrorMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateMessage.ID] = () => { return new PlayerStatusUpdateMessage(); };
-            MessageReceiver._list[PlayerStatusUpdateRequestMessage.ID] = () => { return new PlayerStatusUpdateRequestMessage(); };
-            MessageReceiver._list[ChatAbstractClientMessage.ID] = () => { return new ChatAbstractClientMessage(); };
-            MessageReceiver._list[ChatAbstractServerMessage.ID] = () => { return new ChatAbstractServerMessage(); };
-            MessageReceiver._list[ChatAdminServerMessage.ID] = () => { return new ChatAdminServerMessage(); };
-            MessageReceiver._list[ChatClientMultiMessage.ID] = () => { return new ChatClientMultiMessage(); };
-            MessageReceiver._list[ChatClientMultiWithObjectMessage.ID] = () => { return new ChatClientMultiWithObjectMessage(); };
-            MessageReceiver._list[ChatClientPrivateMessage.ID] = () => { return new ChatClientPrivateMessage(); };
-            MessageReceiver._list[ChatClientPrivateWithObjectMessage.ID] = () => { return new ChatClientPrivateWithObjectMessage(); };
-            MessageReceiver._list[ChatErrorMessage.ID] = () => { return new ChatErrorMessage(); };
-            MessageReceiver._list[ChatServerCopyMessage.ID] = () => { return new ChatServerCopyMessage(); };
-            MessageReceiver._list[ChatServerCopyWithObjectMessage.ID] = () => { return new ChatServerCopyWithObjectMessage(); };
-            MessageReceiver._list[ChatServerMessage.ID] = () => { return new ChatServerMessage(); };
-            MessageReceiver._list[ChatServerWithObjectMessage.ID] = () => { return new ChatServerWithObjectMessage(); };
-            MessageReceiver._list[ChannelEnablingChangeMessage.ID] = () => { return new ChannelEnablingChangeMessage(); };
-            MessageReceiver._list[ChannelEnablingMessage.ID] = () => { return new ChannelEnablingMessage(); };
-            MessageReceiver._list[EnabledChannelsMessage.ID] = () => { return new EnabledChannelsMessage(); };
-            MessageReceiver._list[ChatMessageReportMessage.ID] = () => { return new ChatMessageReportMessage(); };
-            MessageReceiver._list[ChatSmileyExtraPackListMessage.ID] = () => { return new ChatSmileyExtraPackListMessage(); };
-            MessageReceiver._list[ChatSmileyMessage.ID] = () => { return new ChatSmileyMessage(); };
-            MessageReceiver._list[ChatSmileyRequestMessage.ID] = () => { return new ChatSmileyRequestMessage(); };
-            MessageReceiver._list[LocalizedChatSmileyMessage.ID] = () => { return new LocalizedChatSmileyMessage(); };
-            MessageReceiver._list[MoodSmileyRequestMessage.ID] = () => { return new MoodSmileyRequestMessage(); };
-            MessageReceiver._list[MoodSmileyResultMessage.ID] = () => { return new MoodSmileyResultMessage(); };
-            MessageReceiver._list[MoodSmileyUpdateMessage.ID] = () => { return new MoodSmileyUpdateMessage(); };
-            MessageReceiver._list[GameCautiousMapMovementMessage.ID] = () => { return new GameCautiousMapMovementMessage(); };
-            MessageReceiver._list[GameCautiousMapMovementRequestMessage.ID] = () => { return new GameCautiousMapMovementRequestMessage(); };
-            MessageReceiver._list[GameContextCreateErrorMessage.ID] = () => { return new GameContextCreateErrorMessage(); };
-            MessageReceiver._list[GameContextCreateMessage.ID] = () => { return new GameContextCreateMessage(); };
-            MessageReceiver._list[GameContextCreateRequestMessage.ID] = () => { return new GameContextCreateRequestMessage(); };
-            MessageReceiver._list[GameContextDestroyMessage.ID] = () => { return new GameContextDestroyMessage(); };
-            MessageReceiver._list[GameContextKickMessage.ID] = () => { return new GameContextKickMessage(); };
-            MessageReceiver._list[GameContextMoveElementMessage.ID] = () => { return new GameContextMoveElementMessage(); };
-            MessageReceiver._list[GameContextMoveMultipleElementsMessage.ID] = () => { return new GameContextMoveMultipleElementsMessage(); };
-            MessageReceiver._list[GameContextQuitMessage.ID] = () => { return new GameContextQuitMessage(); };
-            MessageReceiver._list[GameContextReadyMessage.ID] = () => { return new GameContextReadyMessage(); };
-            MessageReceiver._list[GameContextRefreshEntityLookMessage.ID] = () => { return new GameContextRefreshEntityLookMessage(); };
-            MessageReceiver._list[GameContextRemoveElementMessage.ID] = () => { return new GameContextRemoveElementMessage(); };
-            MessageReceiver._list[GameContextRemoveElementWithEventMessage.ID] = () => { return new GameContextRemoveElementWithEventMessage(); };
-            MessageReceiver._list[GameContextRemoveMultipleElementsMessage.ID] = () => { return new GameContextRemoveMultipleElementsMessage(); };
-            MessageReceiver._list[GameContextRemoveMultipleElementsWithEventsMessage.ID] = () => { return new GameContextRemoveMultipleElementsWithEventsMessage(); };
-            MessageReceiver._list[GameEntitiesDispositionMessage.ID] = () => { return new GameEntitiesDispositionMessage(); };
-            MessageReceiver._list[GameEntityDispositionErrorMessage.ID] = () => { return new GameEntityDispositionErrorMessage(); };
-            MessageReceiver._list[GameEntityDispositionMessage.ID] = () => { return new GameEntityDispositionMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationMessage.ID] = () => { return new GameMapChangeOrientationMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationRequestMessage.ID] = () => { return new GameMapChangeOrientationRequestMessage(); };
-            MessageReceiver._list[GameMapChangeOrientationsMessage.ID] = () => { return new GameMapChangeOrientationsMessage(); };
-            MessageReceiver._list[GameMapMovementCancelMessage.ID] = () => { return new GameMapMovementCancelMessage(); };
-            MessageReceiver._list[GameMapMovementConfirmMessage.ID] = () => { return new GameMapMovementConfirmMessage(); };
-            MessageReceiver._list[GameMapMovementMessage.ID] = () => { return new GameMapMovementMessage(); };
-            MessageReceiver._list[GameMapMovementRequestMessage.ID] = () => { return new GameMapMovementRequestMessage(); };
-            MessageReceiver._list[GameMapNoMovementMessage.ID] = () => { return new GameMapNoMovementMessage(); };
-            MessageReceiver._list[ShowCellMessage.ID] = () => { return new ShowCellMessage(); };
-            MessageReceiver._list[ShowCellRequestMessage.ID] = () => { return new ShowCellRequestMessage(); };
-            MessageReceiver._list[ShowCellSpectatorMessage.ID] = () => { return new ShowCellSpectatorMessage(); };
-            MessageReceiver._list[DisplayNumericalValuePaddockMessage.ID] = () => { return new DisplayNumericalValuePaddockMessage(); };
-            MessageReceiver._list[DungeonKeyRingMessage.ID] = () => { return new DungeonKeyRingMessage(); };
-            MessageReceiver._list[DungeonKeyRingUpdateMessage.ID] = () => { return new DungeonKeyRingUpdateMessage(); };
-            MessageReceiver._list[GameFightEndMessage.ID] = () => { return new GameFightEndMessage(); };
-            MessageReceiver._list[GameFightHumanReadyStateMessage.ID] = () => { return new GameFightHumanReadyStateMessage(); };
-            MessageReceiver._list[GameFightJoinMessage.ID] = () => { return new GameFightJoinMessage(); };
-            MessageReceiver._list[GameFightJoinRequestMessage.ID] = () => { return new GameFightJoinRequestMessage(); };
-            MessageReceiver._list[GameFightLeaveMessage.ID] = () => { return new GameFightLeaveMessage(); };
-            MessageReceiver._list[GameFightNewRoundMessage.ID] = () => { return new GameFightNewRoundMessage(); };
-            MessageReceiver._list[GameFightNewWaveMessage.ID] = () => { return new GameFightNewWaveMessage(); };
-            MessageReceiver._list[GameFightOptionStateUpdateMessage.ID] = () => { return new GameFightOptionStateUpdateMessage(); };
-            MessageReceiver._list[GameFightOptionToggleMessage.ID] = () => { return new GameFightOptionToggleMessage(); };
-            MessageReceiver._list[GameFightPlacementPositionRequestMessage.ID] = () => { return new GameFightPlacementPositionRequestMessage(); };
-            MessageReceiver._list[GameFightPlacementPossiblePositionsMessage.ID] = () => { return new GameFightPlacementPossiblePositionsMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsAcceptMessage.ID] = () => { return new GameFightPlacementSwapPositionsAcceptMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsCancelMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsCancelledMessage.ID] = () => { return new GameFightPlacementSwapPositionsCancelledMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsErrorMessage.ID] = () => { return new GameFightPlacementSwapPositionsErrorMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsMessage.ID] = () => { return new GameFightPlacementSwapPositionsMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsOfferMessage.ID] = () => { return new GameFightPlacementSwapPositionsOfferMessage(); };
-            MessageReceiver._list[GameFightPlacementSwapPositionsRequestMessage.ID] = () => { return new GameFightPlacementSwapPositionsRequestMessage(); };
-            MessageReceiver._list[GameFightReadyMessage.ID] = () => { return new GameFightReadyMessage(); };
-            MessageReceiver._list[GameFightRemoveTeamMemberMessage.ID] = () => { return new GameFightRemoveTeamMemberMessage(); };
-            MessageReceiver._list[GameFightResumeMessage.ID] = () => { return new GameFightResumeMessage(); };
-            MessageReceiver._list[GameFightResumeWithSlavesMessage.ID] = () => { return new GameFightResumeWithSlavesMessage(); };
-            MessageReceiver._list[GameFightSpectateMessage.ID] = () => { return new GameFightSpectateMessage(); };
-            MessageReceiver._list[GameFightSpectatePlayerRequestMessage.ID] = () => { return new GameFightSpectatePlayerRequestMessage(); };
-            MessageReceiver._list[GameFightSpectatorJoinMessage.ID] = () => { return new GameFightSpectatorJoinMessage(); };
-            MessageReceiver._list[GameFightStartMessage.ID] = () => { return new GameFightStartMessage(); };
-            MessageReceiver._list[GameFightStartingMessage.ID] = () => { return new GameFightStartingMessage(); };
-            MessageReceiver._list[GameFightSynchronizeMessage.ID] = () => { return new GameFightSynchronizeMessage(); };
-            MessageReceiver._list[GameFightTurnEndMessage.ID] = () => { return new GameFightTurnEndMessage(); };
-            MessageReceiver._list[GameFightTurnFinishMessage.ID] = () => { return new GameFightTurnFinishMessage(); };
-            MessageReceiver._list[GameFightTurnListMessage.ID] = () => { return new GameFightTurnListMessage(); };
-            MessageReceiver._list[GameFightTurnReadyMessage.ID] = () => { return new GameFightTurnReadyMessage(); };
-            MessageReceiver._list[GameFightTurnReadyRequestMessage.ID] = () => { return new GameFightTurnReadyRequestMessage(); };
-            MessageReceiver._list[GameFightTurnResumeMessage.ID] = () => { return new GameFightTurnResumeMessage(); };
-            MessageReceiver._list[GameFightTurnStartMessage.ID] = () => { return new GameFightTurnStartMessage(); };
-            MessageReceiver._list[GameFightTurnStartPlayingMessage.ID] = () => { return new GameFightTurnStartPlayingMessage(); };
-            MessageReceiver._list[GameFightUpdateTeamMessage.ID] = () => { return new GameFightUpdateTeamMessage(); };
-            MessageReceiver._list[SlaveSwitchContextMessage.ID] = () => { return new SlaveSwitchContextMessage(); };
-            MessageReceiver._list[ChallengeInfoMessage.ID] = () => { return new ChallengeInfoMessage(); };
-            MessageReceiver._list[ChallengeResultMessage.ID] = () => { return new ChallengeResultMessage(); };
-            MessageReceiver._list[ChallengeTargetUpdateMessage.ID] = () => { return new ChallengeTargetUpdateMessage(); };
-            MessageReceiver._list[ChallengeTargetsListMessage.ID] = () => { return new ChallengeTargetsListMessage(); };
-            MessageReceiver._list[ChallengeTargetsListRequestMessage.ID] = () => { return new ChallengeTargetsListRequestMessage(); };
-            MessageReceiver._list[GameFightRefreshFighterMessage.ID] = () => { return new GameFightRefreshFighterMessage(); };
-            MessageReceiver._list[GameFightShowFighterMessage.ID] = () => { return new GameFightShowFighterMessage(); };
-            MessageReceiver._list[GameFightShowFighterRandomStaticPoseMessage.ID] = () => { return new GameFightShowFighterRandomStaticPoseMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectAddMessage.ID] = () => { return new GameDataPaddockObjectAddMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectListAddMessage.ID] = () => { return new GameDataPaddockObjectListAddMessage(); };
-            MessageReceiver._list[GameDataPaddockObjectRemoveMessage.ID] = () => { return new GameDataPaddockObjectRemoveMessage(); };
-            MessageReceiver._list[MountDataErrorMessage.ID] = () => { return new MountDataErrorMessage(); };
-            MessageReceiver._list[MountDataMessage.ID] = () => { return new MountDataMessage(); };
-            MessageReceiver._list[MountEmoteIconUsedOkMessage.ID] = () => { return new MountEmoteIconUsedOkMessage(); };
-            MessageReceiver._list[MountEquipedErrorMessage.ID] = () => { return new MountEquipedErrorMessage(); };
-            MessageReceiver._list[MountFeedRequestMessage.ID] = () => { return new MountFeedRequestMessage(); };
-            MessageReceiver._list[MountInformationInPaddockRequestMessage.ID] = () => { return new MountInformationInPaddockRequestMessage(); };
-            MessageReceiver._list[MountInformationRequestMessage.ID] = () => { return new MountInformationRequestMessage(); };
-            MessageReceiver._list[MountReleaseRequestMessage.ID] = () => { return new MountReleaseRequestMessage(); };
-            MessageReceiver._list[MountReleasedMessage.ID] = () => { return new MountReleasedMessage(); };
-            MessageReceiver._list[MountRenameRequestMessage.ID] = () => { return new MountRenameRequestMessage(); };
-            MessageReceiver._list[MountRenamedMessage.ID] = () => { return new MountRenamedMessage(); };
-            MessageReceiver._list[MountRidingMessage.ID] = () => { return new MountRidingMessage(); };
-            MessageReceiver._list[MountSetMessage.ID] = () => { return new MountSetMessage(); };
-            MessageReceiver._list[MountSetXpRatioRequestMessage.ID] = () => { return new MountSetXpRatioRequestMessage(); };
-            MessageReceiver._list[MountSterilizeRequestMessage.ID] = () => { return new MountSterilizeRequestMessage(); };
-            MessageReceiver._list[MountSterilizedMessage.ID] = () => { return new MountSterilizedMessage(); };
-            MessageReceiver._list[MountToggleRidingRequestMessage.ID] = () => { return new MountToggleRidingRequestMessage(); };
-            MessageReceiver._list[MountUnSetMessage.ID] = () => { return new MountUnSetMessage(); };
-            MessageReceiver._list[MountXpRatioMessage.ID] = () => { return new MountXpRatioMessage(); };
-            MessageReceiver._list[PaddockBuyRequestMessage.ID] = () => { return new PaddockBuyRequestMessage(); };
-            MessageReceiver._list[PaddockBuyResultMessage.ID] = () => { return new PaddockBuyResultMessage(); };
-            MessageReceiver._list[PaddockMoveItemRequestMessage.ID] = () => { return new PaddockMoveItemRequestMessage(); };
-            MessageReceiver._list[PaddockRemoveItemRequestMessage.ID] = () => { return new PaddockRemoveItemRequestMessage(); };
-            MessageReceiver._list[PaddockSellRequestMessage.ID] = () => { return new PaddockSellRequestMessage(); };
-            MessageReceiver._list[NotificationByServerMessage.ID] = () => { return new NotificationByServerMessage(); };
-            MessageReceiver._list[NotificationListMessage.ID] = () => { return new NotificationListMessage(); };
-            MessageReceiver._list[NotificationResetMessage.ID] = () => { return new NotificationResetMessage(); };
-            MessageReceiver._list[NotificationUpdateFlagMessage.ID] = () => { return new NotificationUpdateFlagMessage(); };
-            MessageReceiver._list[ChangeMapMessage.ID] = () => { return new ChangeMapMessage(); };
-            MessageReceiver._list[CurrentMapMessage.ID] = () => { return new CurrentMapMessage(); };
-            MessageReceiver._list[ErrorMapNotFoundMessage.ID] = () => { return new ErrorMapNotFoundMessage(); };
-            MessageReceiver._list[GameRolePlayShowActorMessage.ID] = () => { return new GameRolePlayShowActorMessage(); };
-            MessageReceiver._list[GameRolePlayShowActorWithEventMessage.ID] = () => { return new GameRolePlayShowActorWithEventMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsDataInHouseMessage.ID] = () => { return new MapComplementaryInformationsDataInHouseMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsDataMessage.ID] = () => { return new MapComplementaryInformationsDataMessage(); };
-            MessageReceiver._list[MapComplementaryInformationsWithCoordsMessage.ID] = () => { return new MapComplementaryInformationsWithCoordsMessage(); };
-            MessageReceiver._list[MapFightCountMessage.ID] = () => { return new MapFightCountMessage(); };
-            MessageReceiver._list[MapInformationsRequestMessage.ID] = () => { return new MapInformationsRequestMessage(); };
-            MessageReceiver._list[MapObstacleUpdateMessage.ID] = () => { return new MapObstacleUpdateMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsExtendedMessage.ID] = () => { return new MapRunningFightDetailsExtendedMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsMessage.ID] = () => { return new MapRunningFightDetailsMessage(); };
-            MessageReceiver._list[MapRunningFightDetailsRequestMessage.ID] = () => { return new MapRunningFightDetailsRequestMessage(); };
-            MessageReceiver._list[MapRunningFightListMessage.ID] = () => { return new MapRunningFightListMessage(); };
-            MessageReceiver._list[MapRunningFightListRequestMessage.ID] = () => { return new MapRunningFightListRequestMessage(); };
-            MessageReceiver._list[StopToListenRunningFightRequestMessage.ID] = () => { return new StopToListenRunningFightRequestMessage(); };
-            MessageReceiver._list[TeleportOnSameMapMessage.ID] = () => { return new TeleportOnSameMapMessage(); };
-            MessageReceiver._list[GameRolePlayFreeSoulRequestMessage.ID] = () => { return new GameRolePlayFreeSoulRequestMessage(); };
-            MessageReceiver._list[GameRolePlayGameOverMessage.ID] = () => { return new GameRolePlayGameOverMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerLifeStatusMessage.ID] = () => { return new GameRolePlayPlayerLifeStatusMessage(); };
-            MessageReceiver._list[WarnOnPermaDeathMessage.ID] = () => { return new WarnOnPermaDeathMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedActionFinishedMessage.ID] = () => { return new GameRolePlayDelayedActionFinishedMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedActionMessage.ID] = () => { return new GameRolePlayDelayedActionMessage(); };
-            MessageReceiver._list[GameRolePlayDelayedObjectUseMessage.ID] = () => { return new GameRolePlayDelayedObjectUseMessage(); };
-            MessageReceiver._list[ComicReadingBeginMessage.ID] = () => { return new ComicReadingBeginMessage(); };
-            MessageReceiver._list[DocumentReadingBeginMessage.ID] = () => { return new DocumentReadingBeginMessage(); };
-            MessageReceiver._list[EmoteAddMessage.ID] = () => { return new EmoteAddMessage(); };
-            MessageReceiver._list[EmoteListMessage.ID] = () => { return new EmoteListMessage(); };
-            MessageReceiver._list[EmotePlayAbstractMessage.ID] = () => { return new EmotePlayAbstractMessage(); };
-            MessageReceiver._list[EmotePlayErrorMessage.ID] = () => { return new EmotePlayErrorMessage(); };
-            MessageReceiver._list[EmotePlayMassiveMessage.ID] = () => { return new EmotePlayMassiveMessage(); };
-            MessageReceiver._list[EmotePlayMessage.ID] = () => { return new EmotePlayMessage(); };
-            MessageReceiver._list[EmotePlayRequestMessage.ID] = () => { return new EmotePlayRequestMessage(); };
-            MessageReceiver._list[EmoteRemoveMessage.ID] = () => { return new EmoteRemoveMessage(); };
-            MessageReceiver._list[GameRolePlayAggressionMessage.ID] = () => { return new GameRolePlayAggressionMessage(); };
-            MessageReceiver._list[GameRolePlayAttackMonsterRequestMessage.ID] = () => { return new GameRolePlayAttackMonsterRequestMessage(); };
-            MessageReceiver._list[GameRolePlayFightRequestCanceledMessage.ID] = () => { return new GameRolePlayFightRequestCanceledMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnswerMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnswerMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyAnsweredMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyAnsweredMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightFriendlyRequestedMessage.ID] = () => { return new GameRolePlayPlayerFightFriendlyRequestedMessage(); };
-            MessageReceiver._list[GameRolePlayPlayerFightRequestMessage.ID] = () => { return new GameRolePlayPlayerFightRequestMessage(); };
-            MessageReceiver._list[GameRolePlayRemoveChallengeMessage.ID] = () => { return new GameRolePlayRemoveChallengeMessage(); };
-            MessageReceiver._list[GameRolePlayShowChallengeMessage.ID] = () => { return new GameRolePlayShowChallengeMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFightAnswerMessage.ID] = () => { return new GameRolePlayArenaFightAnswerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFightPropositionMessage.ID] = () => { return new GameRolePlayArenaFightPropositionMessage(); };
-            MessageReceiver._list[GameRolePlayArenaFighterStatusMessage.ID] = () => { return new GameRolePlayArenaFighterStatusMessage(); };
-            MessageReceiver._list[GameRolePlayArenaRegisterMessage.ID] = () => { return new GameRolePlayArenaRegisterMessage(); };
-            MessageReceiver._list[GameRolePlayArenaRegistrationStatusMessage.ID] = () => { return new GameRolePlayArenaRegistrationStatusMessage(); };
-            MessageReceiver._list[GameRolePlayArenaSwitchToFightServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToFightServerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaSwitchToGameServerMessage.ID] = () => { return new GameRolePlayArenaSwitchToGameServerMessage(); };
-            MessageReceiver._list[GameRolePlayArenaUnregisterMessage.ID] = () => { return new GameRolePlayArenaUnregisterMessage(); };
-            MessageReceiver._list[GameRolePlayArenaUpdatePlayerInfosMessage.ID] = () => { return new GameRolePlayArenaUpdatePlayerInfosMessage(); };
-            MessageReceiver._list[AccountHouseMessage.ID] = () => { return new AccountHouseMessage(); };
-            MessageReceiver._list[HouseBuyRequestMessage.ID] = () => { return new HouseBuyRequestMessage(); };
-            MessageReceiver._list[HouseBuyResultMessage.ID] = () => { return new HouseBuyResultMessage(); };
-            MessageReceiver._list[HouseKickIndoorMerchantRequestMessage.ID] = () => { return new HouseKickIndoorMerchantRequestMessage(); };
-            MessageReceiver._list[HouseKickRequestMessage.ID] = () => { return new HouseKickRequestMessage(); };
-            MessageReceiver._list[HouseLockFromInsideRequestMessage.ID] = () => { return new HouseLockFromInsideRequestMessage(); };
-            MessageReceiver._list[HousePropertiesMessage.ID] = () => { return new HousePropertiesMessage(); };
-            MessageReceiver._list[HouseSellFromInsideRequestMessage.ID] = () => { return new HouseSellFromInsideRequestMessage(); };
-            MessageReceiver._list[HouseSellRequestMessage.ID] = () => { return new HouseSellRequestMessage(); };
-            MessageReceiver._list[HouseSoldMessage.ID] = () => { return new HouseSoldMessage(); };
-            MessageReceiver._list[HouseToSellFilterMessage.ID] = () => { return new HouseToSellFilterMessage(); };
-            MessageReceiver._list[HouseToSellListMessage.ID] = () => { return new HouseToSellListMessage(); };
-            MessageReceiver._list[HouseToSellListRequestMessage.ID] = () => { return new HouseToSellListRequestMessage(); };
-            MessageReceiver._list[HouseGuildNoneMessage.ID] = () => { return new HouseGuildNoneMessage(); };
-            MessageReceiver._list[HouseGuildRightsMessage.ID] = () => { return new HouseGuildRightsMessage(); };
-            MessageReceiver._list[HouseGuildRightsViewMessage.ID] = () => { return new HouseGuildRightsViewMessage(); };
-            MessageReceiver._list[HouseGuildShareRequestMessage.ID] = () => { return new HouseGuildShareRequestMessage(); };
-            MessageReceiver._list[JobAllowMultiCraftRequestMessage.ID] = () => { return new JobAllowMultiCraftRequestMessage(); };
-            MessageReceiver._list[JobBookSubscriptionMessage.ID] = () => { return new JobBookSubscriptionMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryAddMessage.ID] = () => { return new JobCrafterDirectoryAddMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryDefineSettingsMessage.ID] = () => { return new JobCrafterDirectoryDefineSettingsMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryEntryMessage.ID] = () => { return new JobCrafterDirectoryEntryMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryEntryRequestMessage.ID] = () => { return new JobCrafterDirectoryEntryRequestMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryListMessage.ID] = () => { return new JobCrafterDirectoryListMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryListRequestMessage.ID] = () => { return new JobCrafterDirectoryListRequestMessage(); };
-            MessageReceiver._list[JobCrafterDirectoryRemoveMessage.ID] = () => { return new JobCrafterDirectoryRemoveMessage(); };
-            MessageReceiver._list[JobCrafterDirectorySettingsMessage.ID] = () => { return new JobCrafterDirectorySettingsMessage(); };
-            MessageReceiver._list[JobDescriptionMessage.ID] = () => { return new JobDescriptionMessage(); };
-            MessageReceiver._list[JobExperienceMultiUpdateMessage.ID] = () => { return new JobExperienceMultiUpdateMessage(); };
-            MessageReceiver._list[JobExperienceOtherPlayerUpdateMessage.ID] = () => { return new JobExperienceOtherPlayerUpdateMessage(); };
-            MessageReceiver._list[JobExperienceUpdateMessage.ID] = () => { return new JobExperienceUpdateMessage(); };
-            MessageReceiver._list[JobLevelUpMessage.ID] = () => { return new JobLevelUpMessage(); };
-            MessageReceiver._list[JobMultiCraftAvailableSkillsMessage.ID] = () => { return new JobMultiCraftAvailableSkillsMessage(); };
-            MessageReceiver._list[LockableChangeCodeMessage.ID] = () => { return new LockableChangeCodeMessage(); };
-            MessageReceiver._list[LockableCodeResultMessage.ID] = () => { return new LockableCodeResultMessage(); };
-            MessageReceiver._list[LockableShowCodeDialogMessage.ID] = () => { return new LockableShowCodeDialogMessage(); };
-            MessageReceiver._list[LockableStateUpdateAbstractMessage.ID] = () => { return new LockableStateUpdateAbstractMessage(); };
-            MessageReceiver._list[LockableStateUpdateHouseDoorMessage.ID] = () => { return new LockableStateUpdateHouseDoorMessage(); };
-            MessageReceiver._list[LockableStateUpdateStorageMessage.ID] = () => { return new LockableStateUpdateStorageMessage(); };
-            MessageReceiver._list[LockableUseCodeMessage.ID] = () => { return new LockableUseCodeMessage(); };
-            MessageReceiver._list[AlliancePrismDialogQuestionMessage.ID] = () => { return new AlliancePrismDialogQuestionMessage(); };
-            MessageReceiver._list[AllianceTaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new AllianceTaxCollectorDialogQuestionExtendedMessage(); };
-            MessageReceiver._list[EntityTalkMessage.ID] = () => { return new EntityTalkMessage(); };
-            MessageReceiver._list[MapNpcsQuestStatusUpdateMessage.ID] = () => { return new MapNpcsQuestStatusUpdateMessage(); };
-            MessageReceiver._list[NpcDialogCreationMessage.ID] = () => { return new NpcDialogCreationMessage(); };
-            MessageReceiver._list[NpcDialogQuestionMessage.ID] = () => { return new NpcDialogQuestionMessage(); };
-            MessageReceiver._list[NpcDialogReplyMessage.ID] = () => { return new NpcDialogReplyMessage(); };
-            MessageReceiver._list[NpcGenericActionFailureMessage.ID] = () => { return new NpcGenericActionFailureMessage(); };
-            MessageReceiver._list[NpcGenericActionRequestMessage.ID] = () => { return new NpcGenericActionRequestMessage(); };
-            MessageReceiver._list[TaxCollectorDialogQuestionBasicMessage.ID] = () => { return new TaxCollectorDialogQuestionBasicMessage(); };
-            MessageReceiver._list[TaxCollectorDialogQuestionExtendedMessage.ID] = () => { return new TaxCollectorDialogQuestionExtendedMessage(); };
-            MessageReceiver._list[ObjectGroundAddedMessage.ID] = () => { return new ObjectGroundAddedMessage(); };
-            MessageReceiver._list[ObjectGroundListAddedMessage.ID] = () => { return new ObjectGroundListAddedMessage(); };
-            MessageReceiver._list[ObjectGroundRemovedMessage.ID] = () => { return new ObjectGroundRemovedMessage(); };
-            MessageReceiver._list[ObjectGroundRemovedMultipleMessage.ID] = () => { return new ObjectGroundRemovedMultipleMessage(); };
-            MessageReceiver._list[GameDataPlayFarmObjectAnimationMessage.ID] = () => { return new GameDataPlayFarmObjectAnimationMessage(); };
-            MessageReceiver._list[PaddockPropertiesMessage.ID] = () => { return new PaddockPropertiesMessage(); };
-            MessageReceiver._list[PaddockSellBuyDialogMessage.ID] = () => { return new PaddockSellBuyDialogMessage(); };
-            MessageReceiver._list[PaddockToSellFilterMessage.ID] = () => { return new PaddockToSellFilterMessage(); };
-            MessageReceiver._list[PaddockToSellListMessage.ID] = () => { return new PaddockToSellListMessage(); };
-            MessageReceiver._list[PaddockToSellListRequestMessage.ID] = () => { return new PaddockToSellListRequestMessage(); };
-            MessageReceiver._list[AbstractPartyEventMessage.ID] = () => { return new AbstractPartyEventMessage(); };
-            MessageReceiver._list[AbstractPartyMessage.ID] = () => { return new AbstractPartyMessage(); };
-            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsMessage(); };
-            MessageReceiver._list[DungeonPartyFinderAvailableDungeonsRequestMessage.ID] = () => { return new DungeonPartyFinderAvailableDungeonsRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderListenErrorMessage.ID] = () => { return new DungeonPartyFinderListenErrorMessage(); };
-            MessageReceiver._list[DungeonPartyFinderListenRequestMessage.ID] = () => { return new DungeonPartyFinderListenRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterErrorMessage.ID] = () => { return new DungeonPartyFinderRegisterErrorMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterRequestMessage.ID] = () => { return new DungeonPartyFinderRegisterRequestMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRegisterSuccessMessage.ID] = () => { return new DungeonPartyFinderRegisterSuccessMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRoomContentMessage.ID] = () => { return new DungeonPartyFinderRoomContentMessage(); };
-            MessageReceiver._list[DungeonPartyFinderRoomContentUpdateMessage.ID] = () => { return new DungeonPartyFinderRoomContentUpdateMessage(); };
-            MessageReceiver._list[PartyAbdicateThroneMessage.ID] = () => { return new PartyAbdicateThroneMessage(); };
-            MessageReceiver._list[PartyAcceptInvitationMessage.ID] = () => { return new PartyAcceptInvitationMessage(); };
-            MessageReceiver._list[PartyCancelInvitationMessage.ID] = () => { return new PartyCancelInvitationMessage(); };
-            MessageReceiver._list[PartyCancelInvitationNotificationMessage.ID] = () => { return new PartyCancelInvitationNotificationMessage(); };
-            MessageReceiver._list[PartyCannotJoinErrorMessage.ID] = () => { return new PartyCannotJoinErrorMessage(); };
-            MessageReceiver._list[PartyDeletedMessage.ID] = () => { return new PartyDeletedMessage(); };
-            MessageReceiver._list[PartyFollowMemberRequestMessage.ID] = () => { return new PartyFollowMemberRequestMessage(); };
-            MessageReceiver._list[PartyFollowStatusUpdateMessage.ID] = () => { return new PartyFollowStatusUpdateMessage(); };
-            MessageReceiver._list[PartyFollowThisMemberRequestMessage.ID] = () => { return new PartyFollowThisMemberRequestMessage(); };
-            MessageReceiver._list[PartyInvitationArenaRequestMessage.ID] = () => { return new PartyInvitationArenaRequestMessage(); };
-            MessageReceiver._list[PartyInvitationCancelledForGuestMessage.ID] = () => { return new PartyInvitationCancelledForGuestMessage(); };
-            MessageReceiver._list[PartyInvitationDetailsMessage.ID] = () => { return new PartyInvitationDetailsMessage(); };
-            MessageReceiver._list[PartyInvitationDetailsRequestMessage.ID] = () => { return new PartyInvitationDetailsRequestMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonDetailsMessage.ID] = () => { return new PartyInvitationDungeonDetailsMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonMessage.ID] = () => { return new PartyInvitationDungeonMessage(); };
-            MessageReceiver._list[PartyInvitationDungeonRequestMessage.ID] = () => { return new PartyInvitationDungeonRequestMessage(); };
-            MessageReceiver._list[PartyInvitationMessage.ID] = () => { return new PartyInvitationMessage(); };
-            MessageReceiver._list[PartyInvitationRequestMessage.ID] = () => { return new PartyInvitationRequestMessage(); };
-            MessageReceiver._list[PartyJoinMessage.ID] = () => { return new PartyJoinMessage(); };
-            MessageReceiver._list[PartyKickRequestMessage.ID] = () => { return new PartyKickRequestMessage(); };
-            MessageReceiver._list[PartyKickedByMessage.ID] = () => { return new PartyKickedByMessage(); };
-            MessageReceiver._list[PartyLeaderUpdateMessage.ID] = () => { return new PartyLeaderUpdateMessage(); };
-            MessageReceiver._list[PartyLeaveMessage.ID] = () => { return new PartyLeaveMessage(); };
-            MessageReceiver._list[PartyLeaveRequestMessage.ID] = () => { return new PartyLeaveRequestMessage(); };
-            MessageReceiver._list[PartyLocateMembersMessage.ID] = () => { return new PartyLocateMembersMessage(); };
-            MessageReceiver._list[PartyLoyaltyStatusMessage.ID] = () => { return new PartyLoyaltyStatusMessage(); };
-            MessageReceiver._list[PartyMemberEjectedMessage.ID] = () => { return new PartyMemberEjectedMessage(); };
-            MessageReceiver._list[PartyMemberInFightMessage.ID] = () => { return new PartyMemberInFightMessage(); };
-            MessageReceiver._list[PartyMemberRemoveMessage.ID] = () => { return new PartyMemberRemoveMessage(); };
-            MessageReceiver._list[PartyModifiableStatusMessage.ID] = () => { return new PartyModifiableStatusMessage(); };
-            MessageReceiver._list[PartyNameSetErrorMessage.ID] = () => { return new PartyNameSetErrorMessage(); };
-            MessageReceiver._list[PartyNameSetRequestMessage.ID] = () => { return new PartyNameSetRequestMessage(); };
-            MessageReceiver._list[PartyNameUpdateMessage.ID] = () => { return new PartyNameUpdateMessage(); };
-            MessageReceiver._list[PartyNewGuestMessage.ID] = () => { return new PartyNewGuestMessage(); };
-            MessageReceiver._list[PartyNewMemberMessage.ID] = () => { return new PartyNewMemberMessage(); };
-            MessageReceiver._list[PartyPledgeLoyaltyRequestMessage.ID] = () => { return new PartyPledgeLoyaltyRequestMessage(); };
-            MessageReceiver._list[PartyRefuseInvitationMessage.ID] = () => { return new PartyRefuseInvitationMessage(); };
-            MessageReceiver._list[PartyRefuseInvitationNotificationMessage.ID] = () => { return new PartyRefuseInvitationNotificationMessage(); };
-            MessageReceiver._list[PartyRestrictedMessage.ID] = () => { return new PartyRestrictedMessage(); };
-            MessageReceiver._list[PartyStopFollowRequestMessage.ID] = () => { return new PartyStopFollowRequestMessage(); };
-            MessageReceiver._list[PartyUpdateLightMessage.ID] = () => { return new PartyUpdateLightMessage(); };
-            MessageReceiver._list[PartyUpdateMessage.ID] = () => { return new PartyUpdateMessage(); };
-            MessageReceiver._list[PartyCompanionUpdateLightMessage.ID] = () => { return new PartyCompanionUpdateLightMessage(); };
-            MessageReceiver._list[PurchasableDialogMessage.ID] = () => { return new PurchasableDialogMessage(); };
-            MessageReceiver._list[GuidedModeQuitRequestMessage.ID] = () => { return new GuidedModeQuitRequestMessage(); };
-            MessageReceiver._list[GuidedModeReturnRequestMessage.ID] = () => { return new GuidedModeReturnRequestMessage(); };
-            MessageReceiver._list[QuestListMessage.ID] = () => { return new QuestListMessage(); };
-            MessageReceiver._list[QuestListRequestMessage.ID] = () => { return new QuestListRequestMessage(); };
-            MessageReceiver._list[QuestObjectiveValidatedMessage.ID] = () => { return new QuestObjectiveValidatedMessage(); };
-            MessageReceiver._list[QuestObjectiveValidationMessage.ID] = () => { return new QuestObjectiveValidationMessage(); };
-            MessageReceiver._list[QuestStartRequestMessage.ID] = () => { return new QuestStartRequestMessage(); };
-            MessageReceiver._list[QuestStartedMessage.ID] = () => { return new QuestStartedMessage(); };
-            MessageReceiver._list[QuestStepInfoMessage.ID] = () => { return new QuestStepInfoMessage(); };
-            MessageReceiver._list[QuestStepInfoRequestMessage.ID] = () => { return new QuestStepInfoRequestMessage(); };
-            MessageReceiver._list[QuestStepStartedMessage.ID] = () => { return new QuestStepStartedMessage(); };
-            MessageReceiver._list[QuestStepValidatedMessage.ID] = () => { return new QuestStepValidatedMessage(); };
-            MessageReceiver._list[QuestValidatedMessage.ID] = () => { return new QuestValidatedMessage(); };
-            MessageReceiver._list[SpellForgetUIMessage.ID] = () => { return new SpellForgetUIMessage(); };
-            MessageReceiver._list[SpellForgottenMessage.ID] = () => { return new SpellForgottenMessage(); };
-            MessageReceiver._list[SpellItemBoostMessage.ID] = () => { return new SpellItemBoostMessage(); };
-            MessageReceiver._list[SpellUpgradeFailureMessage.ID] = () => { return new SpellUpgradeFailureMessage(); };
-            MessageReceiver._list[SpellUpgradeRequestMessage.ID] = () => { return new SpellUpgradeRequestMessage(); };
-            MessageReceiver._list[SpellUpgradeSuccessMessage.ID] = () => { return new SpellUpgradeSuccessMessage(); };
-            MessageReceiver._list[ValidateSpellForgetMessage.ID] = () => { return new ValidateSpellForgetMessage(); };
-            MessageReceiver._list[StatsUpgradeRequestMessage.ID] = () => { return new StatsUpgradeRequestMessage(); };
-            MessageReceiver._list[StatsUpgradeResultMessage.ID] = () => { return new StatsUpgradeResultMessage(); };
-            MessageReceiver._list[PortalUseRequestMessage.ID] = () => { return new PortalUseRequestMessage(); };
-            MessageReceiver._list[TreasureHuntAvailableRetryCountUpdateMessage.ID] = () => { return new TreasureHuntAvailableRetryCountUpdateMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestAnswerFailedMessage.ID] = () => { return new TreasureHuntDigRequestAnswerFailedMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestAnswerMessage.ID] = () => { return new TreasureHuntDigRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntDigRequestMessage.ID] = () => { return new TreasureHuntDigRequestMessage(); };
-            MessageReceiver._list[TreasureHuntFinishedMessage.ID] = () => { return new TreasureHuntFinishedMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRemoveRequestMessage.ID] = () => { return new TreasureHuntFlagRemoveRequestMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRequestAnswerMessage.ID] = () => { return new TreasureHuntFlagRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntFlagRequestMessage.ID] = () => { return new TreasureHuntFlagRequestMessage(); };
-            MessageReceiver._list[TreasureHuntGiveUpRequestMessage.ID] = () => { return new TreasureHuntGiveUpRequestMessage(); };
-            MessageReceiver._list[TreasureHuntLegendaryRequestMessage.ID] = () => { return new TreasureHuntLegendaryRequestMessage(); };
-            MessageReceiver._list[TreasureHuntMessage.ID] = () => { return new TreasureHuntMessage(); };
-            MessageReceiver._list[TreasureHuntRequestAnswerMessage.ID] = () => { return new TreasureHuntRequestAnswerMessage(); };
-            MessageReceiver._list[TreasureHuntRequestMessage.ID] = () => { return new TreasureHuntRequestMessage(); };
-            MessageReceiver._list[TreasureHuntShowLegendaryUIMessage.ID] = () => { return new TreasureHuntShowLegendaryUIMessage(); };
-            MessageReceiver._list[GameRolePlaySpellAnimMessage.ID] = () => { return new GameRolePlaySpellAnimMessage(); };
-            MessageReceiver._list[LeaveDialogMessage.ID] = () => { return new LeaveDialogMessage(); };
-            MessageReceiver._list[LeaveDialogRequestMessage.ID] = () => { return new LeaveDialogRequestMessage(); };
-            MessageReceiver._list[PauseDialogMessage.ID] = () => { return new PauseDialogMessage(); };
-            MessageReceiver._list[FriendAddFailureMessage.ID] = () => { return new FriendAddFailureMessage(); };
-            MessageReceiver._list[FriendAddRequestMessage.ID] = () => { return new FriendAddRequestMessage(); };
-            MessageReceiver._list[FriendAddedMessage.ID] = () => { return new FriendAddedMessage(); };
-            MessageReceiver._list[FriendDeleteRequestMessage.ID] = () => { return new FriendDeleteRequestMessage(); };
-            MessageReceiver._list[FriendDeleteResultMessage.ID] = () => { return new FriendDeleteResultMessage(); };
-            MessageReceiver._list[FriendJoinRequestMessage.ID] = () => { return new FriendJoinRequestMessage(); };
-            MessageReceiver._list[FriendSetWarnOnConnectionMessage.ID] = () => { return new FriendSetWarnOnConnectionMessage(); };
-            MessageReceiver._list[FriendSetWarnOnLevelGainMessage.ID] = () => { return new FriendSetWarnOnLevelGainMessage(); };
-            MessageReceiver._list[FriendSpouseFollowWithCompassRequestMessage.ID] = () => { return new FriendSpouseFollowWithCompassRequestMessage(); };
-            MessageReceiver._list[FriendSpouseJoinRequestMessage.ID] = () => { return new FriendSpouseJoinRequestMessage(); };
-            MessageReceiver._list[FriendUpdateMessage.ID] = () => { return new FriendUpdateMessage(); };
-            MessageReceiver._list[FriendWarnOnConnectionStateMessage.ID] = () => { return new FriendWarnOnConnectionStateMessage(); };
-            MessageReceiver._list[FriendWarnOnLevelGainStateMessage.ID] = () => { return new FriendWarnOnLevelGainStateMessage(); };
-            MessageReceiver._list[FriendsGetListMessage.ID] = () => { return new FriendsGetListMessage(); };
-            MessageReceiver._list[FriendsListMessage.ID] = () => { return new FriendsListMessage(); };
-            MessageReceiver._list[GuildMemberSetWarnOnConnectionMessage.ID] = () => { return new GuildMemberSetWarnOnConnectionMessage(); };
-            MessageReceiver._list[GuildMemberWarnOnConnectionStateMessage.ID] = () => { return new GuildMemberWarnOnConnectionStateMessage(); };
-            MessageReceiver._list[IgnoredAddFailureMessage.ID] = () => { return new IgnoredAddFailureMessage(); };
-            MessageReceiver._list[IgnoredAddRequestMessage.ID] = () => { return new IgnoredAddRequestMessage(); };
-            MessageReceiver._list[IgnoredAddedMessage.ID] = () => { return new IgnoredAddedMessage(); };
-            MessageReceiver._list[IgnoredDeleteRequestMessage.ID] = () => { return new IgnoredDeleteRequestMessage(); };
-            MessageReceiver._list[IgnoredDeleteResultMessage.ID] = () => { return new IgnoredDeleteResultMessage(); };
-            MessageReceiver._list[IgnoredGetListMessage.ID] = () => { return new IgnoredGetListMessage(); };
-            MessageReceiver._list[IgnoredListMessage.ID] = () => { return new IgnoredListMessage(); };
-            MessageReceiver._list[SpouseGetInformationsMessage.ID] = () => { return new SpouseGetInformationsMessage(); };
-            MessageReceiver._list[SpouseInformationsMessage.ID] = () => { return new SpouseInformationsMessage(); };
-            MessageReceiver._list[SpouseStatusMessage.ID] = () => { return new SpouseStatusMessage(); };
-            MessageReceiver._list[WarnOnPermaDeathStateMessage.ID] = () => { return new WarnOnPermaDeathStateMessage(); };
-            MessageReceiver._list[GuestLimitationMessage.ID] = () => { return new GuestLimitationMessage(); };
-            MessageReceiver._list[GuestModeMessage.ID] = () => { return new GuestModeMessage(); };
-            MessageReceiver._list[ChallengeFightJoinRefusedMessage.ID] = () => { return new ChallengeFightJoinRefusedMessage(); };
-            MessageReceiver._list[GuildChangeMemberParametersMessage.ID] = () => { return new GuildChangeMemberParametersMessage(); };
-            MessageReceiver._list[GuildCharacsUpgradeRequestMessage.ID] = () => { return new GuildCharacsUpgradeRequestMessage(); };
-            MessageReceiver._list[GuildCreationResultMessage.ID] = () => { return new GuildCreationResultMessage(); };
-            MessageReceiver._list[GuildCreationStartedMessage.ID] = () => { return new GuildCreationStartedMessage(); };
-            MessageReceiver._list[GuildCreationValidMessage.ID] = () => { return new GuildCreationValidMessage(); };
-            MessageReceiver._list[GuildFactsErrorMessage.ID] = () => { return new GuildFactsErrorMessage(); };
-            MessageReceiver._list[GuildFactsMessage.ID] = () => { return new GuildFactsMessage(); };
-            MessageReceiver._list[GuildFactsRequestMessage.ID] = () => { return new GuildFactsRequestMessage(); };
-            MessageReceiver._list[GuildGetInformationsMessage.ID] = () => { return new GuildGetInformationsMessage(); };
-            MessageReceiver._list[GuildHouseRemoveMessage.ID] = () => { return new GuildHouseRemoveMessage(); };
-            MessageReceiver._list[GuildHouseTeleportRequestMessage.ID] = () => { return new GuildHouseTeleportRequestMessage(); };
-            MessageReceiver._list[GuildHouseUpdateInformationMessage.ID] = () => { return new GuildHouseUpdateInformationMessage(); };
-            MessageReceiver._list[GuildHousesInformationMessage.ID] = () => { return new GuildHousesInformationMessage(); };
-            MessageReceiver._list[GuildInAllianceFactsMessage.ID] = () => { return new GuildInAllianceFactsMessage(); };
-            MessageReceiver._list[GuildInformationsGeneralMessage.ID] = () => { return new GuildInformationsGeneralMessage(); };
-            MessageReceiver._list[GuildInformationsMemberUpdateMessage.ID] = () => { return new GuildInformationsMemberUpdateMessage(); };
-            MessageReceiver._list[GuildInformationsMembersMessage.ID] = () => { return new GuildInformationsMembersMessage(); };
-            MessageReceiver._list[GuildInformationsPaddocksMessage.ID] = () => { return new GuildInformationsPaddocksMessage(); };
-            MessageReceiver._list[GuildInfosUpgradeMessage.ID] = () => { return new GuildInfosUpgradeMessage(); };
-            MessageReceiver._list[GuildInvitationAnswerMessage.ID] = () => { return new GuildInvitationAnswerMessage(); };
-            MessageReceiver._list[GuildInvitationByNameMessage.ID] = () => { return new GuildInvitationByNameMessage(); };
-            MessageReceiver._list[GuildInvitationMessage.ID] = () => { return new GuildInvitationMessage(); };
-            MessageReceiver._list[GuildInvitationStateRecrutedMessage.ID] = () => { return new GuildInvitationStateRecrutedMessage(); };
-            MessageReceiver._list[GuildInvitationStateRecruterMessage.ID] = () => { return new GuildInvitationStateRecruterMessage(); };
-            MessageReceiver._list[GuildInvitedMessage.ID] = () => { return new GuildInvitedMessage(); };
-            MessageReceiver._list[GuildJoinedMessage.ID] = () => { return new GuildJoinedMessage(); };
-            MessageReceiver._list[GuildKickRequestMessage.ID] = () => { return new GuildKickRequestMessage(); };
-            MessageReceiver._list[GuildLeftMessage.ID] = () => { return new GuildLeftMessage(); };
-            MessageReceiver._list[GuildLevelUpMessage.ID] = () => { return new GuildLevelUpMessage(); };
-            MessageReceiver._list[GuildListMessage.ID] = () => { return new GuildListMessage(); };
-            MessageReceiver._list[GuildMemberLeavingMessage.ID] = () => { return new GuildMemberLeavingMessage(); };
-            MessageReceiver._list[GuildMemberOnlineStatusMessage.ID] = () => { return new GuildMemberOnlineStatusMessage(); };
-            MessageReceiver._list[GuildMembershipMessage.ID] = () => { return new GuildMembershipMessage(); };
-            MessageReceiver._list[GuildModificationEmblemValidMessage.ID] = () => { return new GuildModificationEmblemValidMessage(); };
-            MessageReceiver._list[GuildModificationNameValidMessage.ID] = () => { return new GuildModificationNameValidMessage(); };
-            MessageReceiver._list[GuildModificationStartedMessage.ID] = () => { return new GuildModificationStartedMessage(); };
-            MessageReceiver._list[GuildModificationValidMessage.ID] = () => { return new GuildModificationValidMessage(); };
-            MessageReceiver._list[GuildMotdMessage.ID] = () => { return new GuildMotdMessage(); };
-            MessageReceiver._list[GuildMotdSetErrorMessage.ID] = () => { return new GuildMotdSetErrorMessage(); };
-            MessageReceiver._list[GuildPaddockBoughtMessage.ID] = () => { return new GuildPaddockBoughtMessage(); };
-            MessageReceiver._list[GuildPaddockRemovedMessage.ID] = () => { return new GuildPaddockRemovedMessage(); };
-            MessageReceiver._list[GuildPaddockTeleportRequestMessage.ID] = () => { return new GuildPaddockTeleportRequestMessage(); };
-            MessageReceiver._list[GuildSpellUpgradeRequestMessage.ID] = () => { return new GuildSpellUpgradeRequestMessage(); };
-            MessageReceiver._list[GuildVersatileInfoListMessage.ID] = () => { return new GuildVersatileInfoListMessage(); };
-            MessageReceiver._list[AbstractTaxCollectorListMessage.ID] = () => { return new AbstractTaxCollectorListMessage(); };
-            MessageReceiver._list[GameRolePlayTaxCollectorFightRequestMessage.ID] = () => { return new GameRolePlayTaxCollectorFightRequestMessage(); };
-            MessageReceiver._list[GuildFightJoinRequestMessage.ID] = () => { return new GuildFightJoinRequestMessage(); };
-            MessageReceiver._list[GuildFightLeaveRequestMessage.ID] = () => { return new GuildFightLeaveRequestMessage(); };
-            MessageReceiver._list[GuildFightPlayersEnemiesListMessage.ID] = () => { return new GuildFightPlayersEnemiesListMessage(); };
-            MessageReceiver._list[GuildFightPlayersEnemyRemoveMessage.ID] = () => { return new GuildFightPlayersEnemyRemoveMessage(); };
-            MessageReceiver._list[GuildFightPlayersHelpersJoinMessage.ID] = () => { return new GuildFightPlayersHelpersJoinMessage(); };
-            MessageReceiver._list[GuildFightPlayersHelpersLeaveMessage.ID] = () => { return new GuildFightPlayersHelpersLeaveMessage(); };
-            MessageReceiver._list[GuildFightTakePlaceRequestMessage.ID] = () => { return new GuildFightTakePlaceRequestMessage(); };
-            MessageReceiver._list[TaxCollectorAttackedMessage.ID] = () => { return new TaxCollectorAttackedMessage(); };
-            MessageReceiver._list[TaxCollectorAttackedResultMessage.ID] = () => { return new TaxCollectorAttackedResultMessage(); };
-            MessageReceiver._list[TaxCollectorErrorMessage.ID] = () => { return new TaxCollectorErrorMessage(); };
-            MessageReceiver._list[TaxCollectorListMessage.ID] = () => { return new TaxCollectorListMessage(); };
-            MessageReceiver._list[TaxCollectorMovementAddMessage.ID] = () => { return new TaxCollectorMovementAddMessage(); };
-            MessageReceiver._list[TaxCollectorMovementMessage.ID] = () => { return new TaxCollectorMovementMessage(); };
-            MessageReceiver._list[TaxCollectorMovementRemoveMessage.ID] = () => { return new TaxCollectorMovementRemoveMessage(); };
-            MessageReceiver._list[TaxCollectorStateUpdateMessage.ID] = () => { return new TaxCollectorStateUpdateMessage(); };
-            MessageReceiver._list[TopTaxCollectorListMessage.ID] = () => { return new TopTaxCollectorListMessage(); };
-            MessageReceiver._list[IdolFightPreparationUpdateMessage.ID] = () => { return new IdolFightPreparationUpdateMessage(); };
-            MessageReceiver._list[IdolListMessage.ID] = () => { return new IdolListMessage(); };
-            MessageReceiver._list[IdolPartyLostMessage.ID] = () => { return new IdolPartyLostMessage(); };
-            MessageReceiver._list[IdolPartyRefreshMessage.ID] = () => { return new IdolPartyRefreshMessage(); };
-            MessageReceiver._list[IdolPartyRegisterRequestMessage.ID] = () => { return new IdolPartyRegisterRequestMessage(); };
-            MessageReceiver._list[IdolSelectErrorMessage.ID] = () => { return new IdolSelectErrorMessage(); };
-            MessageReceiver._list[IdolSelectRequestMessage.ID] = () => { return new IdolSelectRequestMessage(); };
-            MessageReceiver._list[IdolSelectedMessage.ID] = () => { return new IdolSelectedMessage(); };
-            MessageReceiver._list[CharacterCapabilitiesMessage.ID] = () => { return new CharacterCapabilitiesMessage(); };
-            MessageReceiver._list[CharacterLoadingCompleteMessage.ID] = () => { return new CharacterLoadingCompleteMessage(); };
-            MessageReceiver._list[OnConnectionEventMessage.ID] = () => { return new OnConnectionEventMessage(); };
-            MessageReceiver._list[ServerExperienceModificatorMessage.ID] = () => { return new ServerExperienceModificatorMessage(); };
-            MessageReceiver._list[SetCharacterRestrictionsMessage.ID] = () => { return new SetCharacterRestrictionsMessage(); };
-            MessageReceiver._list[InteractiveElementUpdatedMessage.ID] = () => { return new InteractiveElementUpdatedMessage(); };
-            MessageReceiver._list[InteractiveMapUpdateMessage.ID] = () => { return new InteractiveMapUpdateMessage(); };
-            MessageReceiver._list[InteractiveUseEndedMessage.ID] = () => { return new InteractiveUseEndedMessage(); };
-            MessageReceiver._list[InteractiveUseErrorMessage.ID] = () => { return new InteractiveUseErrorMessage(); };
-            MessageReceiver._list[InteractiveUseRequestMessage.ID] = () => { return new InteractiveUseRequestMessage(); };
-            MessageReceiver._list[InteractiveUsedMessage.ID] = () => { return new InteractiveUsedMessage(); };
-            MessageReceiver._list[StatedElementUpdatedMessage.ID] = () => { return new StatedElementUpdatedMessage(); };
-            MessageReceiver._list[StatedMapUpdateMessage.ID] = () => { return new StatedMapUpdateMessage(); };
-            MessageReceiver._list[TeleportBuddiesAnswerMessage.ID] = () => { return new TeleportBuddiesAnswerMessage(); };
-            MessageReceiver._list[TeleportBuddiesMessage.ID] = () => { return new TeleportBuddiesMessage(); };
-            MessageReceiver._list[TeleportBuddiesRequestedMessage.ID] = () => { return new TeleportBuddiesRequestedMessage(); };
-            MessageReceiver._list[TeleportToBuddyAnswerMessage.ID] = () => { return new TeleportToBuddyAnswerMessage(); };
-            MessageReceiver._list[TeleportToBuddyCloseMessage.ID] = () => { return new TeleportToBuddyCloseMessage(); };
-            MessageReceiver._list[TeleportToBuddyOfferMessage.ID] = () => { return new TeleportToBuddyOfferMessage(); };
-            MessageReceiver._list[TeleportDestinationsListMessage.ID] = () => { return new TeleportDestinationsListMessage(); };
-            MessageReceiver._list[TeleportRequestMessage.ID] = () => { return new TeleportRequestMessage(); };
-            MessageReceiver._list[ZaapListMessage.ID] = () => { return new ZaapListMessage(); };
-            MessageReceiver._list[ZaapRespawnSaveRequestMessage.ID] = () => { return new ZaapRespawnSaveRequestMessage(); };
-            MessageReceiver._list[ZaapRespawnUpdatedMessage.ID] = () => { return new ZaapRespawnUpdatedMessage(); };
-            MessageReceiver._list[KamasUpdateMessage.ID] = () => { return new KamasUpdateMessage(); };
-            MessageReceiver._list[ObjectAveragePricesErrorMessage.ID] = () => { return new ObjectAveragePricesErrorMessage(); };
-            MessageReceiver._list[ObjectAveragePricesGetMessage.ID] = () => { return new ObjectAveragePricesGetMessage(); };
-            MessageReceiver._list[ObjectAveragePricesMessage.ID] = () => { return new ObjectAveragePricesMessage(); };
-            MessageReceiver._list[DecraftResultMessage.ID] = () => { return new DecraftResultMessage(); };
-            MessageReceiver._list[ExchangeAcceptMessage.ID] = () => { return new ExchangeAcceptMessage(); };
-            MessageReceiver._list[ExchangeBidHouseBuyMessage.ID] = () => { return new ExchangeBidHouseBuyMessage(); };
-            MessageReceiver._list[ExchangeBidHouseBuyResultMessage.ID] = () => { return new ExchangeBidHouseBuyResultMessage(); };
-            MessageReceiver._list[ExchangeBidHouseGenericItemAddedMessage.ID] = () => { return new ExchangeBidHouseGenericItemAddedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseGenericItemRemovedMessage.ID] = () => { return new ExchangeBidHouseGenericItemRemovedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListAddedMessage.ID] = () => { return new ExchangeBidHouseInListAddedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListRemovedMessage.ID] = () => { return new ExchangeBidHouseInListRemovedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseInListUpdatedMessage.ID] = () => { return new ExchangeBidHouseInListUpdatedMessage(); };
-            MessageReceiver._list[ExchangeBidHouseItemAddOkMessage.ID] = () => { return new ExchangeBidHouseItemAddOkMessage(); };
-            MessageReceiver._list[ExchangeBidHouseItemRemoveOkMessage.ID] = () => { return new ExchangeBidHouseItemRemoveOkMessage(); };
-            MessageReceiver._list[ExchangeBidHouseListMessage.ID] = () => { return new ExchangeBidHouseListMessage(); };
-            MessageReceiver._list[ExchangeBidHousePriceMessage.ID] = () => { return new ExchangeBidHousePriceMessage(); };
-            MessageReceiver._list[ExchangeBidHouseSearchMessage.ID] = () => { return new ExchangeBidHouseSearchMessage(); };
-            MessageReceiver._list[ExchangeBidHouseTypeMessage.ID] = () => { return new ExchangeBidHouseTypeMessage(); };
-            MessageReceiver._list[ExchangeBidPriceForSellerMessage.ID] = () => { return new ExchangeBidPriceForSellerMessage(); };
-            MessageReceiver._list[ExchangeBidPriceMessage.ID] = () => { return new ExchangeBidPriceMessage(); };
-            MessageReceiver._list[ExchangeBidSearchOkMessage.ID] = () => { return new ExchangeBidSearchOkMessage(); };
-            MessageReceiver._list[ExchangeBuyMessage.ID] = () => { return new ExchangeBuyMessage(); };
-            MessageReceiver._list[ExchangeBuyOkMessage.ID] = () => { return new ExchangeBuyOkMessage(); };
-            MessageReceiver._list[ExchangeCraftCountModifiedMessage.ID] = () => { return new ExchangeCraftCountModifiedMessage(); };
-            MessageReceiver._list[ExchangeCraftCountRequestMessage.ID] = () => { return new ExchangeCraftCountRequestMessage(); };
-            MessageReceiver._list[ExchangeCraftInformationObjectMessage.ID] = () => { return new ExchangeCraftInformationObjectMessage(); };
-            MessageReceiver._list[ExchangeCraftPaymentModificationRequestMessage.ID] = () => { return new ExchangeCraftPaymentModificationRequestMessage(); };
-            MessageReceiver._list[ExchangeCraftPaymentModifiedMessage.ID] = () => { return new ExchangeCraftPaymentModifiedMessage(); };
-            MessageReceiver._list[ExchangeCraftResultMagicWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultMagicWithObjectDescMessage(); };
-            MessageReceiver._list[ExchangeCraftResultMessage.ID] = () => { return new ExchangeCraftResultMessage(); };
-            MessageReceiver._list[ExchangeCraftResultWithObjectDescMessage.ID] = () => { return new ExchangeCraftResultWithObjectDescMessage(); };
-            MessageReceiver._list[ExchangeCraftResultWithObjectIdMessage.ID] = () => { return new ExchangeCraftResultWithObjectIdMessage(); };
-            MessageReceiver._list[ExchangeCrafterJobLevelupMessage.ID] = () => { return new ExchangeCrafterJobLevelupMessage(); };
-            MessageReceiver._list[ExchangeErrorMessage.ID] = () => { return new ExchangeErrorMessage(); };
-            MessageReceiver._list[ExchangeGuildTaxCollectorGetMessage.ID] = () => { return new ExchangeGuildTaxCollectorGetMessage(); };
-            MessageReceiver._list[ExchangeHandleMountsStableMessage.ID] = () => { return new ExchangeHandleMountsStableMessage(); };
-            MessageReceiver._list[ExchangeIsReadyMessage.ID] = () => { return new ExchangeIsReadyMessage(); };
-            MessageReceiver._list[ExchangeItemAutoCraftStopedMessage.ID] = () => { return new ExchangeItemAutoCraftStopedMessage(); };
-            MessageReceiver._list[ExchangeLeaveMessage.ID] = () => { return new ExchangeLeaveMessage(); };
-            MessageReceiver._list[ExchangeMountFreeFromPaddockMessage.ID] = () => { return new ExchangeMountFreeFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeMountStableErrorMessage.ID] = () => { return new ExchangeMountStableErrorMessage(); };
-            MessageReceiver._list[ExchangeMountSterilizeFromPaddockMessage.ID] = () => { return new ExchangeMountSterilizeFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeMountsPaddockAddMessage.ID] = () => { return new ExchangeMountsPaddockAddMessage(); };
-            MessageReceiver._list[ExchangeMountsPaddockRemoveMessage.ID] = () => { return new ExchangeMountsPaddockRemoveMessage(); };
-            MessageReceiver._list[ExchangeMountsStableAddMessage.ID] = () => { return new ExchangeMountsStableAddMessage(); };
-            MessageReceiver._list[ExchangeMountsStableBornAddMessage.ID] = () => { return new ExchangeMountsStableBornAddMessage(); };
-            MessageReceiver._list[ExchangeMountsStableRemoveMessage.ID] = () => { return new ExchangeMountsStableRemoveMessage(); };
-            MessageReceiver._list[ExchangeMountsTakenFromPaddockMessage.ID] = () => { return new ExchangeMountsTakenFromPaddockMessage(); };
-            MessageReceiver._list[ExchangeObjectAddedMessage.ID] = () => { return new ExchangeObjectAddedMessage(); };
-            MessageReceiver._list[ExchangeObjectMessage.ID] = () => { return new ExchangeObjectMessage(); };
-            MessageReceiver._list[ExchangeObjectModifyPricedMessage.ID] = () => { return new ExchangeObjectModifyPricedMessage(); };
-            MessageReceiver._list[ExchangeObjectMoveKamaMessage.ID] = () => { return new ExchangeObjectMoveKamaMessage(); };
-            MessageReceiver._list[ExchangeObjectMoveMessage.ID] = () => { return new ExchangeObjectMoveMessage(); };
-            MessageReceiver._list[ExchangeObjectMovePricedMessage.ID] = () => { return new ExchangeObjectMovePricedMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertAllFromInvMessage.ID] = () => { return new ExchangeObjectTransfertAllFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertAllToInvMessage.ID] = () => { return new ExchangeObjectTransfertAllToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertExistingFromInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertExistingToInvMessage.ID] = () => { return new ExchangeObjectTransfertExistingToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListFromInvMessage.ID] = () => { return new ExchangeObjectTransfertListFromInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListToInvMessage.ID] = () => { return new ExchangeObjectTransfertListToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectTransfertListWithQuantityToInvMessage.ID] = () => { return new ExchangeObjectTransfertListWithQuantityToInvMessage(); };
-            MessageReceiver._list[ExchangeObjectUseInWorkshopMessage.ID] = () => { return new ExchangeObjectUseInWorkshopMessage(); };
-            MessageReceiver._list[ExchangeObjectsAddedMessage.ID] = () => { return new ExchangeObjectsAddedMessage(); };
-            MessageReceiver._list[ExchangeOkMultiCraftMessage.ID] = () => { return new ExchangeOkMultiCraftMessage(); };
-            MessageReceiver._list[ExchangeOnHumanVendorRequestMessage.ID] = () => { return new ExchangeOnHumanVendorRequestMessage(); };
-            MessageReceiver._list[ExchangePlayerMultiCraftRequestMessage.ID] = () => { return new ExchangePlayerMultiCraftRequestMessage(); };
-            MessageReceiver._list[ExchangePlayerRequestMessage.ID] = () => { return new ExchangePlayerRequestMessage(); };
-            MessageReceiver._list[ExchangeReadyMessage.ID] = () => { return new ExchangeReadyMessage(); };
-            MessageReceiver._list[ExchangeReplayStopMessage.ID] = () => { return new ExchangeReplayStopMessage(); };
-            MessageReceiver._list[ExchangeReplyTaxVendorMessage.ID] = () => { return new ExchangeReplyTaxVendorMessage(); };
-            MessageReceiver._list[ExchangeRequestMessage.ID] = () => { return new ExchangeRequestMessage(); };
-            MessageReceiver._list[ExchangeRequestOnMountStockMessage.ID] = () => { return new ExchangeRequestOnMountStockMessage(); };
-            MessageReceiver._list[ExchangeRequestOnShopStockMessage.ID] = () => { return new ExchangeRequestOnShopStockMessage(); };
-            MessageReceiver._list[ExchangeRequestOnTaxCollectorMessage.ID] = () => { return new ExchangeRequestOnTaxCollectorMessage(); };
-            MessageReceiver._list[ExchangeRequestedMessage.ID] = () => { return new ExchangeRequestedMessage(); };
-            MessageReceiver._list[ExchangeRequestedTradeMessage.ID] = () => { return new ExchangeRequestedTradeMessage(); };
-            MessageReceiver._list[ExchangeSellMessage.ID] = () => { return new ExchangeSellMessage(); };
-            MessageReceiver._list[ExchangeSellOkMessage.ID] = () => { return new ExchangeSellOkMessage(); };
-            MessageReceiver._list[ExchangeSetCraftRecipeMessage.ID] = () => { return new ExchangeSetCraftRecipeMessage(); };
-            MessageReceiver._list[ExchangeShopStockMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMovementRemovedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMovementUpdatedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMultiMovementRemovedMessage.ID] = () => { return new ExchangeShopStockMultiMovementRemovedMessage(); };
-            MessageReceiver._list[ExchangeShopStockMultiMovementUpdatedMessage.ID] = () => { return new ExchangeShopStockMultiMovementUpdatedMessage(); };
-            MessageReceiver._list[ExchangeShopStockStartedMessage.ID] = () => { return new ExchangeShopStockStartedMessage(); };
-            MessageReceiver._list[ExchangeShowVendorTaxMessage.ID] = () => { return new ExchangeShowVendorTaxMessage(); };
-            MessageReceiver._list[ExchangeStartAsVendorMessage.ID] = () => { return new ExchangeStartAsVendorMessage(); };
-            MessageReceiver._list[ExchangeStartOkCraftMessage.ID] = () => { return new ExchangeStartOkCraftMessage(); };
-            MessageReceiver._list[ExchangeStartOkCraftWithInformationMessage.ID] = () => { return new ExchangeStartOkCraftWithInformationMessage(); };
-            MessageReceiver._list[ExchangeStartOkHumanVendorMessage.ID] = () => { return new ExchangeStartOkHumanVendorMessage(); };
-            MessageReceiver._list[ExchangeStartOkJobIndexMessage.ID] = () => { return new ExchangeStartOkJobIndexMessage(); };
-            MessageReceiver._list[ExchangeStartOkMountMessage.ID] = () => { return new ExchangeStartOkMountMessage(); };
-            MessageReceiver._list[ExchangeStartOkMountWithOutPaddockMessage.ID] = () => { return new ExchangeStartOkMountWithOutPaddockMessage(); };
-            MessageReceiver._list[ExchangeStartOkMulticraftCrafterMessage.ID] = () => { return new ExchangeStartOkMulticraftCrafterMessage(); };
-            MessageReceiver._list[ExchangeStartOkMulticraftCustomerMessage.ID] = () => { return new ExchangeStartOkMulticraftCustomerMessage(); };
-            MessageReceiver._list[ExchangeStartOkNpcShopMessage.ID] = () => { return new ExchangeStartOkNpcShopMessage(); };
-            MessageReceiver._list[ExchangeStartOkNpcTradeMessage.ID] = () => { return new ExchangeStartOkNpcTradeMessage(); };
-            MessageReceiver._list[ExchangeStartOkRecycleTradeMessage.ID] = () => { return new ExchangeStartOkRecycleTradeMessage(); };
-            MessageReceiver._list[ExchangeStartOkRunesTradeMessage.ID] = () => { return new ExchangeStartOkRunesTradeMessage(); };
-            MessageReceiver._list[ExchangeStartedBidBuyerMessage.ID] = () => { return new ExchangeStartedBidBuyerMessage(); };
-            MessageReceiver._list[ExchangeStartedBidSellerMessage.ID] = () => { return new ExchangeStartedBidSellerMessage(); };
-            MessageReceiver._list[ExchangeStartedMessage.ID] = () => { return new ExchangeStartedMessage(); };
-            MessageReceiver._list[ExchangeStartedMountStockMessage.ID] = () => { return new ExchangeStartedMountStockMessage(); };
-            MessageReceiver._list[ExchangeStartedWithPodsMessage.ID] = () => { return new ExchangeStartedWithPodsMessage(); };
-            MessageReceiver._list[ExchangeStartedWithStorageMessage.ID] = () => { return new ExchangeStartedWithStorageMessage(); };
-            MessageReceiver._list[ExchangeStoppedMessage.ID] = () => { return new ExchangeStoppedMessage(); };
-            MessageReceiver._list[ExchangeTypesExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesExchangerDescriptionForUserMessage(); };
-            MessageReceiver._list[ExchangeTypesItemsExchangerDescriptionForUserMessage.ID] = () => { return new ExchangeTypesItemsExchangerDescriptionForUserMessage(); };
-            MessageReceiver._list[ExchangeWaitingResultMessage.ID] = () => { return new ExchangeWaitingResultMessage(); };
-            MessageReceiver._list[ExchangeWeightMessage.ID] = () => { return new ExchangeWeightMessage(); };
-            MessageReceiver._list[ItemNoMoreAvailableMessage.ID] = () => { return new ItemNoMoreAvailableMessage(); };
-            MessageReceiver._list[JobBookSubscribeRequestMessage.ID] = () => { return new JobBookSubscribeRequestMessage(); };
-            MessageReceiver._list[RecycleResultMessage.ID] = () => { return new RecycleResultMessage(); };
-            MessageReceiver._list[UpdateMountBoostMessage.ID] = () => { return new UpdateMountBoostMessage(); };
-            MessageReceiver._list[ExchangeKamaModifiedMessage.ID] = () => { return new ExchangeKamaModifiedMessage(); };
-            MessageReceiver._list[ExchangeMultiCraftCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftCrafterCanUseHisRessourcesMessage(); };
-            MessageReceiver._list[ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage.ID] = () => { return new ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage(); };
-            MessageReceiver._list[ExchangeObjectModifiedInBagMessage.ID] = () => { return new ExchangeObjectModifiedInBagMessage(); };
-            MessageReceiver._list[ExchangeObjectModifiedMessage.ID] = () => { return new ExchangeObjectModifiedMessage(); };
-            MessageReceiver._list[ExchangeObjectPutInBagMessage.ID] = () => { return new ExchangeObjectPutInBagMessage(); };
-            MessageReceiver._list[ExchangeObjectRemovedFromBagMessage.ID] = () => { return new ExchangeObjectRemovedFromBagMessage(); };
-            MessageReceiver._list[ExchangeObjectRemovedMessage.ID] = () => { return new ExchangeObjectRemovedMessage(); };
-            MessageReceiver._list[ExchangeObjectsModifiedMessage.ID] = () => { return new ExchangeObjectsModifiedMessage(); };
-            MessageReceiver._list[ExchangeObjectsRemovedMessage.ID] = () => { return new ExchangeObjectsRemovedMessage(); };
-            MessageReceiver._list[GoldAddedMessage.ID] = () => { return new GoldAddedMessage(); };
-            MessageReceiver._list[InventoryContentAndPresetMessage.ID] = () => { return new InventoryContentAndPresetMessage(); };
-            MessageReceiver._list[InventoryContentMessage.ID] = () => { return new InventoryContentMessage(); };
-            MessageReceiver._list[InventoryWeightMessage.ID] = () => { return new InventoryWeightMessage(); };
-            MessageReceiver._list[LivingObjectChangeSkinRequestMessage.ID] = () => { return new LivingObjectChangeSkinRequestMessage(); };
-            MessageReceiver._list[LivingObjectDissociateMessage.ID] = () => { return new LivingObjectDissociateMessage(); };
-            MessageReceiver._list[LivingObjectMessageMessage.ID] = () => { return new LivingObjectMessageMessage(); };
-            MessageReceiver._list[LivingObjectMessageRequestMessage.ID] = () => { return new LivingObjectMessageRequestMessage(); };
-            MessageReceiver._list[MimicryObjectAssociatedMessage.ID] = () => { return new MimicryObjectAssociatedMessage(); };
-            MessageReceiver._list[MimicryObjectEraseRequestMessage.ID] = () => { return new MimicryObjectEraseRequestMessage(); };
-            MessageReceiver._list[MimicryObjectErrorMessage.ID] = () => { return new MimicryObjectErrorMessage(); };
-            MessageReceiver._list[MimicryObjectFeedAndAssociateRequestMessage.ID] = () => { return new MimicryObjectFeedAndAssociateRequestMessage(); };
-            MessageReceiver._list[MimicryObjectPreviewMessage.ID] = () => { return new MimicryObjectPreviewMessage(); };
-            MessageReceiver._list[ObjectAddedMessage.ID] = () => { return new ObjectAddedMessage(); };
-            MessageReceiver._list[ObjectDeleteMessage.ID] = () => { return new ObjectDeleteMessage(); };
-            MessageReceiver._list[ObjectDeletedMessage.ID] = () => { return new ObjectDeletedMessage(); };
-            MessageReceiver._list[ObjectDropMessage.ID] = () => { return new ObjectDropMessage(); };
-            MessageReceiver._list[ObjectErrorMessage.ID] = () => { return new ObjectErrorMessage(); };
-            MessageReceiver._list[ObjectFeedMessage.ID] = () => { return new ObjectFeedMessage(); };
-            MessageReceiver._list[ObjectFoundWhileRecoltingMessage.ID] = () => { return new ObjectFoundWhileRecoltingMessage(); };
-            MessageReceiver._list[ObjectJobAddedMessage.ID] = () => { return new ObjectJobAddedMessage(); };
-            MessageReceiver._list[ObjectModifiedMessage.ID] = () => { return new ObjectModifiedMessage(); };
-            MessageReceiver._list[ObjectMovementMessage.ID] = () => { return new ObjectMovementMessage(); };
-            MessageReceiver._list[ObjectQuantityMessage.ID] = () => { return new ObjectQuantityMessage(); };
-            MessageReceiver._list[ObjectSetPositionMessage.ID] = () => { return new ObjectSetPositionMessage(); };
-            MessageReceiver._list[ObjectUseMessage.ID] = () => { return new ObjectUseMessage(); };
-            MessageReceiver._list[ObjectUseMultipleMessage.ID] = () => { return new ObjectUseMultipleMessage(); };
-            MessageReceiver._list[ObjectUseOnCellMessage.ID] = () => { return new ObjectUseOnCellMessage(); };
-            MessageReceiver._list[ObjectUseOnCharacterMessage.ID] = () => { return new ObjectUseOnCharacterMessage(); };
-            MessageReceiver._list[ObjectsAddedMessage.ID] = () => { return new ObjectsAddedMessage(); };
-            MessageReceiver._list[ObjectsDeletedMessage.ID] = () => { return new ObjectsDeletedMessage(); };
-            MessageReceiver._list[ObjectsQuantityMessage.ID] = () => { return new ObjectsQuantityMessage(); };
-            MessageReceiver._list[ObtainedItemMessage.ID] = () => { return new ObtainedItemMessage(); };
-            MessageReceiver._list[ObtainedItemWithBonusMessage.ID] = () => { return new ObtainedItemWithBonusMessage(); };
-            MessageReceiver._list[SetUpdateMessage.ID] = () => { return new SetUpdateMessage(); };
-            MessageReceiver._list[SymbioticObjectAssociateRequestMessage.ID] = () => { return new SymbioticObjectAssociateRequestMessage(); };
-            MessageReceiver._list[SymbioticObjectAssociatedMessage.ID] = () => { return new SymbioticObjectAssociatedMessage(); };
-            MessageReceiver._list[SymbioticObjectErrorMessage.ID] = () => { return new SymbioticObjectErrorMessage(); };
-            MessageReceiver._list[WrapperObjectAssociatedMessage.ID] = () => { return new WrapperObjectAssociatedMessage(); };
-            MessageReceiver._list[WrapperObjectDissociateRequestMessage.ID] = () => { return new WrapperObjectDissociateRequestMessage(); };
-            MessageReceiver._list[WrapperObjectErrorMessage.ID] = () => { return new WrapperObjectErrorMessage(); };
-            MessageReceiver._list[IdolsPresetDeleteMessage.ID] = () => { return new IdolsPresetDeleteMessage(); };
-            MessageReceiver._list[IdolsPresetDeleteResultMessage.ID] = () => { return new IdolsPresetDeleteResultMessage(); };
-            MessageReceiver._list[IdolsPresetSaveMessage.ID] = () => { return new IdolsPresetSaveMessage(); };
-            MessageReceiver._list[IdolsPresetSaveResultMessage.ID] = () => { return new IdolsPresetSaveResultMessage(); };
-            MessageReceiver._list[IdolsPresetUpdateMessage.ID] = () => { return new IdolsPresetUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetDeleteMessage.ID] = () => { return new InventoryPresetDeleteMessage(); };
-            MessageReceiver._list[InventoryPresetDeleteResultMessage.ID] = () => { return new InventoryPresetDeleteResultMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateErrorMessage.ID] = () => { return new InventoryPresetItemUpdateErrorMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateMessage.ID] = () => { return new InventoryPresetItemUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetItemUpdateRequestMessage.ID] = () => { return new InventoryPresetItemUpdateRequestMessage(); };
-            MessageReceiver._list[InventoryPresetSaveCustomMessage.ID] = () => { return new InventoryPresetSaveCustomMessage(); };
-            MessageReceiver._list[InventoryPresetSaveMessage.ID] = () => { return new InventoryPresetSaveMessage(); };
-            MessageReceiver._list[InventoryPresetSaveResultMessage.ID] = () => { return new InventoryPresetSaveResultMessage(); };
-            MessageReceiver._list[InventoryPresetUpdateMessage.ID] = () => { return new InventoryPresetUpdateMessage(); };
-            MessageReceiver._list[InventoryPresetUseMessage.ID] = () => { return new InventoryPresetUseMessage(); };
-            MessageReceiver._list[InventoryPresetUseResultMessage.ID] = () => { return new InventoryPresetUseResultMessage(); };
-            MessageReceiver._list[SpellListMessage.ID] = () => { return new SpellListMessage(); };
-            MessageReceiver._list[StorageInventoryContentMessage.ID] = () => { return new StorageInventoryContentMessage(); };
-            MessageReceiver._list[StorageKamasUpdateMessage.ID] = () => { return new StorageKamasUpdateMessage(); };
-            MessageReceiver._list[StorageObjectRemoveMessage.ID] = () => { return new StorageObjectRemoveMessage(); };
-            MessageReceiver._list[StorageObjectUpdateMessage.ID] = () => { return new StorageObjectUpdateMessage(); };
-            MessageReceiver._list[StorageObjectsRemoveMessage.ID] = () => { return new StorageObjectsRemoveMessage(); };
-            MessageReceiver._list[StorageObjectsUpdateMessage.ID] = () => { return new StorageObjectsUpdateMessage(); };
-            MessageReceiver._list[AccessoryPreviewErrorMessage.ID] = () => { return new AccessoryPreviewErrorMessage(); };
-            MessageReceiver._list[AccessoryPreviewMessage.ID] = () => { return new AccessoryPreviewMessage(); };
-            MessageReceiver._list[AccessoryPreviewRequestMessage.ID] = () => { return new AccessoryPreviewRequestMessage(); };
-            MessageReceiver._list[PopupWarningMessage.ID] = () => { return new PopupWarningMessage(); };
-            MessageReceiver._list[AreaFightModificatorUpdateMessage.ID] = () => { return new AreaFightModificatorUpdateMessage(); };
-            MessageReceiver._list[PrismAttackRequestMessage.ID] = () => { return new PrismAttackRequestMessage(); };
-            MessageReceiver._list[PrismFightAddedMessage.ID] = () => { return new PrismFightAddedMessage(); };
-            MessageReceiver._list[PrismFightAttackerAddMessage.ID] = () => { return new PrismFightAttackerAddMessage(); };
-            MessageReceiver._list[PrismFightAttackerRemoveMessage.ID] = () => { return new PrismFightAttackerRemoveMessage(); };
-            MessageReceiver._list[PrismFightDefenderAddMessage.ID] = () => { return new PrismFightDefenderAddMessage(); };
-            MessageReceiver._list[PrismFightDefenderLeaveMessage.ID] = () => { return new PrismFightDefenderLeaveMessage(); };
-            MessageReceiver._list[PrismFightJoinLeaveRequestMessage.ID] = () => { return new PrismFightJoinLeaveRequestMessage(); };
-            MessageReceiver._list[PrismFightRemovedMessage.ID] = () => { return new PrismFightRemovedMessage(); };
-            MessageReceiver._list[PrismFightStateUpdateMessage.ID] = () => { return new PrismFightStateUpdateMessage(); };
-            MessageReceiver._list[PrismFightSwapRequestMessage.ID] = () => { return new PrismFightSwapRequestMessage(); };
-            MessageReceiver._list[PrismInfoCloseMessage.ID] = () => { return new PrismInfoCloseMessage(); };
-            MessageReceiver._list[PrismInfoInValidMessage.ID] = () => { return new PrismInfoInValidMessage(); };
-            MessageReceiver._list[PrismInfoJoinLeaveRequestMessage.ID] = () => { return new PrismInfoJoinLeaveRequestMessage(); };
-            MessageReceiver._list[PrismModuleExchangeRequestMessage.ID] = () => { return new PrismModuleExchangeRequestMessage(); };
-            MessageReceiver._list[PrismSetSabotagedRefusedMessage.ID] = () => { return new PrismSetSabotagedRefusedMessage(); };
-            MessageReceiver._list[PrismSetSabotagedRequestMessage.ID] = () => { return new PrismSetSabotagedRequestMessage(); };
-            MessageReceiver._list[PrismSettingsErrorMessage.ID] = () => { return new PrismSettingsErrorMessage(); };
-            MessageReceiver._list[PrismSettingsRequestMessage.ID] = () => { return new PrismSettingsRequestMessage(); };
-            MessageReceiver._list[PrismUseRequestMessage.ID] = () => { return new PrismUseRequestMessage(); };
-            MessageReceiver._list[PrismsInfoValidMessage.ID] = () => { return new PrismsInfoValidMessage(); };
-            MessageReceiver._list[PrismsListMessage.ID] = () => { return new PrismsListMessage(); };
-            MessageReceiver._list[PrismsListRegisterMessage.ID] = () => { return new PrismsListRegisterMessage(); };
-            MessageReceiver._list[PrismsListUpdateMessage.ID] = () => { return new PrismsListUpdateMessage(); };
-            MessageReceiver._list[AlignmentRankUpdateMessage.ID] = () => { return new AlignmentRankUpdateMessage(); };
-            MessageReceiver._list[SetEnableAVARequestMessage.ID] = () => { return new SetEnableAVARequestMessage(); };
-            MessageReceiver._list[SetEnablePVPRequestMessage.ID] = () => { return new SetEnablePVPRequestMessage(); };
-            MessageReceiver._list[UpdateMapPlayersAgressableStatusMessage.ID] = () => { return new UpdateMapPlayersAgressableStatusMessage(); };
-            MessageReceiver._list[UpdateSelfAgressableStatusMessage.ID] = () => { return new UpdateSelfAgressableStatusMessage(); };
-            MessageReceiver._list[CharacterReportMessage.ID] = () => { return new CharacterReportMessage(); };
-            MessageReceiver._list[CinematicMessage.ID] = () => { return new CinematicMessage(); };
-            MessageReceiver._list[URLOpenMessage.ID] = () => { return new URLOpenMessage(); };
-            MessageReceiver._list[ShortcutBarAddErrorMessage.ID] = () => { return new ShortcutBarAddErrorMessage(); };
-            MessageReceiver._list[ShortcutBarAddRequestMessage.ID] = () => { return new ShortcutBarAddRequestMessage(); };
-            MessageReceiver._list[ShortcutBarContentMessage.ID] = () => { return new ShortcutBarContentMessage(); };
-            MessageReceiver._list[ShortcutBarRefreshMessage.ID] = () => { return new ShortcutBarRefreshMessage(); };
-            MessageReceiver._list[ShortcutBarRemoveErrorMessage.ID] = () => { return new ShortcutBarRemoveErrorMessage(); };
-            MessageReceiver._list[ShortcutBarRemoveRequestMessage.ID] = () => { return new ShortcutBarRemoveRequestMessage(); };
-            MessageReceiver._list[ShortcutBarRemovedMessage.ID] = () => { return new ShortcutBarRemovedMessage(); };
-            MessageReceiver._list[ShortcutBarSwapErrorMessage.ID] = () => { return new ShortcutBarSwapErrorMessage(); };
-            MessageReceiver._list[ShortcutBarSwapRequestMessage.ID] = () => { return new ShortcutBarSwapRequestMessage(); };
-            MessageReceiver._list[ContactLookErrorMessage.ID] = () => { return new ContactLookErrorMessage(); };
-            MessageReceiver._list[ContactLookMessage.ID] = () => { return new ContactLookMessage(); };
-            MessageReceiver._list[ContactLookRequestByIdMessage.ID] = () => { return new ContactLookRequestByIdMessage(); };
-            MessageReceiver._list[ContactLookRequestMessage.ID] = () => { return new ContactLookRequestMessage(); };
-            MessageReceiver._list[StartupActionAddMessage.ID] = () => { return new StartupActionAddMessage(); };
-            MessageReceiver._list[StartupActionFinishedMessage.ID] = () => { return new StartupActionFinishedMessage(); };
-            MessageReceiver._list[StartupActionsAllAttributionMessage.ID] = () => { return new StartupActionsAllAttributionMessage(); };
-            MessageReceiver._list[StartupActionsExecuteMessage.ID] = () => { return new StartupActionsExecuteMessage(); };
-            MessageReceiver._list[StartupActionsListMessage.ID] = () => { return new StartupActionsListMessage(); };
-            MessageReceiver._list[StartupActionsObjetAttributionMessage.ID] = () => { return new StartupActionsObjetAttributionMessage(); };
-            MessageReceiver._list[SubscriptionLimitationMessage.ID] = () => { return new SubscriptionLimitationMessage(); };
-            MessageReceiver._list[SubscriptionZoneMessage.ID] = () => { return new SubscriptionZoneMessage(); };
-            MessageReceiver._list[OrnamentGainedMessage.ID] = () => { return new OrnamentGainedMessage(); };
-            MessageReceiver._list[OrnamentSelectErrorMessage.ID] = () => { return new OrnamentSelectErrorMessage(); };
-            MessageReceiver._list[OrnamentSelectRequestMessage.ID] = () => { return new OrnamentSelectRequestMessage(); };
-            MessageReceiver._list[OrnamentSelectedMessage.ID] = () => { return new OrnamentSelectedMessage(); };
-            MessageReceiver._list[TitleGainedMessage.ID] = () => { return new TitleGainedMessage(); };
-            MessageReceiver._list[TitleLostMessage.ID] = () => { return new TitleLostMessage(); };
-            MessageReceiver._list[TitleSelectErrorMessage.ID] = () => { return new TitleSelectErrorMessage(); };
-            MessageReceiver._list[TitleSelectRequestMessage.ID] = () => { return new TitleSelectRequestMessage(); };
-            MessageReceiver._list[TitleSelectedMessage.ID] = () => { return new TitleSelectedMessage(); };
-            MessageReceiver._list[TitlesAndOrnamentsListMessage.ID] = () => { return new TitlesAndOrnamentsListMessage(); };
-            MessageReceiver._list[TitlesAndOrnamentsListRequestMessage.ID] = () => { return new TitlesAndOrnamentsListRequestMessage(); };
-            MessageReceiver._list[ClientUIOpenedByObjectMessage.ID] = () => { return new ClientUIOpenedByObjectMessage(); };
-            MessageReceiver._list[ClientUIOpenedMessage.ID] = () => { return new ClientUIOpenedMessage(); };
-            MessageReceiver._list[ProtocolRequired.ID] = () => { return new ProtocolRequired(); };
-            MessageReceiver._list[LoginQueueStatusMessage.ID] = () => { return new LoginQueueStatusMessage(); };
-            MessageReceiver._list[QueueStatusMessage.ID] = () => { return new QueueStatusMessage(); };
-            MessageReceiver._list[TrustStatusMessage.ID] = () => { return new TrustStatusMessage(); };
-            MessageReceiver._list[CheckFileMessage.ID] = () => { return new CheckFileMessage(); };
-            MessageReceiver._list[CheckFileRequestMessage.ID] = () => { return new CheckFileRequestMessage(); };
-            MessageReceiver._list[CheckIntegrityMessage.ID] = () => { return new CheckIntegrityMessage(); };
-            MessageReceiver._list[ClientKeyMessage.ID] = () => { return new ClientKeyMessage(); };
-            MessageReceiver._list[RawDataMessage.ID] = () => { return new RawDataMessage(); };
-            MessageReceiver._list[SystemMessageDisplayMessage.ID] = () => { return new SystemMessageDisplayMessage(); };
-            MessageReceiver._list[DownloadCurrentSpeedMessage.ID] = () => { return new DownloadCurrentSpeedMessage(); };
-            MessageReceiver._list[DownloadErrorMessage.ID] = () => { return new DownloadErrorMessage(); };
-            MessageReceiver._list[DownloadGetCurrentSpeedRequestMessage.ID] = () => { return new DownloadGetCurrentSpeedRequestMessage(); };
-            MessageReceiver._list[DownloadPartMessage.ID] = () => { return new DownloadPartMessage(); };
-            MessageReceiver._list[DownloadSetSpeedRequestMessage.ID] = () => { return new DownloadSetSpeedRequestMessage(); };
-            MessageReceiver._list[GetPartInfoMessage.ID] = () => { return new GetPartInfoMessage(); };
-            MessageReceiver._list[GetPartsListMessage.ID] = () => { return new GetPartsListMessage(); };
-            MessageReceiver._list[PartInfoMessage.ID] = () => { return new PartInfoMessage(); };
-            MessageReceiver._list[PartsListMessage.ID] = () => { return new PartsListMessage(); };
-            MessageReceiver._list[MailStatusMessage.ID] = () => { return new MailStatusMessage(); };
-            MessageReceiver._list[NewMailMessage.ID] = () => { return new NewMailMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenErrorMessage.ID] = () => { return new KrosmasterAuthTokenErrorMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenMessage.ID] = () => { return new KrosmasterAuthTokenMessage(); };
-            MessageReceiver._list[KrosmasterAuthTokenRequestMessage.ID] = () => { return new KrosmasterAuthTokenRequestMessage(); };
-            MessageReceiver._list[KrosmasterInventoryErrorMessage.ID] = () => { return new KrosmasterInventoryErrorMessage(); };
-            MessageReceiver._list[KrosmasterInventoryMessage.ID] = () => { return new KrosmasterInventoryMessage(); };
-            MessageReceiver._list[KrosmasterInventoryRequestMessage.ID] = () => { return new KrosmasterInventoryRequestMessage(); };
-            MessageReceiver._list[KrosmasterPlayingStatusMessage.ID] = () => { return new KrosmasterPlayingStatusMessage(); };
-            MessageReceiver._list[KrosmasterTransferMessage.ID] = () => { return new KrosmasterTransferMessage(); };
-            MessageReceiver._list[KrosmasterTransferRequestMessage.ID] = () => { return new KrosmasterTransferRequestMessage(); };
-            MessageReceiver._list[ClientYouAreDrunkMessage.ID] = () => { return new ClientYouAreDrunkMessage(); };
-        }
-
-        public static parse(param1: ICustomDataInput, param2: number, param3: number): INetworkMessage {
-            let _loc4_ = MessageReceiver._list[param2];
-            if (!_loc4_) {
-                console.log('Unknown packet received (ID ' + param2 + ', length ' + param3 + ')');
-                return null;
-            }
-            var _loc5_: INetworkMessage = _loc4_();
-            _loc5_.unpack(param1, param3);
-            return _loc5_;
-        }
-    }
-
-    export class ProtocolTypeManager {
-        private static _list: { [idx: number]: () => INetworkType };
-
-        constructor() {
-            ProtocolTypeManager._list = {};
-            ProtocolTypeManager._list[StatisticData.ID] = () => { return new StatisticData(); };
-            ProtocolTypeManager._list[StatisticDataBoolean.ID] = () => { return new StatisticDataBoolean(); };
-            ProtocolTypeManager._list[StatisticDataByte.ID] = () => { return new StatisticDataByte(); };
-            ProtocolTypeManager._list[StatisticDataInt.ID] = () => { return new StatisticDataInt(); };
-            ProtocolTypeManager._list[StatisticDataShort.ID] = () => { return new StatisticDataShort(); };
-            ProtocolTypeManager._list[StatisticDataString.ID] = () => { return new StatisticDataString(); };
-            ProtocolTypeManager._list[GameServerInformations.ID] = () => { return new GameServerInformations(); };
-            ProtocolTypeManager._list[Achievement.ID] = () => { return new Achievement(); };
-            ProtocolTypeManager._list[AchievementObjective.ID] = () => { return new AchievementObjective(); };
-            ProtocolTypeManager._list[AchievementRewardable.ID] = () => { return new AchievementRewardable(); };
-            ProtocolTypeManager._list[AchievementStartedObjective.ID] = () => { return new AchievementStartedObjective(); };
-            ProtocolTypeManager._list[FightDispellableEffectExtendedInformations.ID] = () => { return new FightDispellableEffectExtendedInformations(); };
-            ProtocolTypeManager._list[AbstractFightDispellableEffect.ID] = () => { return new AbstractFightDispellableEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostEffect.ID] = () => { return new FightTemporaryBoostEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostStateEffect.ID] = () => { return new FightTemporaryBoostStateEffect(); };
-            ProtocolTypeManager._list[FightTemporaryBoostWeaponDamagesEffect.ID] = () => { return new FightTemporaryBoostWeaponDamagesEffect(); };
-            ProtocolTypeManager._list[FightTemporarySpellBoostEffect.ID] = () => { return new FightTemporarySpellBoostEffect(); };
-            ProtocolTypeManager._list[FightTemporarySpellImmunityEffect.ID] = () => { return new FightTemporarySpellImmunityEffect(); };
-            ProtocolTypeManager._list[FightTriggeredEffect.ID] = () => { return new FightTriggeredEffect(); };
-            ProtocolTypeManager._list[GameActionMark.ID] = () => { return new GameActionMark(); };
-            ProtocolTypeManager._list[GameActionMarkedCell.ID] = () => { return new GameActionMarkedCell(); };
-            ProtocolTypeManager._list[ServerSessionConstant.ID] = () => { return new ServerSessionConstant(); };
-            ProtocolTypeManager._list[ServerSessionConstantInteger.ID] = () => { return new ServerSessionConstantInteger(); };
-            ProtocolTypeManager._list[ServerSessionConstantLong.ID] = () => { return new ServerSessionConstantLong(); };
-            ProtocolTypeManager._list[ServerSessionConstantString.ID] = () => { return new ServerSessionConstantString(); };
-            ProtocolTypeManager._list[AbstractCharacterInformation.ID] = () => { return new AbstractCharacterInformation(); };
-            ProtocolTypeManager._list[CharacterMinimalAllianceInformations.ID] = () => { return new CharacterMinimalAllianceInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalGuildInformations.ID] = () => { return new CharacterMinimalGuildInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalInformations.ID] = () => { return new CharacterMinimalInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalPlusLookAndGradeInformations.ID] = () => { return new CharacterMinimalPlusLookAndGradeInformations(); };
-            ProtocolTypeManager._list[CharacterMinimalPlusLookInformations.ID] = () => { return new CharacterMinimalPlusLookInformations(); };
-            ProtocolTypeManager._list[ActorAlignmentInformations.ID] = () => { return new ActorAlignmentInformations(); };
-            ProtocolTypeManager._list[ActorExtendedAlignmentInformations.ID] = () => { return new ActorExtendedAlignmentInformations(); };
-            ProtocolTypeManager._list[CharacterBaseCharacteristic.ID] = () => { return new CharacterBaseCharacteristic(); };
-            ProtocolTypeManager._list[CharacterCharacteristicsInformations.ID] = () => { return new CharacterCharacteristicsInformations(); };
-            ProtocolTypeManager._list[CharacterSpellModification.ID] = () => { return new CharacterSpellModification(); };
-            ProtocolTypeManager._list[AbstractCharacterToRefurbishInformation.ID] = () => { return new AbstractCharacterToRefurbishInformation(); };
-            ProtocolTypeManager._list[CharacterBaseInformations.ID] = () => { return new CharacterBaseInformations(); };
-            ProtocolTypeManager._list[CharacterHardcoreOrEpicInformations.ID] = () => { return new CharacterHardcoreOrEpicInformations(); };
-            ProtocolTypeManager._list[CharacterRemodelingInformation.ID] = () => { return new CharacterRemodelingInformation(); };
-            ProtocolTypeManager._list[CharacterToRecolorInformation.ID] = () => { return new CharacterToRecolorInformation(); };
-            ProtocolTypeManager._list[CharacterToRelookInformation.ID] = () => { return new CharacterToRelookInformation(); };
-            ProtocolTypeManager._list[CharacterToRemodelInformations.ID] = () => { return new CharacterToRemodelInformations(); };
-            ProtocolTypeManager._list[RemodelingInformation.ID] = () => { return new RemodelingInformation(); };
-            ProtocolTypeManager._list[ActorRestrictionsInformations.ID] = () => { return new ActorRestrictionsInformations(); };
-            ProtocolTypeManager._list[PlayerStatus.ID] = () => { return new PlayerStatus(); };
-            ProtocolTypeManager._list[PlayerStatusExtended.ID] = () => { return new PlayerStatusExtended(); };
-            ProtocolTypeManager._list[ActorOrientation.ID] = () => { return new ActorOrientation(); };
-            ProtocolTypeManager._list[EntityDispositionInformations.ID] = () => { return new EntityDispositionInformations(); };
-            ProtocolTypeManager._list[EntityMovementInformations.ID] = () => { return new EntityMovementInformations(); };
-            ProtocolTypeManager._list[FightEntityDispositionInformations.ID] = () => { return new FightEntityDispositionInformations(); };
-            ProtocolTypeManager._list[GameContextActorInformations.ID] = () => { return new GameContextActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayTaxCollectorInformations.ID] = () => { return new GameRolePlayTaxCollectorInformations(); };
-            ProtocolTypeManager._list[IdentifiedEntityDispositionInformations.ID] = () => { return new IdentifiedEntityDispositionInformations(); };
-            ProtocolTypeManager._list[MapCoordinates.ID] = () => { return new MapCoordinates(); };
-            ProtocolTypeManager._list[MapCoordinatesAndId.ID] = () => { return new MapCoordinatesAndId(); };
-            ProtocolTypeManager._list[MapCoordinatesExtended.ID] = () => { return new MapCoordinatesExtended(); };
-            ProtocolTypeManager._list[TaxCollectorStaticExtendedInformations.ID] = () => { return new TaxCollectorStaticExtendedInformations(); };
-            ProtocolTypeManager._list[TaxCollectorStaticInformations.ID] = () => { return new TaxCollectorStaticInformations(); };
-            ProtocolTypeManager._list[AbstractFightTeamInformations.ID] = () => { return new AbstractFightTeamInformations(); };
-            ProtocolTypeManager._list[FightAllianceTeamInformations.ID] = () => { return new FightAllianceTeamInformations(); };
-            ProtocolTypeManager._list[FightCommonInformations.ID] = () => { return new FightCommonInformations(); };
-            ProtocolTypeManager._list[FightExternalInformations.ID] = () => { return new FightExternalInformations(); };
-            ProtocolTypeManager._list[FightLoot.ID] = () => { return new FightLoot(); };
-            ProtocolTypeManager._list[FightOptionsInformations.ID] = () => { return new FightOptionsInformations(); };
-            ProtocolTypeManager._list[FightResultAdditionalData.ID] = () => { return new FightResultAdditionalData(); };
-            ProtocolTypeManager._list[FightResultExperienceData.ID] = () => { return new FightResultExperienceData(); };
-            ProtocolTypeManager._list[FightResultFighterListEntry.ID] = () => { return new FightResultFighterListEntry(); };
-            ProtocolTypeManager._list[FightResultListEntry.ID] = () => { return new FightResultListEntry(); };
-            ProtocolTypeManager._list[FightResultMutantListEntry.ID] = () => { return new FightResultMutantListEntry(); };
-            ProtocolTypeManager._list[FightResultPlayerListEntry.ID] = () => { return new FightResultPlayerListEntry(); };
-            ProtocolTypeManager._list[FightResultPvpData.ID] = () => { return new FightResultPvpData(); };
-            ProtocolTypeManager._list[FightResultTaxCollectorListEntry.ID] = () => { return new FightResultTaxCollectorListEntry(); };
-            ProtocolTypeManager._list[FightTeamInformations.ID] = () => { return new FightTeamInformations(); };
-            ProtocolTypeManager._list[FightTeamLightInformations.ID] = () => { return new FightTeamLightInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberCharacterInformations.ID] = () => { return new FightTeamMemberCharacterInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberCompanionInformations.ID] = () => { return new FightTeamMemberCompanionInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberInformations.ID] = () => { return new FightTeamMemberInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberMonsterInformations.ID] = () => { return new FightTeamMemberMonsterInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberTaxCollectorInformations.ID] = () => { return new FightTeamMemberTaxCollectorInformations(); };
-            ProtocolTypeManager._list[FightTeamMemberWithAllianceCharacterInformations.ID] = () => { return new FightTeamMemberWithAllianceCharacterInformations(); };
-            ProtocolTypeManager._list[GameFightAIInformations.ID] = () => { return new GameFightAIInformations(); };
-            ProtocolTypeManager._list[GameFightCharacterInformations.ID] = () => { return new GameFightCharacterInformations(); };
-            ProtocolTypeManager._list[GameFightCompanionInformations.ID] = () => { return new GameFightCompanionInformations(); };
-            ProtocolTypeManager._list[GameFightFighterCompanionLightInformations.ID] = () => { return new GameFightFighterCompanionLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterInformations.ID] = () => { return new GameFightFighterInformations(); };
-            ProtocolTypeManager._list[GameFightFighterLightInformations.ID] = () => { return new GameFightFighterLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterMonsterLightInformations.ID] = () => { return new GameFightFighterMonsterLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterNamedInformations.ID] = () => { return new GameFightFighterNamedInformations(); };
-            ProtocolTypeManager._list[GameFightFighterNamedLightInformations.ID] = () => { return new GameFightFighterNamedLightInformations(); };
-            ProtocolTypeManager._list[GameFightFighterTaxCollectorLightInformations.ID] = () => { return new GameFightFighterTaxCollectorLightInformations(); };
-            ProtocolTypeManager._list[GameFightMinimalStats.ID] = () => { return new GameFightMinimalStats(); };
-            ProtocolTypeManager._list[GameFightMinimalStatsPreparation.ID] = () => { return new GameFightMinimalStatsPreparation(); };
-            ProtocolTypeManager._list[GameFightMonsterInformations.ID] = () => { return new GameFightMonsterInformations(); };
-            ProtocolTypeManager._list[GameFightMonsterWithAlignmentInformations.ID] = () => { return new GameFightMonsterWithAlignmentInformations(); };
-            ProtocolTypeManager._list[GameFightMutantInformations.ID] = () => { return new GameFightMutantInformations(); };
-            ProtocolTypeManager._list[GameFightResumeSlaveInfo.ID] = () => { return new GameFightResumeSlaveInfo(); };
-            ProtocolTypeManager._list[GameFightSpellCooldown.ID] = () => { return new GameFightSpellCooldown(); };
-            ProtocolTypeManager._list[GameFightTaxCollectorInformations.ID] = () => { return new GameFightTaxCollectorInformations(); };
-            ProtocolTypeManager._list[AllianceInformations.ID] = () => { return new AllianceInformations(); };
-            ProtocolTypeManager._list[AlternativeMonstersInGroupLightInformations.ID] = () => { return new AlternativeMonstersInGroupLightInformations(); };
-            ProtocolTypeManager._list[AtlasPointsInformations.ID] = () => { return new AtlasPointsInformations(); };
-            ProtocolTypeManager._list[BasicAllianceInformations.ID] = () => { return new BasicAllianceInformations(); };
-            ProtocolTypeManager._list[BasicGuildInformations.ID] = () => { return new BasicGuildInformations(); };
-            ProtocolTypeManager._list[BasicNamedAllianceInformations.ID] = () => { return new BasicNamedAllianceInformations(); };
-            ProtocolTypeManager._list[GameRolePlayActorInformations.ID] = () => { return new GameRolePlayActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayCharacterInformations.ID] = () => { return new GameRolePlayCharacterInformations(); };
-            ProtocolTypeManager._list[GameRolePlayGroupMonsterInformations.ID] = () => { return new GameRolePlayGroupMonsterInformations(); };
-            ProtocolTypeManager._list[GameRolePlayGroupMonsterWaveInformations.ID] = () => { return new GameRolePlayGroupMonsterWaveInformations(); };
-            ProtocolTypeManager._list[GameRolePlayHumanoidInformations.ID] = () => { return new GameRolePlayHumanoidInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMerchantInformations.ID] = () => { return new GameRolePlayMerchantInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMountInformations.ID] = () => { return new GameRolePlayMountInformations(); };
-            ProtocolTypeManager._list[GameRolePlayMutantInformations.ID] = () => { return new GameRolePlayMutantInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNamedActorInformations.ID] = () => { return new GameRolePlayNamedActorInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcInformations.ID] = () => { return new GameRolePlayNpcInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcWithQuestInformations.ID] = () => { return new GameRolePlayNpcWithQuestInformations(); };
-            ProtocolTypeManager._list[GameRolePlayPortalInformations.ID] = () => { return new GameRolePlayPortalInformations(); };
-            ProtocolTypeManager._list[GameRolePlayPrismInformations.ID] = () => { return new GameRolePlayPrismInformations(); };
-            ProtocolTypeManager._list[GameRolePlayTreasureHintInformations.ID] = () => { return new GameRolePlayTreasureHintInformations(); };
-            ProtocolTypeManager._list[GroupMonsterStaticInformations.ID] = () => { return new GroupMonsterStaticInformations(); };
-            ProtocolTypeManager._list[GroupMonsterStaticInformationsWithAlternatives.ID] = () => { return new GroupMonsterStaticInformationsWithAlternatives(); };
-            ProtocolTypeManager._list[GuildInAllianceInformations.ID] = () => { return new GuildInAllianceInformations(); };
-            ProtocolTypeManager._list[GuildInformations.ID] = () => { return new GuildInformations(); };
-            ProtocolTypeManager._list[HumanInformations.ID] = () => { return new HumanInformations(); };
-            ProtocolTypeManager._list[HumanOption.ID] = () => { return new HumanOption(); };
-            ProtocolTypeManager._list[HumanOptionAlliance.ID] = () => { return new HumanOptionAlliance(); };
-            ProtocolTypeManager._list[HumanOptionEmote.ID] = () => { return new HumanOptionEmote(); };
-            ProtocolTypeManager._list[HumanOptionFollowers.ID] = () => { return new HumanOptionFollowers(); };
-            ProtocolTypeManager._list[HumanOptionGuild.ID] = () => { return new HumanOptionGuild(); };
-            ProtocolTypeManager._list[HumanOptionObjectUse.ID] = () => { return new HumanOptionObjectUse(); };
-            ProtocolTypeManager._list[HumanOptionOrnament.ID] = () => { return new HumanOptionOrnament(); };
-            ProtocolTypeManager._list[HumanOptionTitle.ID] = () => { return new HumanOptionTitle(); };
-            ProtocolTypeManager._list[MonsterInGroupInformations.ID] = () => { return new MonsterInGroupInformations(); };
-            ProtocolTypeManager._list[MonsterInGroupLightInformations.ID] = () => { return new MonsterInGroupLightInformations(); };
-            ProtocolTypeManager._list[ObjectItemInRolePlay.ID] = () => { return new ObjectItemInRolePlay(); };
-            ProtocolTypeManager._list[DecraftedItemStackInfo.ID] = () => { return new DecraftedItemStackInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryEntryJobInfo.ID] = () => { return new JobCrafterDirectoryEntryJobInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryEntryPlayerInfo.ID] = () => { return new JobCrafterDirectoryEntryPlayerInfo(); };
-            ProtocolTypeManager._list[JobCrafterDirectoryListEntry.ID] = () => { return new JobCrafterDirectoryListEntry(); };
-            ProtocolTypeManager._list[JobCrafterDirectorySettings.ID] = () => { return new JobCrafterDirectorySettings(); };
-            ProtocolTypeManager._list[JobDescription.ID] = () => { return new JobDescription(); };
-            ProtocolTypeManager._list[JobExperience.ID] = () => { return new JobExperience(); };
-            ProtocolTypeManager._list[DungeonPartyFinderPlayer.ID] = () => { return new DungeonPartyFinderPlayer(); };
-            ProtocolTypeManager._list[NamedPartyTeam.ID] = () => { return new NamedPartyTeam(); };
-            ProtocolTypeManager._list[NamedPartyTeamWithOutcome.ID] = () => { return new NamedPartyTeamWithOutcome(); };
-            ProtocolTypeManager._list[PartyGuestInformations.ID] = () => { return new PartyGuestInformations(); };
-            ProtocolTypeManager._list[PartyInvitationMemberInformations.ID] = () => { return new PartyInvitationMemberInformations(); };
-            ProtocolTypeManager._list[PartyMemberArenaInformations.ID] = () => { return new PartyMemberArenaInformations(); };
-            ProtocolTypeManager._list[PartyMemberGeoPosition.ID] = () => { return new PartyMemberGeoPosition(); };
-            ProtocolTypeManager._list[PartyMemberInformations.ID] = () => { return new PartyMemberInformations(); };
-            ProtocolTypeManager._list[PartyCompanionBaseInformations.ID] = () => { return new PartyCompanionBaseInformations(); };
-            ProtocolTypeManager._list[PartyCompanionMemberInformations.ID] = () => { return new PartyCompanionMemberInformations(); };
-            ProtocolTypeManager._list[GameRolePlayNpcQuestFlag.ID] = () => { return new GameRolePlayNpcQuestFlag(); };
-            ProtocolTypeManager._list[QuestActiveDetailedInformations.ID] = () => { return new QuestActiveDetailedInformations(); };
-            ProtocolTypeManager._list[QuestActiveInformations.ID] = () => { return new QuestActiveInformations(); };
-            ProtocolTypeManager._list[QuestObjectiveInformations.ID] = () => { return new QuestObjectiveInformations(); };
-            ProtocolTypeManager._list[QuestObjectiveInformationsWithCompletion.ID] = () => { return new QuestObjectiveInformationsWithCompletion(); };
-            ProtocolTypeManager._list[PortalInformation.ID] = () => { return new PortalInformation(); };
-            ProtocolTypeManager._list[TreasureHuntFlag.ID] = () => { return new TreasureHuntFlag(); };
-            ProtocolTypeManager._list[TreasureHuntStep.ID] = () => { return new TreasureHuntStep(); };
-            ProtocolTypeManager._list[TreasureHuntStepDig.ID] = () => { return new TreasureHuntStepDig(); };
-            ProtocolTypeManager._list[TreasureHuntStepFight.ID] = () => { return new TreasureHuntStepFight(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirection.ID] = () => { return new TreasureHuntStepFollowDirection(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToHint.ID] = () => { return new TreasureHuntStepFollowDirectionToHint(); };
-            ProtocolTypeManager._list[TreasureHuntStepFollowDirectionToPOI.ID] = () => { return new TreasureHuntStepFollowDirectionToPOI(); };
-            ProtocolTypeManager._list[BidExchangerObjectInfo.ID] = () => { return new BidExchangerObjectInfo(); };
-            ProtocolTypeManager._list[GoldItem.ID] = () => { return new GoldItem(); };
-            ProtocolTypeManager._list[Item.ID] = () => { return new Item(); };
-            ProtocolTypeManager._list[ObjectItem.ID] = () => { return new ObjectItem(); };
-            ProtocolTypeManager._list[ObjectItemGenericQuantity.ID] = () => { return new ObjectItemGenericQuantity(); };
-            ProtocolTypeManager._list[ObjectItemInformationWithQuantity.ID] = () => { return new ObjectItemInformationWithQuantity(); };
-            ProtocolTypeManager._list[ObjectItemMinimalInformation.ID] = () => { return new ObjectItemMinimalInformation(); };
-            ProtocolTypeManager._list[ObjectItemNotInContainer.ID] = () => { return new ObjectItemNotInContainer(); };
-            ProtocolTypeManager._list[ObjectItemQuantity.ID] = () => { return new ObjectItemQuantity(); };
-            ProtocolTypeManager._list[ObjectItemToSell.ID] = () => { return new ObjectItemToSell(); };
-            ProtocolTypeManager._list[ObjectItemToSellInBid.ID] = () => { return new ObjectItemToSellInBid(); };
-            ProtocolTypeManager._list[ObjectItemToSellInHumanVendorShop.ID] = () => { return new ObjectItemToSellInHumanVendorShop(); };
-            ProtocolTypeManager._list[ObjectItemToSellInNpcShop.ID] = () => { return new ObjectItemToSellInNpcShop(); };
-            ProtocolTypeManager._list[SellerBuyerDescriptor.ID] = () => { return new SellerBuyerDescriptor(); };
-            ProtocolTypeManager._list[SpellItem.ID] = () => { return new SpellItem(); };
-            ProtocolTypeManager._list[ObjectEffect.ID] = () => { return new ObjectEffect(); };
-            ProtocolTypeManager._list[ObjectEffectCreature.ID] = () => { return new ObjectEffectCreature(); };
-            ProtocolTypeManager._list[ObjectEffectDate.ID] = () => { return new ObjectEffectDate(); };
-            ProtocolTypeManager._list[ObjectEffectDice.ID] = () => { return new ObjectEffectDice(); };
-            ProtocolTypeManager._list[ObjectEffectDuration.ID] = () => { return new ObjectEffectDuration(); };
-            ProtocolTypeManager._list[ObjectEffectInteger.ID] = () => { return new ObjectEffectInteger(); };
-            ProtocolTypeManager._list[ObjectEffectLadder.ID] = () => { return new ObjectEffectLadder(); };
-            ProtocolTypeManager._list[ObjectEffectMinMax.ID] = () => { return new ObjectEffectMinMax(); };
-            ProtocolTypeManager._list[ObjectEffectMount.ID] = () => { return new ObjectEffectMount(); };
-            ProtocolTypeManager._list[ObjectEffectString.ID] = () => { return new ObjectEffectString(); };
-            ProtocolTypeManager._list[ProtectedEntityWaitingForHelpInfo.ID] = () => { return new ProtectedEntityWaitingForHelpInfo(); };
-            ProtocolTypeManager._list[AbstractContactInformations.ID] = () => { return new AbstractContactInformations(); };
-            ProtocolTypeManager._list[FriendInformations.ID] = () => { return new FriendInformations(); };
-            ProtocolTypeManager._list[FriendOnlineInformations.ID] = () => { return new FriendOnlineInformations(); };
-            ProtocolTypeManager._list[FriendSpouseInformations.ID] = () => { return new FriendSpouseInformations(); };
-            ProtocolTypeManager._list[FriendSpouseOnlineInformations.ID] = () => { return new FriendSpouseOnlineInformations(); };
-            ProtocolTypeManager._list[IgnoredInformations.ID] = () => { return new IgnoredInformations(); };
-            ProtocolTypeManager._list[IgnoredOnlineInformations.ID] = () => { return new IgnoredOnlineInformations(); };
-            ProtocolTypeManager._list[GuildEmblem.ID] = () => { return new GuildEmblem(); };
-            ProtocolTypeManager._list[GuildMember.ID] = () => { return new GuildMember(); };
-            ProtocolTypeManager._list[AdditionalTaxCollectorInformations.ID] = () => { return new AdditionalTaxCollectorInformations(); };
-            ProtocolTypeManager._list[TaxCollectorBasicInformations.ID] = () => { return new TaxCollectorBasicInformations(); };
-            ProtocolTypeManager._list[TaxCollectorComplementaryInformations.ID] = () => { return new TaxCollectorComplementaryInformations(); };
-            ProtocolTypeManager._list[TaxCollectorFightersInformation.ID] = () => { return new TaxCollectorFightersInformation(); };
-            ProtocolTypeManager._list[TaxCollectorGuildInformations.ID] = () => { return new TaxCollectorGuildInformations(); };
-            ProtocolTypeManager._list[TaxCollectorInformations.ID] = () => { return new TaxCollectorInformations(); };
-            ProtocolTypeManager._list[TaxCollectorLootInformations.ID] = () => { return new TaxCollectorLootInformations(); };
-            ProtocolTypeManager._list[TaxCollectorWaitingForHelpInformations.ID] = () => { return new TaxCollectorWaitingForHelpInformations(); };
-            ProtocolTypeManager._list[AccountHouseInformations.ID] = () => { return new AccountHouseInformations(); };
-            ProtocolTypeManager._list[HouseInformations.ID] = () => { return new HouseInformations(); };
-            ProtocolTypeManager._list[HouseInformationsExtended.ID] = () => { return new HouseInformationsExtended(); };
-            ProtocolTypeManager._list[HouseInformationsForGuild.ID] = () => { return new HouseInformationsForGuild(); };
-            ProtocolTypeManager._list[HouseInformationsForSell.ID] = () => { return new HouseInformationsForSell(); };
-            ProtocolTypeManager._list[HouseInformationsInside.ID] = () => { return new HouseInformationsInside(); };
-            ProtocolTypeManager._list[Idol.ID] = () => { return new Idol(); };
-            ProtocolTypeManager._list[PartyIdol.ID] = () => { return new PartyIdol(); };
-            ProtocolTypeManager._list[InteractiveElement.ID] = () => { return new InteractiveElement(); };
-            ProtocolTypeManager._list[InteractiveElementNamedSkill.ID] = () => { return new InteractiveElementNamedSkill(); };
-            ProtocolTypeManager._list[InteractiveElementSkill.ID] = () => { return new InteractiveElementSkill(); };
-            ProtocolTypeManager._list[InteractiveElementWithAgeBonus.ID] = () => { return new InteractiveElementWithAgeBonus(); };
-            ProtocolTypeManager._list[MapObstacle.ID] = () => { return new MapObstacle(); };
-            ProtocolTypeManager._list[StatedElement.ID] = () => { return new StatedElement(); };
-            ProtocolTypeManager._list[SkillActionDescription.ID] = () => { return new SkillActionDescription(); };
-            ProtocolTypeManager._list[SkillActionDescriptionCollect.ID] = () => { return new SkillActionDescriptionCollect(); };
-            ProtocolTypeManager._list[SkillActionDescriptionCraft.ID] = () => { return new SkillActionDescriptionCraft(); };
-            ProtocolTypeManager._list[SkillActionDescriptionTimed.ID] = () => { return new SkillActionDescriptionTimed(); };
-            ProtocolTypeManager._list[IdolsPreset.ID] = () => { return new IdolsPreset(); };
-            ProtocolTypeManager._list[Preset.ID] = () => { return new Preset(); };
-            ProtocolTypeManager._list[PresetItem.ID] = () => { return new PresetItem(); };
-            ProtocolTypeManager._list[EntityLook.ID] = () => { return new EntityLook(); };
-            ProtocolTypeManager._list[IndexedEntityLook.ID] = () => { return new IndexedEntityLook(); };
-            ProtocolTypeManager._list[SubEntity.ID] = () => { return new SubEntity(); };
-            ProtocolTypeManager._list[ItemDurability.ID] = () => { return new ItemDurability(); };
-            ProtocolTypeManager._list[MountClientData.ID] = () => { return new MountClientData(); };
-            ProtocolTypeManager._list[UpdateMountBoost.ID] = () => { return new UpdateMountBoost(); };
-            ProtocolTypeManager._list[UpdateMountIntBoost.ID] = () => { return new UpdateMountIntBoost(); };
-            ProtocolTypeManager._list[MountInformationsForPaddock.ID] = () => { return new MountInformationsForPaddock(); };
-            ProtocolTypeManager._list[PaddockAbandonnedInformations.ID] = () => { return new PaddockAbandonnedInformations(); };
-            ProtocolTypeManager._list[PaddockBuyableInformations.ID] = () => { return new PaddockBuyableInformations(); };
-            ProtocolTypeManager._list[PaddockContentInformations.ID] = () => { return new PaddockContentInformations(); };
-            ProtocolTypeManager._list[PaddockInformations.ID] = () => { return new PaddockInformations(); };
-            ProtocolTypeManager._list[PaddockInformationsForSell.ID] = () => { return new PaddockInformationsForSell(); };
-            ProtocolTypeManager._list[PaddockItem.ID] = () => { return new PaddockItem(); };
-            ProtocolTypeManager._list[PaddockPrivateInformations.ID] = () => { return new PaddockPrivateInformations(); };
-            ProtocolTypeManager._list[AllianceInsiderPrismInformation.ID] = () => { return new AllianceInsiderPrismInformation(); };
-            ProtocolTypeManager._list[AlliancePrismInformation.ID] = () => { return new AlliancePrismInformation(); };
-            ProtocolTypeManager._list[PrismFightersInformation.ID] = () => { return new PrismFightersInformation(); };
-            ProtocolTypeManager._list[PrismGeolocalizedInformation.ID] = () => { return new PrismGeolocalizedInformation(); };
-            ProtocolTypeManager._list[PrismInformation.ID] = () => { return new PrismInformation(); };
-            ProtocolTypeManager._list[PrismSubareaEmptyInfo.ID] = () => { return new PrismSubareaEmptyInfo(); };
-            ProtocolTypeManager._list[Shortcut.ID] = () => { return new Shortcut(); };
-            ProtocolTypeManager._list[ShortcutEmote.ID] = () => { return new ShortcutEmote(); };
-            ProtocolTypeManager._list[ShortcutObject.ID] = () => { return new ShortcutObject(); };
-            ProtocolTypeManager._list[ShortcutObjectIdolsPreset.ID] = () => { return new ShortcutObjectIdolsPreset(); };
-            ProtocolTypeManager._list[ShortcutObjectItem.ID] = () => { return new ShortcutObjectItem(); };
-            ProtocolTypeManager._list[ShortcutObjectPreset.ID] = () => { return new ShortcutObjectPreset(); };
-            ProtocolTypeManager._list[ShortcutSmiley.ID] = () => { return new ShortcutSmiley(); };
-            ProtocolTypeManager._list[ShortcutSpell.ID] = () => { return new ShortcutSpell(); };
-            ProtocolTypeManager._list[AbstractSocialGroupInfos.ID] = () => { return new AbstractSocialGroupInfos(); };
-            ProtocolTypeManager._list[AllianceFactSheetInformations.ID] = () => { return new AllianceFactSheetInformations(); };
-            ProtocolTypeManager._list[AllianceVersatileInformations.ID] = () => { return new AllianceVersatileInformations(); };
-            ProtocolTypeManager._list[AlliancedGuildFactSheetInformations.ID] = () => { return new AlliancedGuildFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildFactSheetInformations.ID] = () => { return new GuildFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildInAllianceVersatileInformations.ID] = () => { return new GuildInAllianceVersatileInformations(); };
-            ProtocolTypeManager._list[GuildInsiderFactSheetInformations.ID] = () => { return new GuildInsiderFactSheetInformations(); };
-            ProtocolTypeManager._list[GuildVersatileInformations.ID] = () => { return new GuildVersatileInformations(); };
-            ProtocolTypeManager._list[StartupActionAddObject.ID] = () => { return new StartupActionAddObject(); };
-            ProtocolTypeManager._list[TrustCertificate.ID] = () => { return new TrustCertificate(); };
-            ProtocolTypeManager._list[ContentPart.ID] = () => { return new ContentPart(); };
-            ProtocolTypeManager._list[Version.ID] = () => { return new Version(); };
-            ProtocolTypeManager._list[VersionExtended.ID] = () => { return new VersionExtended(); };
-            ProtocolTypeManager._list[KrosmasterFigure.ID] = () => { return new KrosmasterFigure(); };
-        }
-
-        public static getInstance(networkType: any, param2: number): INetworkType {
-            let _loc3_ = ProtocolTypeManager._list[param2];
-            if (!_loc3_) {
-                throw new Error('Type with id ' + param2 + ' is unknown.');
-            }
-            return _loc3_();
-        }
-    }
-    export class Binary64 {
-        low: number;
-        high: number;
-
-        constructor(low: number = 0, high: number = 0) {
-            this.high = high;
-            this.low = low;
-        }
-
-        div(n: number): number {
-            var modHigh = 0;
-            modHigh = (this.high % n);
-            var mod = (((this.low % n) + (modHigh * 6)) % n);
-            this.high = (this.high / n);
-            var newLow = (((modHigh * 4294967296) + this.low) / n);
-            this.high = (this.high + Number((newLow / 4294967296)));
-            this.low = newLow;
-            return mod;
-        };
-
-        mul(n: number): void {
-            var newLow = (Number(this.low) * n);
-            this.high = (this.high * n);
-            this.high = (this.high + Number((newLow / 4294967296)));
-            this.low = (this.low * n);
-        };
-
-        add(n: number): void {
-            var newLow = (Number(this.low) + n);
-            this.high = (this.high + Number((newLow / 4294967296)));
-            this.low = newLow;
-        };
-
-        bitwiseNot(n: number): void {
-            this.low = ~(this.low);
-            this.high = ~(this.high);
-        };
-    }
-
-    export class BooleanByteWrapper {
-        static setFlag(param1?: number, param2?: number, param3?: boolean): number {
-            switch (param2) {
-                case 0:
-                    if (param3) {
-                        param1 = param1 | 1;
-                    } else {
-                        param1 = param1 & 255 - 1;
-                    }
-                    break;
-                case 1:
-                    if (param3) {
-                        param1 = param1 | 2;
-                    } else {
-                        param1 = param1 & 255 - 2;
-                    }
-                    break;
-                case 2:
-                    if (param3) {
-                        param1 = param1 | 4;
-                    } else {
-                        param1 = param1 & 255 - 4;
-                    }
-                    break;
-                case 3:
-                    if (param3) {
-                        param1 = param1 | 8;
-                    } else {
-                        param1 = param1 & 255 - 8;
-                    }
-                    break;
-                case 4:
-                    if (param3) {
-                        param1 = param1 | 16;
-                    } else {
-                        param1 = param1 & 255 - 16;
-                    }
-                    break;
-                case 5:
-                    if (param3) {
-                        param1 = param1 | 32;
-                    } else {
-                        param1 = param1 & 255 - 32;
-                    }
-                    break;
-                case 6:
-                    if (param3) {
-                        param1 = param1 | 64;
-                    } else {
-                        param1 = param1 & 255 - 64;
-                    }
-                    break;
-                case 7:
-                    if (param3) {
-                        param1 = param1 | 128;
-                    } else {
-                        param1 = param1 & 255 - 128;
-                    }
-                    break;
-                default:
-                    throw new Error('Bytebox overflow.');
-            }
-            return param1;
-        }
-
-        static getFlag(param1: number, param2: number): boolean {
-            switch (param2) {
-                case 0:
-                    return !((param1 & 1) === 0);
-                case 1:
-                    return !((param1 & 2) === 0);
-                case 2:
-                    return !((param1 & 4) === 0);
-                case 3:
-                    return !((param1 & 8) === 0);
-                case 4:
-                    return !((param1 & 16) === 0);
-                case 5:
-                    return !((param1 & 32) === 0);
-                case 6:
-                    return !((param1 & 64) === 0);
-                case 7:
-                    return !((param1 & 128) === 0);
-                default:
-                    throw new Error('Bytebox overflow.');
-            }
-        }
-    }
-    export interface ICustomDataOutput {
-        writeVarInt(param1: number): void;
-        writeVarShort(param1: number): void;
-        writeVarLong(param1: number): void;
-        writeBytes(param1: ByteArray, param2?: number, param3?: number): void;
-        writeBoolean(param1: boolean): void;
-        writeByte(param1: number): void;
-        writeShort(param1: number): void;
-        writeInt(param1: number): void;
-        writeUnsignedInt(param1: number): void;
-        writeFloat(param1: number): void;
-        writeDouble(param1: number): void;
-        writeMultiByte(param1: string, param2: string): void;
-        writeUTF(param1: string): void;
-        writeUTFBytes(param1: string): void;
-        writeObject(param1: any): void;
-    }
-    export interface ICustomDataInput {
-        readVarInt(): number;
-        readVarUhInt(): number;
-        readVarShort(): number;
-        readVarUhShort(): number;
-        readVarLong(): number;
-        readVarUhLong(): number;
-        readBytes(param1: ByteArray, param2?: number, param3?: number): void;
-        readBoolean(): boolean;
-        readByte(): number;
-        readUnsignedByte(): number;
-        readShort(): number;
-        readUnsignedShort(): number;
-        readInt(): number;
-        readUnsignedInt(): number;
-        readFloat(): number;
-        readDouble(): number;
-        readMultiByte(param1: number, param2: string): string;
-        readUTF(): string;
-        readUTFBytes(param1: number): string;
-        bytesAvailable: number;
-        readObject(): any;
-    }
-    export class CustomDataWrapper implements ICustomDataOutput, ICustomDataInput {
-        private static INT_SIZE: number = 32;
-        private static SHORT_SIZE: number = 16;
-        private static SHORT_MIN_VALUE: number = -32768;
-        private static SHORT_MAX_VALUE: number = 32767;
-        private static UNSIGNED_SHORT_MAX_VALUE: number = 65536;
-        private static CHUNCK_BIT_SIZE: number = 7;
-        private static MAX_ENCODING_LENGTH: number = Math.ceil(CustomDataWrapper.INT_SIZE / CustomDataWrapper.CHUNCK_BIT_SIZE);
-        private static MASK_10000000: number = 128;
-        private static MASK_01111111: number = 127;
-        private _data: ByteArray;
-
-        constructor(data: ByteArray) {
-            this._data = data;
-        }
-
-        public set position(param1: number) {
-            this._data.position = param1;
-        }
-
-        public get position(): number {
-            return this._data.position;
-        }
-
-        public readVarInt(): number {
-            var _loc4_: number = 0;
-            var _loc1_: number = 0;
-            var _loc2_: number = 0;
-            var _loc3_: boolean = false;
-            while (_loc2_ < CustomDataWrapper.INT_SIZE) {
-                _loc4_ = this._data.readByte();
-                _loc3_ = (_loc4_ & CustomDataWrapper.MASK_10000000) === CustomDataWrapper.MASK_10000000;
-                if (_loc2_ > 0) {
-                    _loc1_ = _loc1_ + ((_loc4_ & CustomDataWrapper.MASK_01111111) << _loc2_);
-                } else {
-                    _loc1_ = _loc1_ + (_loc4_ & CustomDataWrapper.MASK_01111111);
-                }
-                _loc2_ = _loc2_ + CustomDataWrapper.CHUNCK_BIT_SIZE;
-                if (!_loc3_) {
-                    return _loc1_;
-                }
-            }
-            throw new Error('Too much data');
-        }
-
-        public readVarUhInt(): number {
-            return this.readVarInt();
-        }
-
-        public readVarShort(): number {
-            var _loc4_: number = 0;
-            var _loc1_: number = 0;
-            var _loc2_: number = 0;
-            var _loc3_: boolean = false;
-            while (_loc2_ < CustomDataWrapper.SHORT_SIZE) {
-                _loc4_ = this._data.readByte();
-                _loc3_ = (_loc4_ & CustomDataWrapper.MASK_10000000) === CustomDataWrapper.MASK_10000000;
-                if (_loc2_ > 0) {
-                    _loc1_ = _loc1_ + ((_loc4_ & CustomDataWrapper.MASK_01111111) << _loc2_);
-                } else {
-                    _loc1_ = _loc1_ + (_loc4_ & CustomDataWrapper.MASK_01111111);
-                }
-                _loc2_ = _loc2_ + CustomDataWrapper.CHUNCK_BIT_SIZE;
-                if (!_loc3_) {
-                    if (_loc1_ > CustomDataWrapper.SHORT_MAX_VALUE) {
-                        _loc1_ = _loc1_ - CustomDataWrapper.UNSIGNED_SHORT_MAX_VALUE;
-                    }
-                    return _loc1_;
-                }
-            }
-            throw new Error('Too much data');
-        }
-
-        public readVarUhShort(): number {
-            return this.readVarShort();
-        }
-
-        public readVarLong(): number {
-            return this.readInt64(this._data).value();
-        }
-
-        public readVarUhLong(): number {
-            return this.readUInt64(this._data).value();
-        }
-
-        public readBytes(param1: ByteArray, param2: number = 0, param3: number = 0): void {
-            this._data.readBytes(param1, param2, param3);
-        }
-
-        public readBoolean(): boolean {
-            return this._data.readBoolean();
-        }
-
-        public readByte(): number {
-            return this._data.readByte();
-        }
-
-        public readUnsignedByte(): number {
-            return this._data.readUnsignedByte();
-        }
-
-        public readShort(): number {
-            return this._data.readShort();
-        }
-
-        public readUnsignedShort(): number {
-            return this._data.readUnsignedShort();
-        }
-
-        public readInt(): number {
-            return this._data.readInt();
-        }
-
-        public readUnsignedInt(): number {
-            return this._data.readUnsignedInt();
-        }
-
-        public readFloat(): number {
-            return this._data.readFloat();
-        }
-
-        public readDouble(): number {
-            return this._data.readDouble();
-        }
-
-        public readMultiByte(param1: number, param2: string): string {
-            return this._data.readMultiByte(param1, param2);
-        }
-
-        public readUTF(): string {
-            return this._data.readUTF();
-        }
-
-        public readUTFBytes(param1: number): string {
-            return this._data.readUTFBytes(param1);
-        }
-
-        public get bytesAvailable(): number {
-            return this._data.bytesAvailable;
-        }
-
-        public readObject(): any {
-            //return this._data.readObject();
-            return null;
-        }
-
-        /*public get objectEncoding(): number {
-              return this._data.objectEncoding;
-        }
-   
-        public set objectEncoding(param1: number) {
-              this._data.objectEncoding = param1;
-        }*/
-
-        public get endian(): string {
-            return this._data.endian;
-        }
-
-        public set endian(param1: string) {
-            this._data.endian = param1;
-        }
-
-        public writeVarInt(param1: number): void {
-            var _loc5_: number = 0;
-            var _loc2_: ByteArray = new ByteArray();
-            if (param1 >= 0 && param1 <= CustomDataWrapper.MASK_01111111) {
-                _loc2_.writeByte(param1);
-                this._data.writeBytes(_loc2_);
-                return;
-            }
-            var _loc3_: number = param1;
-            var _loc4_: ByteArray = new ByteArray();
-            while (_loc3_ !== 0) {
-                _loc4_.writeByte(_loc3_ & CustomDataWrapper.MASK_01111111);
-                _loc4_.position = _loc4_.length - 1;
-                _loc5_ = _loc4_.readByte();
-                _loc3_ = _loc3_ >>> CustomDataWrapper.CHUNCK_BIT_SIZE;
-                if (_loc3_ > 0) {
-                    _loc5_ = _loc5_ | CustomDataWrapper.MASK_10000000;
-                }
-                _loc2_.writeByte(_loc5_);
-            }
-            this._data.writeBytes(_loc2_);
-        }
-
-        public writeVarShort(param1: number): void {
-            var _loc5_: number = 0;
-            if (param1 > CustomDataWrapper.SHORT_MAX_VALUE || param1 < CustomDataWrapper.SHORT_MIN_VALUE) {
-                throw new Error('Forbidden value');
-            }
-            var _loc2_: ByteArray = new ByteArray();
-            if (param1 >= 0 && param1 <= CustomDataWrapper.MASK_01111111) {
-                _loc2_.writeByte(param1);
-                this._data.writeBytes(_loc2_);
-                return;
-            }
-            var _loc3_: any = param1 & 65535;
-            var _loc4_: ByteArray = new ByteArray();
-            while (_loc3_ !== 0) {
-                _loc4_.writeByte(_loc3_ & CustomDataWrapper.MASK_01111111);
-                _loc4_.position = _loc4_.length - 1;
-                _loc5_ = _loc4_.readByte();
-                _loc3_ = _loc3_ >>> CustomDataWrapper.CHUNCK_BIT_SIZE;
-                if (_loc3_ > 0) {
-                    _loc5_ = _loc5_ | CustomDataWrapper.MASK_10000000;
-                }
-                _loc2_.writeByte(_loc5_);
-            }
-            this._data.writeBytes(_loc2_);
-        }
-
-        public writeVarLong(param1: number): void {
-            var _loc3_: number = 0;
-            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(param1, 0);
-            if (_loc2_.high === 0) {
-                this.writeint32(this._data, _loc2_.low);
-            } else {
-                _loc3_ = 0;
-                while (_loc3_ < 4) {
-                    this._data.writeByte(_loc2_.low & 127 | 128);
-                    _loc2_.low = _loc2_.low >>> 7;
-                    _loc3_++;
-                }
-                if ((_loc2_.high & 268435455 << 3) === 0) {
-                    this._data.writeByte(_loc2_.high << 4 | _loc2_.low);
-                } else {
-                    this._data.writeByte((_loc2_.high << 4 | _loc2_.low) & 127 | 128);
-                    this.writeint32(this._data, _loc2_.high >>> 3);
-                }
-            }
-        }
-
-        public writeBytes(param1: ByteArray, param2: number = 0, param3: number = 0): void {
-            this._data.writeBytes(param1, param2, param3);
-        }
-
-        public writeBoolean(param1: boolean): void {
-            this._data.writeBoolean(param1);
-        }
-
-        public writeByte(param1: number): void {
-            this._data.writeByte(param1);
-        }
-
-        public writeShort(param1: number): void {
-            this._data.writeShort(param1);
-        }
-
-        public writeInt(param1: number): void {
-            this._data.writeInt(param1);
-        }
-
-        public writeUnsignedInt(param1: number): void {
-            this._data.writeUnsignedInt(param1);
-        }
-
-        public writeFloat(param1: number): void {
-            this._data.writeFloat(param1);
-        }
-
-        public writeDouble(param1: number): void {
-            this._data.writeDouble(param1);
-        }
-
-        public writeMultiByte(param1: string, param2: string): void {
-            this._data.writeMultiByte(param1, param2);
-        }
-
-        public writeUTF(param1: string): void {
-            this._data.writeUTF(param1);
-        }
-
-        public writeUTFBytes(param1: string): void {
-            this._data.writeUTFBytes(param1);
-        }
-
-        public writeObject(param1: any): void {
-            //this._data.writeObject(param1);
-        }
-
-        private readInt64(param1: ByteArray): ByteArray.Int64 {
-            var _loc3_: number = 0;
-            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(0, 0);
-            var _loc4_: number = 0;
-            while (true) {
-                _loc3_ = param1.readUnsignedByte();
-                if (_loc4_ === 28) {
-                    break;
-                }
-                if (_loc3_ >= 128) {
-                    _loc2_.low = _loc2_.low | (_loc3_ & 127) << _loc4_;
-                    _loc4_ = _loc4_ + 7;
-                    continue;
-                }
-                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-                return _loc2_;
-            }
-            if (_loc3_ >= 128) {
-                _loc3_ = _loc3_ & 127;
-                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-                _loc2_.high = _loc3_ >>> 4;
-                _loc4_ = 3;
-                while (true) {
-                    _loc3_ = param1.readUnsignedByte();
-                    if (_loc4_ < 32) {
-                        if (_loc3_ >= 128) {
-                            _loc2_.high = _loc2_.high | (_loc3_ & 127) << _loc4_;
-                        } else {
-                            break;
-                        }
-                    }
-                    _loc4_ = _loc4_ + 7;
-                }
-                _loc2_.high = _loc2_.high | _loc3_ << _loc4_;
-                return _loc2_;
-            }
-            _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-            _loc2_.high = _loc3_ >>> 4;
-            return _loc2_;
-        }
-
-        private readUInt64(param1: ByteArray): ByteArray.UInt64 {
-            var _loc3_: number = 0;
-            var _loc2_: ByteArray.UInt64 = new ByteArray.UInt64();
-            var _loc4_: number = 0;
-            while (true) {
-                _loc3_ = param1.readUnsignedByte();
-                if (_loc4_ === 28) {
-                    break;
-                }
-                if (_loc3_ >= 128) {
-                    _loc2_.low = _loc2_.low | (_loc3_ & 127) << _loc4_;
-                    _loc4_ = _loc4_ + 7;
-                    continue;
-                }
-                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-                return _loc2_;
-            }
-            if (_loc3_ >= 128) {
-                _loc3_ = _loc3_ & 127;
-                _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-                _loc2_.high = _loc3_ >>> 4;
-                _loc4_ = 3;
-                while (true) {
-                    _loc3_ = param1.readUnsignedByte();
-                    if (_loc4_ < 32) {
-                        if (_loc3_ >= 128) {
-                            _loc2_.high = _loc2_.high | (_loc3_ & 127) << _loc4_;
-                        } else {
-                            break;
-                        }
-                    }
-                    _loc4_ = _loc4_ + 7;
-                }
-                _loc2_.high = _loc2_.high | _loc3_ << _loc4_;
-                return _loc2_;
-            }
-            _loc2_.low = _loc2_.low | _loc3_ << _loc4_;
-            _loc2_.high = _loc3_ >>> 4;
-            return _loc2_;
-        }
-
-        private writeint32(param1: ByteArray, param2: number): void {
-            while (param2 >= 128) {
-                param1.writeByte(param2 & 127 | 128);
-                param2 = param2 >>> 7;
-            }
-            param1.writeByte(param2);
-        }
-    }
-    export class NetworkMessage {
-        public static BIT_RIGHT_SHIFT_LEN_PACKET_ID: number = 2;
-        public static writePacket(param1: ICustomDataOutput, param2: number, param3: ByteArray): void {
-            var _loc5_: number = 0;
-            var _loc6_: number = 0;
-            var _loc4_: number = this.computeTypeLen(param3.buffer.byteLength);
-            param1.writeShort(this.subComputeStaticHeader(param2, _loc4_));
-            switch (_loc4_) {
-                case 0:
-                    return;
-                case 1:
-                    param1.writeByte(param3.buffer.byteLength);
-                    break;
-                case 2:
-                    param1.writeShort(param3.buffer.byteLength);
-                    break;
-                case 3:
-                    _loc5_ = param3.buffer.byteLength >> 16 & 255;
-                    _loc6_ = param3.buffer.byteLength & 65535;
-                    param1.writeByte(_loc5_);
-                    param1.writeShort(_loc6_);
-                    break;
-            }
-            param1.writeBytes(param3, 0, param3.buffer.byteLength);
-        }
-
-        private static computeTypeLen(param1: number): number {
-            if (param1 > 65535) {
-                return 3;
-            }
-            if (param1 > 255) {
-                return 2;
-            }
-            if (param1 > 0) {
-                return 1;
-            }
-            return 0;
-        }
-
-        private static subComputeStaticHeader(param1: number, param2: number): number {
-            return param1 << NetworkMessage.BIT_RIGHT_SHIFT_LEN_PACKET_ID | param2;
-        }
-    }
-    export interface INetworkMessage {
-        pack(param1: ICustomDataOutput): void;
-        unpack(param1: ICustomDataInput, param2: number): void;
-        getMessageId(): number;
-        reset(): void;
-    }
-    export interface INetworkType {
-        serialize(param1: ICustomDataOutput): void;
-        deserialize(param1: ICustomDataInput): void;
-        getTypeId(): number;
-        reset(): void;
     }
 }
 

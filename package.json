@@ -1,30 +1,44 @@
 {
   "name": "d2protocol",
   "version": "1.1.0",
-  "description": "Protocol dofus 2.0 in javascript",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "Protocol dofus 2.0",
+  "main": "lib/protocol.js",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Snapizz/d2protocol.git"
   },
+  "bugs": {
+    "url": "https://github.com/Snapizz/d2protocol/issues"
+  },
+  "homepage": "https://github.com/Snapizz/d2protocol#readme",
+  "author": "Snapiz <snapizz97@gmail.com>",
   "keywords": [
     "dofus",
     "protocol",
     "2.0"
   ],
-  "author": "Snapiz",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Snapizz/d2protocol/issues"
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "gulp test"
   },
-  "homepage": "https://github.com/Snapizz/d2protocol#readme",
   "dependencies": {
-    "d2com": "^1.0.1",
-    "glob": "^5.0.10",
-    "q": "^1.4.1",
-    "require-all": "^1.1.0"
+    "ts-bytearray": "^1.2.3"
+  },
+  "devDependencies": {
+    "del": "2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-help": "^1.6.0",
+    "gulp-inject": "3.0.0",
+    "gulp-jasmine": "^2.0.1",
+    "gulp-sequence": "0.4.1",
+    "gulp-tsconfig-files": "0.0.2",
+    "gulp-tslint": "^3.1",
+    "jasmine": "^2.3.1"
+  },
+  "engines": {
+    "node": ">=0.12.0"
   }
 }

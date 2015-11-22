@@ -19,19 +19,18 @@ var AccessoryPreviewErrorEnum = d2protocol.AccessoryPreviewErrorEnum; // access 
 // serialize Message
 var buff = new ByteArray();
 var wrapper = new Protocol.CustomDataWrapper(buff);
-var helloConnectMessage = new Protocol.helloConnectMessage();
-
-helloConnectMessage.salt = 'hello d2protocol';
-helloConnectMessage.key = [24,32,1,5,45,78];
-helloConnectMessage.pack(wrapper);
+var message = new Protocol.IdentificationMessage();
+message.key = [24,32,1,5,45,78];
+message.salt = 'hello d2protocol';
+message.pack(wrapper);
 
 // deserialize
 
-var wrapper2 = new Protocol.CustomDataWrapper(wrapper);
-var helloConnectMessage2 = Protocol.MessageReceiver.parse(wrapper2);
+wrapper.position = 0;
+var message_p = Protocol.MessageReceiver.parse(wrapper);
 
-// helloConnectMessage2.key => [24,32,1,5,45,78]
-// helloConnectMessage2.salt => hello d2protocol
+// message_p.key => [24,32,1,5,45,78]
+// message_p.salt => hello d2protocol
 ```
 
 # API Doc

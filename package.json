@@ -1,6 +1,6 @@
 {
   "name": "d2protocol",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Protocol dofus 2.0",
   "main": "lib/protocol.js",
   "license": "MIT",

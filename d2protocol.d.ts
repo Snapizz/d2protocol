@@ -1,6 +1,8 @@
+/// <reference path="../bytearray2/bytearray2.d.ts" />
+
 declare module 'd2protocol' {
-	/// <reference path="../node_modules/ts-bytearray/ts-bytearray.d.ts" />
-	import ByteArray = require('ts-bytearray'); module Protocol {
+	import ByteArray = require('bytearray2');
+	module Protocol {
 	    class Metadata {
 	        static PROTOCOL_BUILD: number;
 	        static PROTOCOL_REQUIRED_BUILD: number;
@@ -17395,7 +17397,7 @@ declare module 'd2protocol' {
 	        readUTFBytes(param1: number): string;
 	        bytesAvailable: number;
 	        readObject(): any;
-	        endian: string;
+	        endian: ByteArray.Endian;
 	        writeVarInt(param1: number): void;
 	        writeVarShort(param1: number): void;
 	        writeVarLong(param1: number): void;

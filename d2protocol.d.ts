@@ -17301,7 +17301,7 @@ declare module 'd2protocol' {
 	    class MessageReceiver {
 	        private static _list;
 	        constructor();
-	        static parse(param1: ICustomDataInput, param2: number, param3: number): INetworkMessage;
+	        static parse(param1: ICustomDataInput, param2?: number, param3?: number): INetworkMessage;
 	    }
 	    class ProtocolTypeManager {
 	        private static _list;

@@ -1,11 +1,16 @@
-/// <reference path="../typings/ts-bytearray/ts-bytearray.d.ts" />
+/// <reference path="../typings/bytearray2/bytearray2.d.ts" />
 
-import ByteArray = require('ts-bytearray');
+import ByteArray = require('bytearray2');
 
 module Protocol {
     export class Binary64 {
         low: number;
         high: number;
+
+        public static CHAR_CODE_0 = '0'.charCodeAt(0);
+        public static CHAR_CODE_9 = '9'.charCodeAt(0);
+        public static CHAR_CODE_A = 'a'.charCodeAt(0);
+        public static CHAR_CODE_Z = 'z'.charCodeAt(0);
 
         constructor(low: number = 0, high: number = 0) {
             this.high = high;
@@ -36,7 +41,7 @@ module Protocol {
             this.low = newLow;
         };
 
-        bitwiseNot(n: number): void {
+        bitwiseNot(): void {
             this.low = ~(this.low);
             this.high = ~(this.high);
         };
@@ -194,6 +199,10 @@ module Protocol {
             return this._data.position;
         }
 
+        public get data(): ByteArray {
+            return this._data;
+        }
+
         public readVarInt(): number {
             var _loc4_: number = 0;
             var _loc1_: number = 0;
@@ -248,11 +257,11 @@ module Protocol {
         }
 
         public readVarLong(): number {
-            return this.readInt64(this._data).value();
+            return this.readInt64(this._data).toNumber();
         }
 
         public readVarUhLong(): number {
-            return this.readUInt64(this._data).value();
+            return this.readUInt64(this._data).toNumber();
         }
 
         public readBytes(param1: ByteArray, param2: number = 0, param3: number = 0): void {
@@ -312,23 +321,22 @@ module Protocol {
         }
 
         public readObject(): any {
-            //return this._data.readObject();
-            return null;
+            return this._data.readObject();
         }
 
-        /*public get objectEncoding(): number {
-              return this._data.objectEncoding;
+        public get objectEncoding(): number {
+            return this._data.objectEncoding;
         }
-   
+
         public set objectEncoding(param1: number) {
-              this._data.objectEncoding = param1;
-        }*/
+            this._data.objectEncoding = param1;
+        }
 
-        public get endian(): string {
+        public get endian(): ByteArray.Endian {
             return this._data.endian;
         }
 
-        public set endian(param1: string) {
+        public set endian(param1: ByteArray.Endian) {
             this._data.endian = param1;
         }
 
@@ -383,7 +391,7 @@ module Protocol {
 
         public writeVarLong(param1: number): void {
             var _loc3_: number = 0;
-            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(param1, 0);
+            var _loc2_: Int64 = Int64.fromNumber(param1);
             if (_loc2_.high === 0) {
                 this.writeint32(this._data, _loc2_.low);
             } else {
@@ -447,12 +455,12 @@ module Protocol {
         }
 
         public writeObject(param1: any): void {
-            //this._data.writeObject(param1);
+            this._data.writeObject(param1);
         }
 
-        private readInt64(param1: ByteArray): ByteArray.Int64 {
+        private readInt64(param1: ByteArray): Int64 {
             var _loc3_: number = 0;
-            var _loc2_: ByteArray.Int64 = new ByteArray.Int64(0, 0);
+            var _loc2_: Int64 = new Int64();
             var _loc4_: number = 0;
             while (true) {
                 _loc3_ = param1.readUnsignedByte();
@@ -491,9 +499,9 @@ module Protocol {
             return _loc2_;
         }
 
-        private readUInt64(param1: ByteArray): ByteArray.UInt64 {
+        private readUInt64(param1: ByteArray): UInt64 {
             var _loc3_: number = 0;
-            var _loc2_: ByteArray.UInt64 = new ByteArray.UInt64();
+            var _loc2_: UInt64 = new UInt64();
             var _loc4_: number = 0;
             while (true) {
                 _loc3_ = param1.readUnsignedByte();
@@ -540,30 +548,130 @@ module Protocol {
             param1.writeByte(param2);
         }
     }
+    export class Int64 extends Binary64 {
+        low: number;
+        high: number;
+
+        constructor(low: number = 0, high: number = 0) {
+            super(low, high);
+        }
+
+        public static fromNumber(n: number): Int64 {
+            return new Int64(n, Math.floor((n / 4294967296)));
+        }
+
+        private parseInt64(str: string, radix: number) {
+            radix = radix || 0;
+            var digit = 0;
+            var negative = (str.search(/^\-/) === 0);
+            var i = ((negative) ? 1 : 0);
+            if (radix === 0) {
+                if (str.search(/^\-?0x/) === 0) {
+                    radix = 16;
+                    i = (i + 2);
+                } else {
+                    radix = 10;
+                };
+            };
+            if ((((radix < 2)) || ((radix > 36)))) {
+                throw new Error('ArgumentError');
+            };
+            str = str.toLowerCase();
+            var result = new Int64();
+            while (i < str.length) {
+                digit = str.charCodeAt(i);
+                if ((((digit >= Binary64.CHAR_CODE_0)) && ((digit <= Binary64.CHAR_CODE_9)))) {
+                    digit = (digit - Binary64.CHAR_CODE_0);
+                } else {
+                    if ((((digit >= Binary64.CHAR_CODE_A)) && ((digit <= Binary64.CHAR_CODE_Z)))) {
+                        digit = (digit - Binary64.CHAR_CODE_A);
+                        digit = (digit + 10);
+                    } else {
+                        throw new Error('ArgumentError');
+                    };
+                };
+                if (digit >= radix) {
+                    throw new Error('ArgumentError');
+                };
+                result.mul(radix);
+                result.add(digit);
+                i++;
+            };
+            if (negative) {
+                result.bitwiseNot();
+                result.add(1);
+            };
+            return (result);
+        };
+
+        public toNumber() {
+            return (((this.high * 4294967296) + this.low));
+        };
+
+        public toString(radix: number) {
+            radix = radix || 10;
+            var _local_4 = 0;
+            if ((((radix < 2)) || ((radix > 36)))) {
+                throw new Error('ArgumentError');
+            };
+            switch (this.high) {
+                case 0:
+                    return (this.low.toString(radix));
+                case -1:
+                    if ((this.low & 0x80000000) === 0) {
+                        return ((Number((this.low | 0x80000000)) - 0x80000000).toString(radix));
+                    };
+                    return (Number(this.low).toString(radix));
+            };
+            if ((((this.low === 0)) && ((this.high === 0)))) {
+                return ('0');
+            };
+            var digitChars: number[] = [];
+            var copyOfThis = new Int64(this.low, this.high);
+            if (this.high < 0) {
+                copyOfThis.bitwiseNot();
+                copyOfThis.add(1);
+            };
+            do {
+                _local_4 = copyOfThis.div(radix);
+                if (_local_4 < 10) {
+                    digitChars.push((_local_4 + Binary64.CHAR_CODE_0));
+                } else {
+                    digitChars.push(((_local_4 - 10) + Binary64.CHAR_CODE_A));
+                }
+            } while (copyOfThis.high !== 0);
+            if (this.high < 0) {
+                return ((('-' + copyOfThis.low.toString(radix)) + String.fromCharCode.apply(String, digitChars.reverse())));
+            };
+            return ((copyOfThis.low.toString(radix) + String.fromCharCode.apply(String, digitChars.reverse())));
+        };
+    }
+
     export class NetworkMessage {
         public static BIT_RIGHT_SHIFT_LEN_PACKET_ID: number = 2;
+        public static BIT_MASK: number = 3;
         public static writePacket(param1: ICustomDataOutput, param2: number, param3: ByteArray): void {
             var _loc5_: number = 0;
             var _loc6_: number = 0;
-            var _loc4_: number = this.computeTypeLen(param3.buffer.byteLength);
+            var _loc4_: number = this.computeTypeLen(param3.buffer.length);
             param1.writeShort(this.subComputeStaticHeader(param2, _loc4_));
             switch (_loc4_) {
                 case 0:
                     return;
                 case 1:
-                    param1.writeByte(param3.buffer.byteLength);
+                    param1.writeByte(param3.buffer.length);
                     break;
                 case 2:
-                    param1.writeShort(param3.buffer.byteLength);
+                    param1.writeShort(param3.buffer.length);
                     break;
                 case 3:
-                    _loc5_ = param3.buffer.byteLength >> 16 & 255;
-                    _loc6_ = param3.buffer.byteLength & 65535;
+                    _loc5_ = param3.buffer.length >> 16 & 255;
+                    _loc6_ = param3.buffer.length & 65535;
                     param1.writeByte(_loc5_);
                     param1.writeShort(_loc6_);
                     break;
             }
-            param1.writeBytes(param3, 0, param3.buffer.byteLength);
+            param1.writeBytes(param3, 0, param3.buffer.length);
         }
 
         private static computeTypeLen(param1: number): number {
@@ -595,6 +703,84 @@ module Protocol {
         getTypeId(): number;
         reset(): void;
     }
+    export class UInt64 extends Binary64 {
+        low: number;
+        high: number;
+
+        constructor(low: number = 0, high: number = 0) {
+            super(low, high);
+        }
+        public static fromNumber(n: number) {
+            return new UInt64(n, Math.floor((n / 4294967296)));
+        };
+
+        private parseInt64 = function(str: string, radix: number) {
+            radix = radix || 0;
+            var digit = 0;
+            var i = 0;
+            if (radix === 0) {
+                if (str.search(/^0x/) === 0) {
+                    radix = 16;
+                    i = 2;
+                } else {
+                    radix = 10;
+                };
+            };
+            if ((((radix < 2)) || ((radix > 36)))) {
+                throw new Error('ArgumentError');
+            };
+            str = str.toLowerCase();
+            var result = new UInt64();
+            while (i < str.length) {
+                digit = str.charCodeAt(i);
+                if ((((digit >= Binary64.CHAR_CODE_0)) && ((digit <= Binary64.CHAR_CODE_9)))) {
+                    digit = (digit - Binary64.CHAR_CODE_0);
+                } else {
+                    if ((((digit >= Binary64.CHAR_CODE_A)) && ((digit <= Binary64.CHAR_CODE_Z)))) {
+                        digit = (digit - Binary64.CHAR_CODE_A);
+                        digit = (digit + 10);
+                    } else {
+                        throw new Error('ArgumentError');
+                    };
+                };
+                if (digit >= radix) {
+                    throw new Error('ArgumentError');
+                };
+                result.mul(radix);
+                result.add(digit);
+                i++;
+            };
+            return (result);
+        };
+
+        public toNumber() {
+            return (((this.high * 4294967296) + this.low));
+        };
+
+        public toString(radix: number) {
+            radix = radix || 10;
+            var _local_4 = 0;
+            if ((((radix < 2)) || ((radix > 36)))) {
+                throw new Error('ArgumentError');
+            };
+            if (this.high === 0) {
+                return (this.low.toString(radix));
+            };
+            var digitChars: number[] = [];
+            var copyOfThis = new UInt64(this.low, this.high);
+            do {
+                _local_4 = copyOfThis.div(radix);
+                if (_local_4 < 10) {
+                    digitChars.push((_local_4 + Binary64.CHAR_CODE_0));
+                } else {
+                    digitChars.push(((_local_4 - 10) + Binary64.CHAR_CODE_A));
+                };
+            } while (copyOfThis.high !== 0);
+            return ((copyOfThis.low.toString(radix) + String.fromCharCode.apply(String, digitChars.reverse())));
+        };
+
+    }
+
     export class ProtocolTypeManager {
         private static _list: { [idx: number]: () => INetworkType } = {
             484: () => { return new StatisticData(); },
@@ -871,10 +1057,10 @@ module Protocol {
             397: () => { return new KrosmasterFigure(); }
         };
 
-        public static getInstance(networkType: any, param2: number): INetworkType {
-            let _loc3_ = ProtocolTypeManager._list[param2];
+        public static getInstance(networkType: any, typeId: number): INetworkType {
+            let _loc3_ = ProtocolTypeManager._list[typeId];
             if (!_loc3_) {
-                throw new Error('Type with id ' + param2 + ' is unknown.');
+                throw new Error('Type with id ' + typeId + ' is unknown.');
             }
             return _loc3_();
         }
@@ -1827,15 +2013,61 @@ module Protocol {
             6594: () => { return new ClientYouAreDrunkMessage(); }
         };
 
-        public static parse(param1: ICustomDataInput, param2: number, param3: number): INetworkMessage {
-            let _loc4_ = MessageReceiver._list[param2];
+        public static parse(input: CustomDataWrapper, messageId?: number, messageLength?: number): INetworkMessage {
+            if (!messageId) {
+                return this.parseHeader(input);
+            }
+            let _loc4_ = MessageReceiver._list[messageId];
             if (!_loc4_) {
-                console.log('Unknown packet received (ID ' + param2 + ', length ' + param3 + ')');
+                console.log('Unknown packet received (ID ' + messageId + ', length ' + messageLength + ')');
                 return null;
             }
-            var _loc5_: INetworkMessage = _loc4_();
-            _loc5_.unpack(param1, param3);
+            let _loc5_ = _loc4_();
+            _loc5_.unpack(input, messageLength);
             return _loc5_;
+        }
+
+        private static parseHeader(src: CustomDataWrapper, splitted?: boolean, id?: number, length?: number, staticHeader?: number): INetworkMessage {
+            if (splitted) {
+                return this.parse(src, id, length);
+            }
+            if (src.bytesAvailable < 2) {
+                throw new Error('Not enought data to read the header, byte available : ' + src.bytesAvailable + ' (needed : 2)');
+            }
+            staticHeader = staticHeader || src.readUnsignedShort();
+            id = id || this.getMessageId(staticHeader);
+            if (src.bytesAvailable < (staticHeader & NetworkMessage.BIT_MASK)) {
+                throw new Error('Not enought data to read the message length, byte available : ' + src.bytesAvailable + ' (needed : ' + (staticHeader & NetworkMessage.BIT_MASK) + ')');
+            }
+            length = this.readMessageLength(staticHeader, src);
+
+            if (src.bytesAvailable >= length) {
+                return this.parseHeader(src, false, id, length, staticHeader);
+            }
+            return this.parseHeader(src, true, id, length);
+        }
+
+        private static getMessageId(firstOctet: number) {
+            return ((firstOctet >> NetworkMessage.BIT_RIGHT_SHIFT_LEN_PACKET_ID));
+        }
+
+        private static readMessageLength(staticHeader: number, src: CustomDataWrapper) {
+            var byteLenDynamicHeader = (staticHeader & NetworkMessage.BIT_MASK);
+            var messageLength: number;
+            switch (byteLenDynamicHeader) {
+                case 0:
+                    break;
+                case 1:
+                    messageLength = src.readUnsignedByte();
+                    break;
+                case 2:
+                    messageLength = src.readUnsignedShort();
+                    break;
+                case 3:
+                    messageLength = ((((src.readByte() & 0xFF) << 16) + ((src.readByte() & 0xFF) << 8)) + (src.readByte() & 0xFF));
+                    break;
+            };
+            return (messageLength);
         }
     }
 
@@ -55740,7 +55972,7 @@ module Protocol {
             param1.writeVarInt(this.content.length);
             var _loc2_: number = 0;
             while (_loc2_ < this.content.length) {
-                param1.writeByte(this.content.getArray()[_loc2_]);
+                param1.writeByte(this.content.buffer[_loc2_]);
                 _loc2_++;
             }
 

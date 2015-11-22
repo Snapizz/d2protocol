@@ -25,7 +25,7 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "ts-bytearray": "^1.2.4"
+    "bytearray2": "^1.0.8"
   },
   "devDependencies": {
     "del": "2.0.2",

@@ -1,0 +1,2586 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>NetworkMessage | d2protocol</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script src="../assets/js/modernizr.js"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">d2protocol</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../globals.html">Globals</a>
+				</li>
+				<li>
+					<a href="../modules/_protocol_.html">&quot;protocol&quot;</a>
+				</li>
+				<li>
+					<a href="../modules/_protocol_.protocol.html">Protocol</a>
+				</li>
+				<li>
+					<a href="_protocol_.protocol.networkmessage.html">NetworkMessage</a>
+				</li>
+			</ul>
+			<h1>Class NetworkMessage</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">NetworkMessage</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="_protocol_.protocol.admincommandmessage.html" class="tsd-signature-type">AdminCommandMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.consolecommandslistmessage.html" class="tsd-signature-type">ConsoleCommandsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.consolemessage.html" class="tsd-signature-type">ConsoleMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.networkdatacontainermessage.html" class="tsd-signature-type">NetworkDataContainerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicpingmessage.html" class="tsd-signature-type">BasicPingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicpongmessage.html" class="tsd-signature-type">BasicPongMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicstatmessage.html" class="tsd-signature-type">BasicStatMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.credentialsacknowledgementmessage.html" class="tsd-signature-type">CredentialsAcknowledgementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.helloconnectmessage.html" class="tsd-signature-type">HelloConnectMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.identificationmessage.html" class="tsd-signature-type">IdentificationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.identificationfailedmessage.html" class="tsd-signature-type">IdentificationFailedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.identificationsuccessmessage.html" class="tsd-signature-type">IdentificationSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.selectedserverdatamessage.html" class="tsd-signature-type">SelectedServerDataMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.selectedserverrefusedmessage.html" class="tsd-signature-type">SelectedServerRefusedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serverselectionmessage.html" class="tsd-signature-type">ServerSelectionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serverstatusupdatemessage.html" class="tsd-signature-type">ServerStatusUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serverslistmessage.html" class="tsd-signature-type">ServersListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accountlinkrequiredmessage.html" class="tsd-signature-type">AccountLinkRequiredMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.nicknameacceptedmessage.html" class="tsd-signature-type">NicknameAcceptedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.nicknamechoicerequestmessage.html" class="tsd-signature-type">NicknameChoiceRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.nicknamerefusedmessage.html" class="tsd-signature-type">NicknameRefusedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.nicknameregistrationmessage.html" class="tsd-signature-type">NicknameRegistrationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.acquaintancesearcherrormessage.html" class="tsd-signature-type">AcquaintanceSearchErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.acquaintancesearchmessage.html" class="tsd-signature-type">AcquaintanceSearchMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.acquaintanceserverlistmessage.html" class="tsd-signature-type">AcquaintanceServerListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.debugclearhighlightcellsmessage.html" class="tsd-signature-type">DebugClearHighlightCellsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.debughighlightcellsmessage.html" class="tsd-signature-type">DebugHighlightCellsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.debuginclientmessage.html" class="tsd-signature-type">DebugInClientMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementdetailedlistmessage.html" class="tsd-signature-type">AchievementDetailedListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementdetailedlistrequestmessage.html" class="tsd-signature-type">AchievementDetailedListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementdetailsmessage.html" class="tsd-signature-type">AchievementDetailsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementdetailsrequestmessage.html" class="tsd-signature-type">AchievementDetailsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementfinishedmessage.html" class="tsd-signature-type">AchievementFinishedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementlistmessage.html" class="tsd-signature-type">AchievementListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementrewarderrormessage.html" class="tsd-signature-type">AchievementRewardErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementrewardrequestmessage.html" class="tsd-signature-type">AchievementRewardRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.achievementrewardsuccessmessage.html" class="tsd-signature-type">AchievementRewardSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendguildsetwarnonachievementcompletemessage.html" class="tsd-signature-type">FriendGuildSetWarnOnAchievementCompleteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendguildwarnonachievementcompletestatemessage.html" class="tsd-signature-type">FriendGuildWarnOnAchievementCompleteStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.abstractgameactionmessage.html" class="tsd-signature-type">AbstractGameActionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameactionacknowledgementmessage.html" class="tsd-signature-type">GameActionAcknowledgementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameactionnoopmessage.html" class="tsd-signature-type">GameActionNoopMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameactionfightcastontargetrequestmessage.html" class="tsd-signature-type">GameActionFightCastOnTargetRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameactionfightcastrequestmessage.html" class="tsd-signature-type">GameActionFightCastRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameactionfightnospellcastmessage.html" class="tsd-signature-type">GameActionFightNoSpellCastMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.sequenceendmessage.html" class="tsd-signature-type">SequenceEndMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.sequencestartmessage.html" class="tsd-signature-type">SequenceStartMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancechangeguildrightsmessage.html" class="tsd-signature-type">AllianceChangeGuildRightsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancecreationresultmessage.html" class="tsd-signature-type">AllianceCreationResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancecreationstartedmessage.html" class="tsd-signature-type">AllianceCreationStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancecreationvalidmessage.html" class="tsd-signature-type">AllianceCreationValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancefactserrormessage.html" class="tsd-signature-type">AllianceFactsErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancefactsmessage.html" class="tsd-signature-type">AllianceFactsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancefactsrequestmessage.html" class="tsd-signature-type">AllianceFactsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceguildleavingmessage.html" class="tsd-signature-type">AllianceGuildLeavingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinsiderinfomessage.html" class="tsd-signature-type">AllianceInsiderInfoMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinsiderinforequestmessage.html" class="tsd-signature-type">AllianceInsiderInfoRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinvitationanswermessage.html" class="tsd-signature-type">AllianceInvitationAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinvitationmessage.html" class="tsd-signature-type">AllianceInvitationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinvitationstaterecrutedmessage.html" class="tsd-signature-type">AllianceInvitationStateRecrutedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinvitationstaterecrutermessage.html" class="tsd-signature-type">AllianceInvitationStateRecruterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceinvitedmessage.html" class="tsd-signature-type">AllianceInvitedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancejoinedmessage.html" class="tsd-signature-type">AllianceJoinedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancekickrequestmessage.html" class="tsd-signature-type">AllianceKickRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceleftmessage.html" class="tsd-signature-type">AllianceLeftMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancelistmessage.html" class="tsd-signature-type">AllianceListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancemodificationemblemvalidmessage.html" class="tsd-signature-type">AllianceModificationEmblemValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancemodificationnameandtagvalidmessage.html" class="tsd-signature-type">AllianceModificationNameAndTagValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancemodificationstartedmessage.html" class="tsd-signature-type">AllianceModificationStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alliancemodificationvalidmessage.html" class="tsd-signature-type">AllianceModificationValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceversatileinfolistmessage.html" class="tsd-signature-type">AllianceVersatileInfoListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.kohupdatemessage.html" class="tsd-signature-type">KohUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.almanachcalendardatemessage.html" class="tsd-signature-type">AlmanachCalendarDateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accountcapabilitiesmessage.html" class="tsd-signature-type">AccountCapabilitiesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accountloggingkickedmessage.html" class="tsd-signature-type">AccountLoggingKickedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alreadyconnectedmessage.html" class="tsd-signature-type">AlreadyConnectedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.authenticationticketacceptedmessage.html" class="tsd-signature-type">AuthenticationTicketAcceptedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.authenticationticketmessage.html" class="tsd-signature-type">AuthenticationTicketMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.authenticationticketrefusedmessage.html" class="tsd-signature-type">AuthenticationTicketRefusedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.hellogamemessage.html" class="tsd-signature-type">HelloGameMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.relogintokenrequestmessage.html" class="tsd-signature-type">ReloginTokenRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.relogintokenstatusmessage.html" class="tsd-signature-type">ReloginTokenStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serveroptionalfeaturesmessage.html" class="tsd-signature-type">ServerOptionalFeaturesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serversessionconstantsmessage.html" class="tsd-signature-type">ServerSessionConstantsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serversettingsmessage.html" class="tsd-signature-type">ServerSettingsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.atlaspointinformationsmessage.html" class="tsd-signature-type">AtlasPointInformationsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.compassresetmessage.html" class="tsd-signature-type">CompassResetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.compassupdatemessage.html" class="tsd-signature-type">CompassUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicackmessage.html" class="tsd-signature-type">BasicAckMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicdatemessage.html" class="tsd-signature-type">BasicDateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basiclatencystatsmessage.html" class="tsd-signature-type">BasicLatencyStatsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basiclatencystatsrequestmessage.html" class="tsd-signature-type">BasicLatencyStatsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicnooperationmessage.html" class="tsd-signature-type">BasicNoOperationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basictimemessage.html" class="tsd-signature-type">BasicTimeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicwhoamirequestmessage.html" class="tsd-signature-type">BasicWhoAmIRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicwhoismessage.html" class="tsd-signature-type">BasicWhoIsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicwhoisnomatchmessage.html" class="tsd-signature-type">BasicWhoIsNoMatchMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basicwhoisrequestmessage.html" class="tsd-signature-type">BasicWhoIsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.currentserverstatusupdatemessage.html" class="tsd-signature-type">CurrentServerStatusUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.numericwhoismessage.html" class="tsd-signature-type">NumericWhoIsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.numericwhoisrequestmessage.html" class="tsd-signature-type">NumericWhoIsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.sequencenumbermessage.html" class="tsd-signature-type">SequenceNumberMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.sequencenumberrequestmessage.html" class="tsd-signature-type">SequenceNumberRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.textinformationmessage.html" class="tsd-signature-type">TextInformationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.basiccharacterslistmessage.html" class="tsd-signature-type">BasicCharactersListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterselectionmessage.html" class="tsd-signature-type">CharacterSelectionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterreplayrequestmessage.html" class="tsd-signature-type">CharacterReplayRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterselectederrormessage.html" class="tsd-signature-type">CharacterSelectedErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterselectedforcemessage.html" class="tsd-signature-type">CharacterSelectedForceMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterselectedforcereadymessage.html" class="tsd-signature-type">CharacterSelectedForceReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterselectedsuccessmessage.html" class="tsd-signature-type">CharacterSelectedSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterslisterrormessage.html" class="tsd-signature-type">CharactersListErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterslistrequestmessage.html" class="tsd-signature-type">CharactersListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.charactercreationrequestmessage.html" class="tsd-signature-type">CharacterCreationRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.charactercreationresultmessage.html" class="tsd-signature-type">CharacterCreationResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characternamesuggestionfailuremessage.html" class="tsd-signature-type">CharacterNameSuggestionFailureMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characternamesuggestionrequestmessage.html" class="tsd-signature-type">CharacterNameSuggestionRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characternamesuggestionsuccessmessage.html" class="tsd-signature-type">CharacterNameSuggestionSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterdeletionerrormessage.html" class="tsd-signature-type">CharacterDeletionErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterdeletionrequestmessage.html" class="tsd-signature-type">CharacterDeletionRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterexperiencegainmessage.html" class="tsd-signature-type">CharacterExperienceGainMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterlevelupmessage.html" class="tsd-signature-type">CharacterLevelUpMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterstatslistmessage.html" class="tsd-signature-type">CharacterStatsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.fighterstatslistmessage.html" class="tsd-signature-type">FighterStatsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lifepointsregenbeginmessage.html" class="tsd-signature-type">LifePointsRegenBeginMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.updatelifepointsmessage.html" class="tsd-signature-type">UpdateLifePointsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.playerstatusupdateerrormessage.html" class="tsd-signature-type">PlayerStatusUpdateErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.playerstatusupdatemessage.html" class="tsd-signature-type">PlayerStatusUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.playerstatusupdaterequestmessage.html" class="tsd-signature-type">PlayerStatusUpdateRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatabstractclientmessage.html" class="tsd-signature-type">ChatAbstractClientMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatabstractservermessage.html" class="tsd-signature-type">ChatAbstractServerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chaterrormessage.html" class="tsd-signature-type">ChatErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.channelenablingchangemessage.html" class="tsd-signature-type">ChannelEnablingChangeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.channelenablingmessage.html" class="tsd-signature-type">ChannelEnablingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.enabledchannelsmessage.html" class="tsd-signature-type">EnabledChannelsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatmessagereportmessage.html" class="tsd-signature-type">ChatMessageReportMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatsmileyextrapacklistmessage.html" class="tsd-signature-type">ChatSmileyExtraPackListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatsmileymessage.html" class="tsd-signature-type">ChatSmileyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.chatsmileyrequestmessage.html" class="tsd-signature-type">ChatSmileyRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.moodsmileyrequestmessage.html" class="tsd-signature-type">MoodSmileyRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.moodsmileyresultmessage.html" class="tsd-signature-type">MoodSmileyResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.moodsmileyupdatemessage.html" class="tsd-signature-type">MoodSmileyUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapmovementmessage.html" class="tsd-signature-type">GameMapMovementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapmovementrequestmessage.html" class="tsd-signature-type">GameMapMovementRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextcreateerrormessage.html" class="tsd-signature-type">GameContextCreateErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextcreatemessage.html" class="tsd-signature-type">GameContextCreateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextcreaterequestmessage.html" class="tsd-signature-type">GameContextCreateRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextdestroymessage.html" class="tsd-signature-type">GameContextDestroyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextkickmessage.html" class="tsd-signature-type">GameContextKickMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextmoveelementmessage.html" class="tsd-signature-type">GameContextMoveElementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextmovemultipleelementsmessage.html" class="tsd-signature-type">GameContextMoveMultipleElementsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextquitmessage.html" class="tsd-signature-type">GameContextQuitMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextreadymessage.html" class="tsd-signature-type">GameContextReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextrefreshentitylookmessage.html" class="tsd-signature-type">GameContextRefreshEntityLookMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextremoveelementmessage.html" class="tsd-signature-type">GameContextRemoveElementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamecontextremovemultipleelementsmessage.html" class="tsd-signature-type">GameContextRemoveMultipleElementsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameentitiesdispositionmessage.html" class="tsd-signature-type">GameEntitiesDispositionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameentitydispositionerrormessage.html" class="tsd-signature-type">GameEntityDispositionErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameentitydispositionmessage.html" class="tsd-signature-type">GameEntityDispositionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapchangeorientationmessage.html" class="tsd-signature-type">GameMapChangeOrientationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapchangeorientationrequestmessage.html" class="tsd-signature-type">GameMapChangeOrientationRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapchangeorientationsmessage.html" class="tsd-signature-type">GameMapChangeOrientationsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapmovementcancelmessage.html" class="tsd-signature-type">GameMapMovementCancelMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapmovementconfirmmessage.html" class="tsd-signature-type">GameMapMovementConfirmMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamemapnomovementmessage.html" class="tsd-signature-type">GameMapNoMovementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.showcellmessage.html" class="tsd-signature-type">ShowCellMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.showcellrequestmessage.html" class="tsd-signature-type">ShowCellRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.displaynumericalvaluepaddockmessage.html" class="tsd-signature-type">DisplayNumericalValuePaddockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonkeyringmessage.html" class="tsd-signature-type">DungeonKeyRingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonkeyringupdatemessage.html" class="tsd-signature-type">DungeonKeyRingUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightendmessage.html" class="tsd-signature-type">GameFightEndMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefighthumanreadystatemessage.html" class="tsd-signature-type">GameFightHumanReadyStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightjoinmessage.html" class="tsd-signature-type">GameFightJoinMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightjoinrequestmessage.html" class="tsd-signature-type">GameFightJoinRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightleavemessage.html" class="tsd-signature-type">GameFightLeaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightnewroundmessage.html" class="tsd-signature-type">GameFightNewRoundMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightnewwavemessage.html" class="tsd-signature-type">GameFightNewWaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightoptionstateupdatemessage.html" class="tsd-signature-type">GameFightOptionStateUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightoptiontogglemessage.html" class="tsd-signature-type">GameFightOptionToggleMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementpositionrequestmessage.html" class="tsd-signature-type">GameFightPlacementPositionRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementpossiblepositionsmessage.html" class="tsd-signature-type">GameFightPlacementPossiblePositionsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionsacceptmessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsAcceptMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionscancelmessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsCancelMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionscancelledmessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsCancelledMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionserrormessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionsmessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightplacementswappositionsoffermessage.html" class="tsd-signature-type">GameFightPlacementSwapPositionsOfferMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightreadymessage.html" class="tsd-signature-type">GameFightReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightremoveteammembermessage.html" class="tsd-signature-type">GameFightRemoveTeamMemberMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightspectatemessage.html" class="tsd-signature-type">GameFightSpectateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightspectateplayerrequestmessage.html" class="tsd-signature-type">GameFightSpectatePlayerRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightstartmessage.html" class="tsd-signature-type">GameFightStartMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightstartingmessage.html" class="tsd-signature-type">GameFightStartingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightsynchronizemessage.html" class="tsd-signature-type">GameFightSynchronizeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnendmessage.html" class="tsd-signature-type">GameFightTurnEndMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnfinishmessage.html" class="tsd-signature-type">GameFightTurnFinishMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnlistmessage.html" class="tsd-signature-type">GameFightTurnListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnreadymessage.html" class="tsd-signature-type">GameFightTurnReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnreadyrequestmessage.html" class="tsd-signature-type">GameFightTurnReadyRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnstartmessage.html" class="tsd-signature-type">GameFightTurnStartMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightturnstartplayingmessage.html" class="tsd-signature-type">GameFightTurnStartPlayingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightupdateteammessage.html" class="tsd-signature-type">GameFightUpdateTeamMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.slaveswitchcontextmessage.html" class="tsd-signature-type">SlaveSwitchContextMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengeinfomessage.html" class="tsd-signature-type">ChallengeInfoMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengeresultmessage.html" class="tsd-signature-type">ChallengeResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengetargetupdatemessage.html" class="tsd-signature-type">ChallengeTargetUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengetargetslistmessage.html" class="tsd-signature-type">ChallengeTargetsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengetargetslistrequestmessage.html" class="tsd-signature-type">ChallengeTargetsListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightrefreshfightermessage.html" class="tsd-signature-type">GameFightRefreshFighterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamefightshowfightermessage.html" class="tsd-signature-type">GameFightShowFighterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamedatapaddockobjectaddmessage.html" class="tsd-signature-type">GameDataPaddockObjectAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamedatapaddockobjectlistaddmessage.html" class="tsd-signature-type">GameDataPaddockObjectListAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamedatapaddockobjectremovemessage.html" class="tsd-signature-type">GameDataPaddockObjectRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountdataerrormessage.html" class="tsd-signature-type">MountDataErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountdatamessage.html" class="tsd-signature-type">MountDataMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountemoteiconusedokmessage.html" class="tsd-signature-type">MountEmoteIconUsedOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountequipederrormessage.html" class="tsd-signature-type">MountEquipedErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountfeedrequestmessage.html" class="tsd-signature-type">MountFeedRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountinformationinpaddockrequestmessage.html" class="tsd-signature-type">MountInformationInPaddockRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountinformationrequestmessage.html" class="tsd-signature-type">MountInformationRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountreleaserequestmessage.html" class="tsd-signature-type">MountReleaseRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountreleasedmessage.html" class="tsd-signature-type">MountReleasedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountrenamerequestmessage.html" class="tsd-signature-type">MountRenameRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountrenamedmessage.html" class="tsd-signature-type">MountRenamedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountridingmessage.html" class="tsd-signature-type">MountRidingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountsetmessage.html" class="tsd-signature-type">MountSetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountsetxpratiorequestmessage.html" class="tsd-signature-type">MountSetXpRatioRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountsterilizerequestmessage.html" class="tsd-signature-type">MountSterilizeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountsterilizedmessage.html" class="tsd-signature-type">MountSterilizedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mounttoggleridingrequestmessage.html" class="tsd-signature-type">MountToggleRidingRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountunsetmessage.html" class="tsd-signature-type">MountUnSetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mountxpratiomessage.html" class="tsd-signature-type">MountXpRatioMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddockbuyrequestmessage.html" class="tsd-signature-type">PaddockBuyRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddockbuyresultmessage.html" class="tsd-signature-type">PaddockBuyResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddockmoveitemrequestmessage.html" class="tsd-signature-type">PaddockMoveItemRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddockremoveitemrequestmessage.html" class="tsd-signature-type">PaddockRemoveItemRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddocksellrequestmessage.html" class="tsd-signature-type">PaddockSellRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.notificationbyservermessage.html" class="tsd-signature-type">NotificationByServerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.notificationlistmessage.html" class="tsd-signature-type">NotificationListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.notificationresetmessage.html" class="tsd-signature-type">NotificationResetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.notificationupdateflagmessage.html" class="tsd-signature-type">NotificationUpdateFlagMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.changemapmessage.html" class="tsd-signature-type">ChangeMapMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.currentmapmessage.html" class="tsd-signature-type">CurrentMapMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.errormapnotfoundmessage.html" class="tsd-signature-type">ErrorMapNotFoundMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayshowactormessage.html" class="tsd-signature-type">GameRolePlayShowActorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mapcomplementaryinformationsdatamessage.html" class="tsd-signature-type">MapComplementaryInformationsDataMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mapfightcountmessage.html" class="tsd-signature-type">MapFightCountMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mapinformationsrequestmessage.html" class="tsd-signature-type">MapInformationsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mapobstacleupdatemessage.html" class="tsd-signature-type">MapObstacleUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.maprunningfightdetailsmessage.html" class="tsd-signature-type">MapRunningFightDetailsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.maprunningfightdetailsrequestmessage.html" class="tsd-signature-type">MapRunningFightDetailsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.maprunningfightlistmessage.html" class="tsd-signature-type">MapRunningFightListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.maprunningfightlistrequestmessage.html" class="tsd-signature-type">MapRunningFightListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.stoptolistenrunningfightrequestmessage.html" class="tsd-signature-type">StopToListenRunningFightRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportonsamemapmessage.html" class="tsd-signature-type">TeleportOnSameMapMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayfreesoulrequestmessage.html" class="tsd-signature-type">GameRolePlayFreeSoulRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplaygameovermessage.html" class="tsd-signature-type">GameRolePlayGameOverMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayplayerlifestatusmessage.html" class="tsd-signature-type">GameRolePlayPlayerLifeStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.warnonpermadeathmessage.html" class="tsd-signature-type">WarnOnPermaDeathMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplaydelayedactionfinishedmessage.html" class="tsd-signature-type">GameRolePlayDelayedActionFinishedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplaydelayedactionmessage.html" class="tsd-signature-type">GameRolePlayDelayedActionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.comicreadingbeginmessage.html" class="tsd-signature-type">ComicReadingBeginMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.documentreadingbeginmessage.html" class="tsd-signature-type">DocumentReadingBeginMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emoteaddmessage.html" class="tsd-signature-type">EmoteAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emotelistmessage.html" class="tsd-signature-type">EmoteListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emoteplayabstractmessage.html" class="tsd-signature-type">EmotePlayAbstractMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emoteplayerrormessage.html" class="tsd-signature-type">EmotePlayErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emoteplayrequestmessage.html" class="tsd-signature-type">EmotePlayRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.emoteremovemessage.html" class="tsd-signature-type">EmoteRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayaggressionmessage.html" class="tsd-signature-type">GameRolePlayAggressionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayattackmonsterrequestmessage.html" class="tsd-signature-type">GameRolePlayAttackMonsterRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayfightrequestcanceledmessage.html" class="tsd-signature-type">GameRolePlayFightRequestCanceledMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayplayerfightfriendlyanswermessage.html" class="tsd-signature-type">GameRolePlayPlayerFightFriendlyAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayplayerfightfriendlyansweredmessage.html" class="tsd-signature-type">GameRolePlayPlayerFightFriendlyAnsweredMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayplayerfightfriendlyrequestedmessage.html" class="tsd-signature-type">GameRolePlayPlayerFightFriendlyRequestedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayplayerfightrequestmessage.html" class="tsd-signature-type">GameRolePlayPlayerFightRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayremovechallengemessage.html" class="tsd-signature-type">GameRolePlayRemoveChallengeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayshowchallengemessage.html" class="tsd-signature-type">GameRolePlayShowChallengeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenafightanswermessage.html" class="tsd-signature-type">GameRolePlayArenaFightAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenafightpropositionmessage.html" class="tsd-signature-type">GameRolePlayArenaFightPropositionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenafighterstatusmessage.html" class="tsd-signature-type">GameRolePlayArenaFighterStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaregistermessage.html" class="tsd-signature-type">GameRolePlayArenaRegisterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaregistrationstatusmessage.html" class="tsd-signature-type">GameRolePlayArenaRegistrationStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaswitchtofightservermessage.html" class="tsd-signature-type">GameRolePlayArenaSwitchToFightServerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaswitchtogameservermessage.html" class="tsd-signature-type">GameRolePlayArenaSwitchToGameServerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaunregistermessage.html" class="tsd-signature-type">GameRolePlayArenaUnregisterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayarenaupdateplayerinfosmessage.html" class="tsd-signature-type">GameRolePlayArenaUpdatePlayerInfosMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accounthousemessage.html" class="tsd-signature-type">AccountHouseMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housebuyrequestmessage.html" class="tsd-signature-type">HouseBuyRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housebuyresultmessage.html" class="tsd-signature-type">HouseBuyResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housekickindoormerchantrequestmessage.html" class="tsd-signature-type">HouseKickIndoorMerchantRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housekickrequestmessage.html" class="tsd-signature-type">HouseKickRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lockablechangecodemessage.html" class="tsd-signature-type">LockableChangeCodeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housepropertiesmessage.html" class="tsd-signature-type">HousePropertiesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housesellrequestmessage.html" class="tsd-signature-type">HouseSellRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housesoldmessage.html" class="tsd-signature-type">HouseSoldMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housetosellfiltermessage.html" class="tsd-signature-type">HouseToSellFilterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housetoselllistmessage.html" class="tsd-signature-type">HouseToSellListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.housetoselllistrequestmessage.html" class="tsd-signature-type">HouseToSellListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.houseguildnonemessage.html" class="tsd-signature-type">HouseGuildNoneMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.houseguildrightsmessage.html" class="tsd-signature-type">HouseGuildRightsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.houseguildrightsviewmessage.html" class="tsd-signature-type">HouseGuildRightsViewMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.houseguildsharerequestmessage.html" class="tsd-signature-type">HouseGuildShareRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.joballowmulticraftrequestmessage.html" class="tsd-signature-type">JobAllowMultiCraftRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobbooksubscriptionmessage.html" class="tsd-signature-type">JobBookSubscriptionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectoryaddmessage.html" class="tsd-signature-type">JobCrafterDirectoryAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectorydefinesettingsmessage.html" class="tsd-signature-type">JobCrafterDirectoryDefineSettingsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectoryentrymessage.html" class="tsd-signature-type">JobCrafterDirectoryEntryMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectoryentryrequestmessage.html" class="tsd-signature-type">JobCrafterDirectoryEntryRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectorylistmessage.html" class="tsd-signature-type">JobCrafterDirectoryListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectorylistrequestmessage.html" class="tsd-signature-type">JobCrafterDirectoryListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectoryremovemessage.html" class="tsd-signature-type">JobCrafterDirectoryRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobcrafterdirectorysettingsmessage.html" class="tsd-signature-type">JobCrafterDirectorySettingsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobdescriptionmessage.html" class="tsd-signature-type">JobDescriptionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobexperiencemultiupdatemessage.html" class="tsd-signature-type">JobExperienceMultiUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobexperienceupdatemessage.html" class="tsd-signature-type">JobExperienceUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.joblevelupmessage.html" class="tsd-signature-type">JobLevelUpMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lockablecoderesultmessage.html" class="tsd-signature-type">LockableCodeResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lockableshowcodedialogmessage.html" class="tsd-signature-type">LockableShowCodeDialogMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lockablestateupdateabstractmessage.html" class="tsd-signature-type">LockableStateUpdateAbstractMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.lockableusecodemessage.html" class="tsd-signature-type">LockableUseCodeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.allianceprismdialogquestionmessage.html" class="tsd-signature-type">AlliancePrismDialogQuestionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectordialogquestionbasicmessage.html" class="tsd-signature-type">TaxCollectorDialogQuestionBasicMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.entitytalkmessage.html" class="tsd-signature-type">EntityTalkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mapnpcsqueststatusupdatemessage.html" class="tsd-signature-type">MapNpcsQuestStatusUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.npcdialogcreationmessage.html" class="tsd-signature-type">NpcDialogCreationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.npcdialogquestionmessage.html" class="tsd-signature-type">NpcDialogQuestionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.npcdialogreplymessage.html" class="tsd-signature-type">NpcDialogReplyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.npcgenericactionfailuremessage.html" class="tsd-signature-type">NpcGenericActionFailureMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.npcgenericactionrequestmessage.html" class="tsd-signature-type">NpcGenericActionRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectgroundaddedmessage.html" class="tsd-signature-type">ObjectGroundAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectgroundlistaddedmessage.html" class="tsd-signature-type">ObjectGroundListAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectgroundremovedmessage.html" class="tsd-signature-type">ObjectGroundRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectgroundremovedmultiplemessage.html" class="tsd-signature-type">ObjectGroundRemovedMultipleMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gamedataplayfarmobjectanimationmessage.html" class="tsd-signature-type">GameDataPlayFarmObjectAnimationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddockpropertiesmessage.html" class="tsd-signature-type">PaddockPropertiesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddocksellbuydialogmessage.html" class="tsd-signature-type">PaddockSellBuyDialogMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddocktosellfiltermessage.html" class="tsd-signature-type">PaddockToSellFilterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddocktoselllistmessage.html" class="tsd-signature-type">PaddockToSellListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.paddocktoselllistrequestmessage.html" class="tsd-signature-type">PaddockToSellListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.abstractpartymessage.html" class="tsd-signature-type">AbstractPartyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderavailabledungeonsmessage.html" class="tsd-signature-type">DungeonPartyFinderAvailableDungeonsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderavailabledungeonsrequestmessage.html" class="tsd-signature-type">DungeonPartyFinderAvailableDungeonsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderlistenerrormessage.html" class="tsd-signature-type">DungeonPartyFinderListenErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderlistenrequestmessage.html" class="tsd-signature-type">DungeonPartyFinderListenRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderregistererrormessage.html" class="tsd-signature-type">DungeonPartyFinderRegisterErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderregisterrequestmessage.html" class="tsd-signature-type">DungeonPartyFinderRegisterRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderregistersuccessmessage.html" class="tsd-signature-type">DungeonPartyFinderRegisterSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderroomcontentmessage.html" class="tsd-signature-type">DungeonPartyFinderRoomContentMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.dungeonpartyfinderroomcontentupdatemessage.html" class="tsd-signature-type">DungeonPartyFinderRoomContentUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.partyinvitationrequestmessage.html" class="tsd-signature-type">PartyInvitationRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.purchasabledialogmessage.html" class="tsd-signature-type">PurchasableDialogMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guidedmodequitrequestmessage.html" class="tsd-signature-type">GuidedModeQuitRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guidedmodereturnrequestmessage.html" class="tsd-signature-type">GuidedModeReturnRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.questlistmessage.html" class="tsd-signature-type">QuestListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.questlistrequestmessage.html" class="tsd-signature-type">QuestListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.questobjectivevalidatedmessage.html" class="tsd-signature-type">QuestObjectiveValidatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.questobjectivevalidationmessage.html" class="tsd-signature-type">QuestObjectiveValidationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststartrequestmessage.html" class="tsd-signature-type">QuestStartRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststartedmessage.html" class="tsd-signature-type">QuestStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststepinfomessage.html" class="tsd-signature-type">QuestStepInfoMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststepinforequestmessage.html" class="tsd-signature-type">QuestStepInfoRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststepstartedmessage.html" class="tsd-signature-type">QuestStepStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queststepvalidatedmessage.html" class="tsd-signature-type">QuestStepValidatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.questvalidatedmessage.html" class="tsd-signature-type">QuestValidatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellforgetuimessage.html" class="tsd-signature-type">SpellForgetUIMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellforgottenmessage.html" class="tsd-signature-type">SpellForgottenMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellitemboostmessage.html" class="tsd-signature-type">SpellItemBoostMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellupgradefailuremessage.html" class="tsd-signature-type">SpellUpgradeFailureMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellupgraderequestmessage.html" class="tsd-signature-type">SpellUpgradeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spellupgradesuccessmessage.html" class="tsd-signature-type">SpellUpgradeSuccessMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.validatespellforgetmessage.html" class="tsd-signature-type">ValidateSpellForgetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.statsupgraderequestmessage.html" class="tsd-signature-type">StatsUpgradeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.statsupgraderesultmessage.html" class="tsd-signature-type">StatsUpgradeResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.portaluserequestmessage.html" class="tsd-signature-type">PortalUseRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntavailableretrycountupdatemessage.html" class="tsd-signature-type">TreasureHuntAvailableRetryCountUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntdigrequestanswermessage.html" class="tsd-signature-type">TreasureHuntDigRequestAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntdigrequestmessage.html" class="tsd-signature-type">TreasureHuntDigRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntfinishedmessage.html" class="tsd-signature-type">TreasureHuntFinishedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntflagremoverequestmessage.html" class="tsd-signature-type">TreasureHuntFlagRemoveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntflagrequestanswermessage.html" class="tsd-signature-type">TreasureHuntFlagRequestAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntflagrequestmessage.html" class="tsd-signature-type">TreasureHuntFlagRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntgiveuprequestmessage.html" class="tsd-signature-type">TreasureHuntGiveUpRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntlegendaryrequestmessage.html" class="tsd-signature-type">TreasureHuntLegendaryRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntmessage.html" class="tsd-signature-type">TreasureHuntMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntrequestanswermessage.html" class="tsd-signature-type">TreasureHuntRequestAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntrequestmessage.html" class="tsd-signature-type">TreasureHuntRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.treasurehuntshowlegendaryuimessage.html" class="tsd-signature-type">TreasureHuntShowLegendaryUIMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplayspellanimmessage.html" class="tsd-signature-type">GameRolePlaySpellAnimMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.leavedialogmessage.html" class="tsd-signature-type">LeaveDialogMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.leavedialogrequestmessage.html" class="tsd-signature-type">LeaveDialogRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.pausedialogmessage.html" class="tsd-signature-type">PauseDialogMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendaddfailuremessage.html" class="tsd-signature-type">FriendAddFailureMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendaddrequestmessage.html" class="tsd-signature-type">FriendAddRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendaddedmessage.html" class="tsd-signature-type">FriendAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.frienddeleterequestmessage.html" class="tsd-signature-type">FriendDeleteRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.frienddeleteresultmessage.html" class="tsd-signature-type">FriendDeleteResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendjoinrequestmessage.html" class="tsd-signature-type">FriendJoinRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendsetwarnonconnectionmessage.html" class="tsd-signature-type">FriendSetWarnOnConnectionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendsetwarnonlevelgainmessage.html" class="tsd-signature-type">FriendSetWarnOnLevelGainMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendspousefollowwithcompassrequestmessage.html" class="tsd-signature-type">FriendSpouseFollowWithCompassRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendspousejoinrequestmessage.html" class="tsd-signature-type">FriendSpouseJoinRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendupdatemessage.html" class="tsd-signature-type">FriendUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendwarnonconnectionstatemessage.html" class="tsd-signature-type">FriendWarnOnConnectionStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendwarnonlevelgainstatemessage.html" class="tsd-signature-type">FriendWarnOnLevelGainStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendsgetlistmessage.html" class="tsd-signature-type">FriendsGetListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.friendslistmessage.html" class="tsd-signature-type">FriendsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmembersetwarnonconnectionmessage.html" class="tsd-signature-type">GuildMemberSetWarnOnConnectionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmemberwarnonconnectionstatemessage.html" class="tsd-signature-type">GuildMemberWarnOnConnectionStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoredaddfailuremessage.html" class="tsd-signature-type">IgnoredAddFailureMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoredaddrequestmessage.html" class="tsd-signature-type">IgnoredAddRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoredaddedmessage.html" class="tsd-signature-type">IgnoredAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoreddeleterequestmessage.html" class="tsd-signature-type">IgnoredDeleteRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoreddeleteresultmessage.html" class="tsd-signature-type">IgnoredDeleteResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoredgetlistmessage.html" class="tsd-signature-type">IgnoredGetListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ignoredlistmessage.html" class="tsd-signature-type">IgnoredListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spousegetinformationsmessage.html" class="tsd-signature-type">SpouseGetInformationsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spouseinformationsmessage.html" class="tsd-signature-type">SpouseInformationsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spousestatusmessage.html" class="tsd-signature-type">SpouseStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.warnonpermadeathstatemessage.html" class="tsd-signature-type">WarnOnPermaDeathStateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guestlimitationmessage.html" class="tsd-signature-type">GuestLimitationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guestmodemessage.html" class="tsd-signature-type">GuestModeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.challengefightjoinrefusedmessage.html" class="tsd-signature-type">ChallengeFightJoinRefusedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildchangememberparametersmessage.html" class="tsd-signature-type">GuildChangeMemberParametersMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildcharacsupgraderequestmessage.html" class="tsd-signature-type">GuildCharacsUpgradeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildcreationresultmessage.html" class="tsd-signature-type">GuildCreationResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildcreationstartedmessage.html" class="tsd-signature-type">GuildCreationStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildcreationvalidmessage.html" class="tsd-signature-type">GuildCreationValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfactserrormessage.html" class="tsd-signature-type">GuildFactsErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfactsmessage.html" class="tsd-signature-type">GuildFactsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfactsrequestmessage.html" class="tsd-signature-type">GuildFactsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildgetinformationsmessage.html" class="tsd-signature-type">GuildGetInformationsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildhouseremovemessage.html" class="tsd-signature-type">GuildHouseRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildhouseteleportrequestmessage.html" class="tsd-signature-type">GuildHouseTeleportRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildhouseupdateinformationmessage.html" class="tsd-signature-type">GuildHouseUpdateInformationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildhousesinformationmessage.html" class="tsd-signature-type">GuildHousesInformationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinformationsgeneralmessage.html" class="tsd-signature-type">GuildInformationsGeneralMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinformationsmemberupdatemessage.html" class="tsd-signature-type">GuildInformationsMemberUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinformationsmembersmessage.html" class="tsd-signature-type">GuildInformationsMembersMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinformationspaddocksmessage.html" class="tsd-signature-type">GuildInformationsPaddocksMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinfosupgrademessage.html" class="tsd-signature-type">GuildInfosUpgradeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitationanswermessage.html" class="tsd-signature-type">GuildInvitationAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitationbynamemessage.html" class="tsd-signature-type">GuildInvitationByNameMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitationmessage.html" class="tsd-signature-type">GuildInvitationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitationstaterecrutedmessage.html" class="tsd-signature-type">GuildInvitationStateRecrutedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitationstaterecrutermessage.html" class="tsd-signature-type">GuildInvitationStateRecruterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildinvitedmessage.html" class="tsd-signature-type">GuildInvitedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildjoinedmessage.html" class="tsd-signature-type">GuildJoinedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildkickrequestmessage.html" class="tsd-signature-type">GuildKickRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildleftmessage.html" class="tsd-signature-type">GuildLeftMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildlevelupmessage.html" class="tsd-signature-type">GuildLevelUpMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildlistmessage.html" class="tsd-signature-type">GuildListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmemberleavingmessage.html" class="tsd-signature-type">GuildMemberLeavingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmemberonlinestatusmessage.html" class="tsd-signature-type">GuildMemberOnlineStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmodificationemblemvalidmessage.html" class="tsd-signature-type">GuildModificationEmblemValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmodificationnamevalidmessage.html" class="tsd-signature-type">GuildModificationNameValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmodificationstartedmessage.html" class="tsd-signature-type">GuildModificationStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmodificationvalidmessage.html" class="tsd-signature-type">GuildModificationValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmotdmessage.html" class="tsd-signature-type">GuildMotdMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildmotdseterrormessage.html" class="tsd-signature-type">GuildMotdSetErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildpaddockboughtmessage.html" class="tsd-signature-type">GuildPaddockBoughtMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildpaddockremovedmessage.html" class="tsd-signature-type">GuildPaddockRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildpaddockteleportrequestmessage.html" class="tsd-signature-type">GuildPaddockTeleportRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildspellupgraderequestmessage.html" class="tsd-signature-type">GuildSpellUpgradeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildversatileinfolistmessage.html" class="tsd-signature-type">GuildVersatileInfoListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.abstracttaxcollectorlistmessage.html" class="tsd-signature-type">AbstractTaxCollectorListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.gameroleplaytaxcollectorfightrequestmessage.html" class="tsd-signature-type">GameRolePlayTaxCollectorFightRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightjoinrequestmessage.html" class="tsd-signature-type">GuildFightJoinRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightleaverequestmessage.html" class="tsd-signature-type">GuildFightLeaveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightplayersenemieslistmessage.html" class="tsd-signature-type">GuildFightPlayersEnemiesListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightplayersenemyremovemessage.html" class="tsd-signature-type">GuildFightPlayersEnemyRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightplayershelpersjoinmessage.html" class="tsd-signature-type">GuildFightPlayersHelpersJoinMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.guildfightplayershelpersleavemessage.html" class="tsd-signature-type">GuildFightPlayersHelpersLeaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectorattackedmessage.html" class="tsd-signature-type">TaxCollectorAttackedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectorattackedresultmessage.html" class="tsd-signature-type">TaxCollectorAttackedResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectorerrormessage.html" class="tsd-signature-type">TaxCollectorErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectormovementaddmessage.html" class="tsd-signature-type">TaxCollectorMovementAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectormovementmessage.html" class="tsd-signature-type">TaxCollectorMovementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectormovementremovemessage.html" class="tsd-signature-type">TaxCollectorMovementRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.taxcollectorstateupdatemessage.html" class="tsd-signature-type">TaxCollectorStateUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolfightpreparationupdatemessage.html" class="tsd-signature-type">IdolFightPreparationUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idollistmessage.html" class="tsd-signature-type">IdolListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolpartylostmessage.html" class="tsd-signature-type">IdolPartyLostMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolpartyrefreshmessage.html" class="tsd-signature-type">IdolPartyRefreshMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolpartyregisterrequestmessage.html" class="tsd-signature-type">IdolPartyRegisterRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolselecterrormessage.html" class="tsd-signature-type">IdolSelectErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolselectrequestmessage.html" class="tsd-signature-type">IdolSelectRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolselectedmessage.html" class="tsd-signature-type">IdolSelectedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.charactercapabilitiesmessage.html" class="tsd-signature-type">CharacterCapabilitiesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterloadingcompletemessage.html" class="tsd-signature-type">CharacterLoadingCompleteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.onconnectioneventmessage.html" class="tsd-signature-type">OnConnectionEventMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.serverexperiencemodificatormessage.html" class="tsd-signature-type">ServerExperienceModificatorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.setcharacterrestrictionsmessage.html" class="tsd-signature-type">SetCharacterRestrictionsMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactiveelementupdatedmessage.html" class="tsd-signature-type">InteractiveElementUpdatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactivemapupdatemessage.html" class="tsd-signature-type">InteractiveMapUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactiveuseendedmessage.html" class="tsd-signature-type">InteractiveUseEndedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactiveuseerrormessage.html" class="tsd-signature-type">InteractiveUseErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactiveuserequestmessage.html" class="tsd-signature-type">InteractiveUseRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.interactiveusedmessage.html" class="tsd-signature-type">InteractiveUsedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.statedelementupdatedmessage.html" class="tsd-signature-type">StatedElementUpdatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.statedmapupdatemessage.html" class="tsd-signature-type">StatedMapUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportbuddiesanswermessage.html" class="tsd-signature-type">TeleportBuddiesAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportbuddiesmessage.html" class="tsd-signature-type">TeleportBuddiesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportbuddiesrequestedmessage.html" class="tsd-signature-type">TeleportBuddiesRequestedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleporttobuddyanswermessage.html" class="tsd-signature-type">TeleportToBuddyAnswerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleporttobuddyclosemessage.html" class="tsd-signature-type">TeleportToBuddyCloseMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleporttobuddyoffermessage.html" class="tsd-signature-type">TeleportToBuddyOfferMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportdestinationslistmessage.html" class="tsd-signature-type">TeleportDestinationsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.teleportrequestmessage.html" class="tsd-signature-type">TeleportRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.zaaprespawnsaverequestmessage.html" class="tsd-signature-type">ZaapRespawnSaveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.zaaprespawnupdatedmessage.html" class="tsd-signature-type">ZaapRespawnUpdatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.kamasupdatemessage.html" class="tsd-signature-type">KamasUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectaveragepriceserrormessage.html" class="tsd-signature-type">ObjectAveragePricesErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectaveragepricesgetmessage.html" class="tsd-signature-type">ObjectAveragePricesGetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectaveragepricesmessage.html" class="tsd-signature-type">ObjectAveragePricesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.decraftresultmessage.html" class="tsd-signature-type">DecraftResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeacceptmessage.html" class="tsd-signature-type">ExchangeAcceptMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousebuymessage.html" class="tsd-signature-type">ExchangeBidHouseBuyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousebuyresultmessage.html" class="tsd-signature-type">ExchangeBidHouseBuyResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousegenericitemaddedmessage.html" class="tsd-signature-type">ExchangeBidHouseGenericItemAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousegenericitemremovedmessage.html" class="tsd-signature-type">ExchangeBidHouseGenericItemRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhouseinlistaddedmessage.html" class="tsd-signature-type">ExchangeBidHouseInListAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhouseinlistremovedmessage.html" class="tsd-signature-type">ExchangeBidHouseInListRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhouseitemaddokmessage.html" class="tsd-signature-type">ExchangeBidHouseItemAddOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhouseitemremoveokmessage.html" class="tsd-signature-type">ExchangeBidHouseItemRemoveOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhouselistmessage.html" class="tsd-signature-type">ExchangeBidHouseListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousepricemessage.html" class="tsd-signature-type">ExchangeBidHousePriceMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousesearchmessage.html" class="tsd-signature-type">ExchangeBidHouseSearchMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidhousetypemessage.html" class="tsd-signature-type">ExchangeBidHouseTypeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidpricemessage.html" class="tsd-signature-type">ExchangeBidPriceMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebidsearchokmessage.html" class="tsd-signature-type">ExchangeBidSearchOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebuymessage.html" class="tsd-signature-type">ExchangeBuyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangebuyokmessage.html" class="tsd-signature-type">ExchangeBuyOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecraftcountmodifiedmessage.html" class="tsd-signature-type">ExchangeCraftCountModifiedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecraftcountrequestmessage.html" class="tsd-signature-type">ExchangeCraftCountRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecraftresultmessage.html" class="tsd-signature-type">ExchangeCraftResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecraftpaymentmodificationrequestmessage.html" class="tsd-signature-type">ExchangeCraftPaymentModificationRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecraftpaymentmodifiedmessage.html" class="tsd-signature-type">ExchangeCraftPaymentModifiedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangecrafterjoblevelupmessage.html" class="tsd-signature-type">ExchangeCrafterJobLevelupMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeerrormessage.html" class="tsd-signature-type">ExchangeErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeguildtaxcollectorgetmessage.html" class="tsd-signature-type">ExchangeGuildTaxCollectorGetMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangehandlemountsstablemessage.html" class="tsd-signature-type">ExchangeHandleMountsStableMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeisreadymessage.html" class="tsd-signature-type">ExchangeIsReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeitemautocraftstopedmessage.html" class="tsd-signature-type">ExchangeItemAutoCraftStopedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountfreefrompaddockmessage.html" class="tsd-signature-type">ExchangeMountFreeFromPaddockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountstableerrormessage.html" class="tsd-signature-type">ExchangeMountStableErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountsterilizefrompaddockmessage.html" class="tsd-signature-type">ExchangeMountSterilizeFromPaddockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountspaddockaddmessage.html" class="tsd-signature-type">ExchangeMountsPaddockAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountspaddockremovemessage.html" class="tsd-signature-type">ExchangeMountsPaddockRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountsstableaddmessage.html" class="tsd-signature-type">ExchangeMountsStableAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountsstableremovemessage.html" class="tsd-signature-type">ExchangeMountsStableRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemountstakenfrompaddockmessage.html" class="tsd-signature-type">ExchangeMountsTakenFromPaddockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjectmessage.html" class="tsd-signature-type">ExchangeObjectMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjectmovemessage.html" class="tsd-signature-type">ExchangeObjectMoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjectmovekamamessage.html" class="tsd-signature-type">ExchangeObjectMoveKamaMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertallfrominvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertAllFromInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertalltoinvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertAllToInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertexistingfrominvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertExistingFromInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertexistingtoinvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertExistingToInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertlistfrominvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertListFromInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertlisttoinvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertListToInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjecttransfertlistwithquantitytoinvmessage.html" class="tsd-signature-type">ExchangeObjectTransfertListWithQuantityToInvMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeobjectuseinworkshopmessage.html" class="tsd-signature-type">ExchangeObjectUseInWorkshopMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeokmulticraftmessage.html" class="tsd-signature-type">ExchangeOkMultiCraftMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeonhumanvendorrequestmessage.html" class="tsd-signature-type">ExchangeOnHumanVendorRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangerequestmessage.html" class="tsd-signature-type">ExchangeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangereadymessage.html" class="tsd-signature-type">ExchangeReadyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangereplaystopmessage.html" class="tsd-signature-type">ExchangeReplayStopMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangereplytaxvendormessage.html" class="tsd-signature-type">ExchangeReplyTaxVendorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangerequestonmountstockmessage.html" class="tsd-signature-type">ExchangeRequestOnMountStockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangerequestonshopstockmessage.html" class="tsd-signature-type">ExchangeRequestOnShopStockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangerequestontaxcollectormessage.html" class="tsd-signature-type">ExchangeRequestOnTaxCollectorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangerequestedmessage.html" class="tsd-signature-type">ExchangeRequestedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangesellmessage.html" class="tsd-signature-type">ExchangeSellMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangesellokmessage.html" class="tsd-signature-type">ExchangeSellOkMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangesetcraftrecipemessage.html" class="tsd-signature-type">ExchangeSetCraftRecipeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshopstockmovementremovedmessage.html" class="tsd-signature-type">ExchangeShopStockMovementRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshopstockmovementupdatedmessage.html" class="tsd-signature-type">ExchangeShopStockMovementUpdatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshopstockmultimovementremovedmessage.html" class="tsd-signature-type">ExchangeShopStockMultiMovementRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshopstockmultimovementupdatedmessage.html" class="tsd-signature-type">ExchangeShopStockMultiMovementUpdatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshopstockstartedmessage.html" class="tsd-signature-type">ExchangeShopStockStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeshowvendortaxmessage.html" class="tsd-signature-type">ExchangeShowVendorTaxMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartasvendormessage.html" class="tsd-signature-type">ExchangeStartAsVendorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokcraftmessage.html" class="tsd-signature-type">ExchangeStartOkCraftMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokhumanvendormessage.html" class="tsd-signature-type">ExchangeStartOkHumanVendorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokjobindexmessage.html" class="tsd-signature-type">ExchangeStartOkJobIndexMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokmountwithoutpaddockmessage.html" class="tsd-signature-type">ExchangeStartOkMountWithOutPaddockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokmulticraftcraftermessage.html" class="tsd-signature-type">ExchangeStartOkMulticraftCrafterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokmulticraftcustomermessage.html" class="tsd-signature-type">ExchangeStartOkMulticraftCustomerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartoknpcshopmessage.html" class="tsd-signature-type">ExchangeStartOkNpcShopMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartoknpctrademessage.html" class="tsd-signature-type">ExchangeStartOkNpcTradeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokrecycletrademessage.html" class="tsd-signature-type">ExchangeStartOkRecycleTradeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartokrunestrademessage.html" class="tsd-signature-type">ExchangeStartOkRunesTradeMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartedbidbuyermessage.html" class="tsd-signature-type">ExchangeStartedBidBuyerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartedbidsellermessage.html" class="tsd-signature-type">ExchangeStartedBidSellerMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartedmessage.html" class="tsd-signature-type">ExchangeStartedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestartedmountstockmessage.html" class="tsd-signature-type">ExchangeStartedMountStockMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangestoppedmessage.html" class="tsd-signature-type">ExchangeStoppedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangetypesexchangerdescriptionforusermessage.html" class="tsd-signature-type">ExchangeTypesExchangerDescriptionForUserMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangetypesitemsexchangerdescriptionforusermessage.html" class="tsd-signature-type">ExchangeTypesItemsExchangerDescriptionForUserMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangewaitingresultmessage.html" class="tsd-signature-type">ExchangeWaitingResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangeweightmessage.html" class="tsd-signature-type">ExchangeWeightMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.itemnomoreavailablemessage.html" class="tsd-signature-type">ItemNoMoreAvailableMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.jobbooksubscriberequestmessage.html" class="tsd-signature-type">JobBookSubscribeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.recycleresultmessage.html" class="tsd-signature-type">RecycleResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.updatemountboostmessage.html" class="tsd-signature-type">UpdateMountBoostMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemulticraftcraftercanusehisressourcesmessage.html" class="tsd-signature-type">ExchangeMultiCraftCrafterCanUseHisRessourcesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.exchangemulticraftsetcraftercanusehisressourcesmessage.html" class="tsd-signature-type">ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.goldaddedmessage.html" class="tsd-signature-type">GoldAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorycontentmessage.html" class="tsd-signature-type">InventoryContentMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventoryweightmessage.html" class="tsd-signature-type">InventoryWeightMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.livingobjectchangeskinrequestmessage.html" class="tsd-signature-type">LivingObjectChangeSkinRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.livingobjectdissociatemessage.html" class="tsd-signature-type">LivingObjectDissociateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.livingobjectmessagemessage.html" class="tsd-signature-type">LivingObjectMessageMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.livingobjectmessagerequestmessage.html" class="tsd-signature-type">LivingObjectMessageRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.symbioticobjectassociatedmessage.html" class="tsd-signature-type">SymbioticObjectAssociatedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mimicryobjecteraserequestmessage.html" class="tsd-signature-type">MimicryObjectEraseRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objecterrormessage.html" class="tsd-signature-type">ObjectErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.symbioticobjectassociaterequestmessage.html" class="tsd-signature-type">SymbioticObjectAssociateRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mimicryobjectpreviewmessage.html" class="tsd-signature-type">MimicryObjectPreviewMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectaddedmessage.html" class="tsd-signature-type">ObjectAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectdeletemessage.html" class="tsd-signature-type">ObjectDeleteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectdeletedmessage.html" class="tsd-signature-type">ObjectDeletedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectdropmessage.html" class="tsd-signature-type">ObjectDropMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectfeedmessage.html" class="tsd-signature-type">ObjectFeedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectfoundwhilerecoltingmessage.html" class="tsd-signature-type">ObjectFoundWhileRecoltingMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectjobaddedmessage.html" class="tsd-signature-type">ObjectJobAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectmodifiedmessage.html" class="tsd-signature-type">ObjectModifiedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectmovementmessage.html" class="tsd-signature-type">ObjectMovementMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectquantitymessage.html" class="tsd-signature-type">ObjectQuantityMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectsetpositionmessage.html" class="tsd-signature-type">ObjectSetPositionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectusemessage.html" class="tsd-signature-type">ObjectUseMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectsaddedmessage.html" class="tsd-signature-type">ObjectsAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectsdeletedmessage.html" class="tsd-signature-type">ObjectsDeletedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.objectsquantitymessage.html" class="tsd-signature-type">ObjectsQuantityMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.obtaineditemmessage.html" class="tsd-signature-type">ObtainedItemMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.setupdatemessage.html" class="tsd-signature-type">SetUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.wrapperobjectdissociaterequestmessage.html" class="tsd-signature-type">WrapperObjectDissociateRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolspresetdeletemessage.html" class="tsd-signature-type">IdolsPresetDeleteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolspresetdeleteresultmessage.html" class="tsd-signature-type">IdolsPresetDeleteResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolspresetsavemessage.html" class="tsd-signature-type">IdolsPresetSaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolspresetsaveresultmessage.html" class="tsd-signature-type">IdolsPresetSaveResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.idolspresetupdatemessage.html" class="tsd-signature-type">IdolsPresetUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetdeletemessage.html" class="tsd-signature-type">InventoryPresetDeleteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetdeleteresultmessage.html" class="tsd-signature-type">InventoryPresetDeleteResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetitemupdateerrormessage.html" class="tsd-signature-type">InventoryPresetItemUpdateErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetitemupdatemessage.html" class="tsd-signature-type">InventoryPresetItemUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetitemupdaterequestmessage.html" class="tsd-signature-type">InventoryPresetItemUpdateRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetsavecustommessage.html" class="tsd-signature-type">InventoryPresetSaveCustomMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetsavemessage.html" class="tsd-signature-type">InventoryPresetSaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetsaveresultmessage.html" class="tsd-signature-type">InventoryPresetSaveResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetupdatemessage.html" class="tsd-signature-type">InventoryPresetUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetusemessage.html" class="tsd-signature-type">InventoryPresetUseMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.inventorypresetuseresultmessage.html" class="tsd-signature-type">InventoryPresetUseResultMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.spelllistmessage.html" class="tsd-signature-type">SpellListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.storagekamasupdatemessage.html" class="tsd-signature-type">StorageKamasUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.storageobjectremovemessage.html" class="tsd-signature-type">StorageObjectRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.storageobjectupdatemessage.html" class="tsd-signature-type">StorageObjectUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.storageobjectsremovemessage.html" class="tsd-signature-type">StorageObjectsRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.storageobjectsupdatemessage.html" class="tsd-signature-type">StorageObjectsUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accessorypreviewerrormessage.html" class="tsd-signature-type">AccessoryPreviewErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accessorypreviewmessage.html" class="tsd-signature-type">AccessoryPreviewMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.accessorypreviewrequestmessage.html" class="tsd-signature-type">AccessoryPreviewRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.popupwarningmessage.html" class="tsd-signature-type">PopupWarningMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.areafightmodificatorupdatemessage.html" class="tsd-signature-type">AreaFightModificatorUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismattackrequestmessage.html" class="tsd-signature-type">PrismAttackRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightaddedmessage.html" class="tsd-signature-type">PrismFightAddedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightattackeraddmessage.html" class="tsd-signature-type">PrismFightAttackerAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightattackerremovemessage.html" class="tsd-signature-type">PrismFightAttackerRemoveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightdefenderaddmessage.html" class="tsd-signature-type">PrismFightDefenderAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightdefenderleavemessage.html" class="tsd-signature-type">PrismFightDefenderLeaveMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightjoinleaverequestmessage.html" class="tsd-signature-type">PrismFightJoinLeaveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightremovedmessage.html" class="tsd-signature-type">PrismFightRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightstateupdatemessage.html" class="tsd-signature-type">PrismFightStateUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismfightswaprequestmessage.html" class="tsd-signature-type">PrismFightSwapRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prisminfoclosemessage.html" class="tsd-signature-type">PrismInfoCloseMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prisminfoinvalidmessage.html" class="tsd-signature-type">PrismInfoInValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prisminfojoinleaverequestmessage.html" class="tsd-signature-type">PrismInfoJoinLeaveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismmoduleexchangerequestmessage.html" class="tsd-signature-type">PrismModuleExchangeRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismsetsabotagedrefusedmessage.html" class="tsd-signature-type">PrismSetSabotagedRefusedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismsetsabotagedrequestmessage.html" class="tsd-signature-type">PrismSetSabotagedRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismsettingserrormessage.html" class="tsd-signature-type">PrismSettingsErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismsettingsrequestmessage.html" class="tsd-signature-type">PrismSettingsRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismuserequestmessage.html" class="tsd-signature-type">PrismUseRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismsinfovalidmessage.html" class="tsd-signature-type">PrismsInfoValidMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismslistmessage.html" class="tsd-signature-type">PrismsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.prismslistregistermessage.html" class="tsd-signature-type">PrismsListRegisterMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.alignmentrankupdatemessage.html" class="tsd-signature-type">AlignmentRankUpdateMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.setenableavarequestmessage.html" class="tsd-signature-type">SetEnableAVARequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.setenablepvprequestmessage.html" class="tsd-signature-type">SetEnablePVPRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.updatemapplayersagressablestatusmessage.html" class="tsd-signature-type">UpdateMapPlayersAgressableStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.updateselfagressablestatusmessage.html" class="tsd-signature-type">UpdateSelfAgressableStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.characterreportmessage.html" class="tsd-signature-type">CharacterReportMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.cinematicmessage.html" class="tsd-signature-type">CinematicMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.urlopenmessage.html" class="tsd-signature-type">URLOpenMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbaradderrormessage.html" class="tsd-signature-type">ShortcutBarAddErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbaraddrequestmessage.html" class="tsd-signature-type">ShortcutBarAddRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarcontentmessage.html" class="tsd-signature-type">ShortcutBarContentMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarrefreshmessage.html" class="tsd-signature-type">ShortcutBarRefreshMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarremoveerrormessage.html" class="tsd-signature-type">ShortcutBarRemoveErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarremoverequestmessage.html" class="tsd-signature-type">ShortcutBarRemoveRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarremovedmessage.html" class="tsd-signature-type">ShortcutBarRemovedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarswaperrormessage.html" class="tsd-signature-type">ShortcutBarSwapErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.shortcutbarswaprequestmessage.html" class="tsd-signature-type">ShortcutBarSwapRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.contactlookerrormessage.html" class="tsd-signature-type">ContactLookErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.contactlookmessage.html" class="tsd-signature-type">ContactLookMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.contactlookrequestmessage.html" class="tsd-signature-type">ContactLookRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionaddmessage.html" class="tsd-signature-type">StartupActionAddMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionfinishedmessage.html" class="tsd-signature-type">StartupActionFinishedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionsallattributionmessage.html" class="tsd-signature-type">StartupActionsAllAttributionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionsexecutemessage.html" class="tsd-signature-type">StartupActionsExecuteMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionslistmessage.html" class="tsd-signature-type">StartupActionsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.startupactionsobjetattributionmessage.html" class="tsd-signature-type">StartupActionsObjetAttributionMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.subscriptionlimitationmessage.html" class="tsd-signature-type">SubscriptionLimitationMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.subscriptionzonemessage.html" class="tsd-signature-type">SubscriptionZoneMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ornamentgainedmessage.html" class="tsd-signature-type">OrnamentGainedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ornamentselecterrormessage.html" class="tsd-signature-type">OrnamentSelectErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ornamentselectrequestmessage.html" class="tsd-signature-type">OrnamentSelectRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.ornamentselectedmessage.html" class="tsd-signature-type">OrnamentSelectedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titlegainedmessage.html" class="tsd-signature-type">TitleGainedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titlelostmessage.html" class="tsd-signature-type">TitleLostMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titleselecterrormessage.html" class="tsd-signature-type">TitleSelectErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titleselectrequestmessage.html" class="tsd-signature-type">TitleSelectRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titleselectedmessage.html" class="tsd-signature-type">TitleSelectedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titlesandornamentslistmessage.html" class="tsd-signature-type">TitlesAndOrnamentsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.titlesandornamentslistrequestmessage.html" class="tsd-signature-type">TitlesAndOrnamentsListRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.clientuiopenedmessage.html" class="tsd-signature-type">ClientUIOpenedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.protocolrequired.html" class="tsd-signature-type">ProtocolRequired</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.loginqueuestatusmessage.html" class="tsd-signature-type">LoginQueueStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.queuestatusmessage.html" class="tsd-signature-type">QueueStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.truststatusmessage.html" class="tsd-signature-type">TrustStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.checkfilemessage.html" class="tsd-signature-type">CheckFileMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.checkfilerequestmessage.html" class="tsd-signature-type">CheckFileRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.checkintegritymessage.html" class="tsd-signature-type">CheckIntegrityMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.clientkeymessage.html" class="tsd-signature-type">ClientKeyMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.rawdatamessage.html" class="tsd-signature-type">RawDataMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.systemmessagedisplaymessage.html" class="tsd-signature-type">SystemMessageDisplayMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.downloadcurrentspeedmessage.html" class="tsd-signature-type">DownloadCurrentSpeedMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.downloaderrormessage.html" class="tsd-signature-type">DownloadErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.downloadgetcurrentspeedrequestmessage.html" class="tsd-signature-type">DownloadGetCurrentSpeedRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.downloadpartmessage.html" class="tsd-signature-type">DownloadPartMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.downloadsetspeedrequestmessage.html" class="tsd-signature-type">DownloadSetSpeedRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.getpartinfomessage.html" class="tsd-signature-type">GetPartInfoMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.getpartslistmessage.html" class="tsd-signature-type">GetPartsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.partinfomessage.html" class="tsd-signature-type">PartInfoMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.partslistmessage.html" class="tsd-signature-type">PartsListMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.mailstatusmessage.html" class="tsd-signature-type">MailStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterauthtokenerrormessage.html" class="tsd-signature-type">KrosmasterAuthTokenErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterauthtokenmessage.html" class="tsd-signature-type">KrosmasterAuthTokenMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterauthtokenrequestmessage.html" class="tsd-signature-type">KrosmasterAuthTokenRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterinventoryerrormessage.html" class="tsd-signature-type">KrosmasterInventoryErrorMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterinventorymessage.html" class="tsd-signature-type">KrosmasterInventoryMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterinventoryrequestmessage.html" class="tsd-signature-type">KrosmasterInventoryRequestMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmasterplayingstatusmessage.html" class="tsd-signature-type">KrosmasterPlayingStatusMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmastertransfermessage.html" class="tsd-signature-type">KrosmasterTransferMessage</a>
+							</li>
+							<li>
+								<a href="_protocol_.protocol.krosmastertransferrequestmessage.html" class="tsd-signature-type">KrosmasterTransferRequestMessage</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><a href="_protocol_.protocol.networkmessage.html#bit_mask" class="tsd-kind-icon">BIT_<wbr>MASK</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><a href="_protocol_.protocol.networkmessage.html#bit_right_shift_len_packet_id" class="tsd-kind-icon">BIT_<wbr>RIGHT_<wbr>SHIFT_<wbr>LEN_<wbr>PACKET_<wbr>ID</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_protocol_.protocol.networkmessage.html#computetypelen" class="tsd-kind-icon">compute<wbr>Type<wbr>Len</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static"><a href="_protocol_.protocol.networkmessage.html#subcomputestaticheader" class="tsd-kind-icon">sub<wbr>Compute<wbr>Static<wbr>Header</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="_protocol_.protocol.networkmessage.html#writepacket" class="tsd-kind-icon">write<wbr>Packet</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-static">
+					<a name="bit_mask" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> BIT_<wbr>MASK</h3>
+					<div class="tsd-signature tsd-kind-icon">BIT_<wbr>MASK<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Snapizz/d2protocol/blob/master/src/protocol.ts#L652">protocol.ts:652</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-static">
+					<a name="bit_right_shift_len_packet_id" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> BIT_<wbr>RIGHT_<wbr>SHIFT_<wbr>LEN_<wbr>PACKET_<wbr>ID</h3>
+					<div class="tsd-signature tsd-kind-icon">BIT_<wbr>RIGHT_<wbr>SHIFT_<wbr>LEN_<wbr>PACKET_<wbr>ID<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/Snapizz/d2protocol/blob/master/src/protocol.ts#L651">protocol.ts:651</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="computetypelen" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> compute<wbr>Type<wbr>Len</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">compute<wbr>Type<wbr>Len<span class="tsd-signature-symbol">(</span>param1<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Snapizz/d2protocol/blob/master/src/protocol.ts#L677">protocol.ts:677</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>param1: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+					<a name="subcomputestaticheader" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> <span class="tsd-flag ts-flagPrivate">Private</span> sub<wbr>Compute<wbr>Static<wbr>Header</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">sub<wbr>Compute<wbr>Static<wbr>Header<span class="tsd-signature-symbol">(</span>param1<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, param2<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Snapizz/d2protocol/blob/master/src/protocol.ts#L690">protocol.ts:690</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>param1: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>param2: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="writepacket" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> write<wbr>Packet</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">write<wbr>Packet<span class="tsd-signature-symbol">(</span>param1<span class="tsd-signature-symbol">: </span><a href="../interfaces/_protocol_.protocol.icustomdataoutput.html" class="tsd-signature-type">ICustomDataOutput</a>, param2<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, param3<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ByteArray</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/Snapizz/d2protocol/blob/master/src/protocol.ts#L653">protocol.ts:653</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>param1: <a href="../interfaces/_protocol_.protocol.icustomdataoutput.html" class="tsd-signature-type">ICustomDataOutput</a></h5>
+								</li>
+								<li>
+									<h5>param2: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>param3: <span class="tsd-signature-type">ByteArray</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module">
+						<a href="_protocol_.protocol.networkmessage.html" class="tsd-kind-icon">Network<wbr>Message</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-static">
+								<a href="_protocol_.protocol.networkmessage.html#bit_mask" class="tsd-kind-icon">BIT_<wbr>MASK</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-static">
+								<a href="_protocol_.protocol.networkmessage.html#bit_right_shift_len_packet_id" class="tsd-kind-icon">BIT_<wbr>RIGHT_<wbr>SHIFT_<wbr>LEN_<wbr>PACKET_<wbr>ID</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_protocol_.protocol.networkmessage.html#computetypelen" class="tsd-kind-icon">compute<wbr>Type<wbr>Len</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private tsd-is-static">
+								<a href="_protocol_.protocol.networkmessage.html#subcomputestaticheader" class="tsd-kind-icon">sub<wbr>Compute<wbr>Static<wbr>Header</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="_protocol_.protocol.networkmessage.html#writepacket" class="tsd-kind-icon">write<wbr>Packet</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.io" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

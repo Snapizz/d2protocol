@@ -11,10 +11,10 @@ $ npm install d2protocol bytearray2 --save
 # Example usage
 
 ``` js
-var d2protocol = require('d2protocol');
+var Protocol = require('d2protocol');
 var ByteArray = require('bytearray2');
 
-var AccessoryPreviewErrorEnum = d2protocol.AccessoryPreviewErrorEnum; // access all enum like this
+var AccessoryPreviewErrorEnum = Protocol.AccessoryPreviewErrorEnum; // access all enum like this
 
 // serialize Message
 var buff = new ByteArray();

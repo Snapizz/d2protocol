@@ -187,8 +187,12 @@ module Protocol {
         private static MASK_01111111: number = 127;
         private _data: ByteArray;
 
-        constructor(data: ByteArray) {
-            this._data = data;
+        constructor(data?: Buffer | ByteArray) {
+            if (data instanceof ByteArray) {
+                this._data = data;
+            } else {
+                this._data = new ByteArray(data);
+            }
         }
 
         public set position(param1: number) {
@@ -2040,10 +2044,6 @@ module Protocol {
                 throw new Error('Not enought data to read the message length, byte available : ' + src.bytesAvailable + ' (needed : ' + (staticHeader & NetworkMessage.BIT_MASK) + ')');
             }
             length = this.readMessageLength(staticHeader, src);
-
-            if (src.bytesAvailable >= length) {
-                return this.parseHeader(src, false, id, length, staticHeader);
-            }
             return this.parseHeader(src, true, id, length);
         }
 

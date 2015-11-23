@@ -1,4 +1,5 @@
 /// <reference path="../bytearray2/bytearray2.d.ts" />
+/// <reference path="../node/node.d.ts" />
 
 declare module 'd2protocol' {
 	import ByteArray = require('bytearray2');
@@ -17374,7 +17375,7 @@ declare module 'd2protocol' {
 	        private static MASK_10000000;
 	        private static MASK_01111111;
 	        private _data;
-	        constructor(data: ByteArray);
+	        constructor(data?: Buffer | ByteArray);
 	        position: number;
 	        readVarInt(): number;
 	        readVarUhInt(): number;

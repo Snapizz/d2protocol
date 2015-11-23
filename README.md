@@ -35,6 +35,4 @@ var message_p = Protocol.MessageReceiver.parse(wrapper);
 
 # API Doc
 
-https://github.com/Snapizz/d2protocol/tree/master/doc
-
-download src and open doc/index.html
+http://d2protocol.comlu.com/
